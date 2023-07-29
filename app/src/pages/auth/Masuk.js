@@ -6,9 +6,7 @@ import logoPortal from "../../assets/images/logo-portal-kepriprov.png";
 
 export default function Masuk() {
 	const dispatch = useAppDispatch();
-	const loading = useAppSelector(
-		(state) => state.session.request_login?.loading
-	);
+	const loading = useAppSelector((state) => state.session?.loading);
 	const [form] = Form.useForm();
 
 	const handleSubmit = (params) => {
