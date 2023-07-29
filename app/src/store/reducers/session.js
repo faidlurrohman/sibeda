@@ -5,43 +5,18 @@ import {
 	LOGIN_USER_SUCCESS,
 } from "../types";
 
-const initialState = {
-	request_login: { loading: false, message: null, errors: null },
-	user: null,
-};
+const initialState = { loading: false, user: null };
 
 export default function sessionReducer(state = initialState, action) {
-	const { type, errors, message, user } = action;
+	const { type, user } = action;
 
 	switch (type) {
 		case LOGIN_USER_REQUEST:
-			return {
-				...state,
-				request_login: {
-					...state.request_login,
-					loading: true,
-				},
-			};
+			return { ...state, loading: true };
 		case LOGIN_USER_SUCCESS:
-			return {
-				...state,
-				request_login: {
-					...state.request_login,
-					loading: false,
-					message: null,
-					errors: null,
-				},
-				user,
-			};
+			return { loading: false, user };
 		case LOGIN_USER_FAILURE:
-			return {
-				...state,
-				request_login: {
-					loading: false,
-					message,
-					errors,
-				},
-			};
+			return { ...state, loading: false };
 		case CLEAR_SESSION:
 			return initialState;
 		default:
