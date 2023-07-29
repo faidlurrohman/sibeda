@@ -11,7 +11,7 @@ export const loginAction = (user) => (dispatch) => {
 	dispatch({ type: LOGIN_USER_REQUEST });
 
 	doLogin(user).then((response) => {
-		if (response?.data?.code === 0) {
+		if (response?.data?.code === 200) {
 			Cookies.set(
 				process.env.REACT_APP_ACCESS_TOKEN,
 				response?.data?.data?.token,
@@ -23,7 +23,7 @@ export const loginAction = (user) => (dispatch) => {
 			);
 			dispatch({
 				type: LOGIN_USER_SUCCESS,
-				user: { ...response?.data?.data, username: user?.username },
+				user: response?.data?.data,
 			});
 		} else {
 			dispatch({ type: LOGIN_USER_FAILURE });
