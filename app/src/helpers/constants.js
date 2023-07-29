@@ -141,7 +141,7 @@ const MENU_NAVIGATION = {
 };
 const EXPORT_TARGET = {
 	city: {
-		filename: `SILARA-MASTER-KOTA`,
+		filename: `SIBEDA-MASTER-KOTA`,
 		headers: [
 			{ header: "No", key: "no", width: 5 },
 			{ header: "Nama Kota", key: "label", width: 30 },
@@ -149,7 +149,7 @@ const EXPORT_TARGET = {
 		],
 	},
 	signer: {
-		filename: `SILARA-MASTER-PENANDA-TANGAN`,
+		filename: `SIBEDA-MASTER-PENANDA-TANGAN`,
 		headers: [
 			{ header: "No", key: "no", width: 5 },
 			{ header: "NIP", key: "nip", width: 20 },
@@ -159,7 +159,7 @@ const EXPORT_TARGET = {
 		],
 	},
 	user: {
-		filename: `SILARA-MASTER-PENGGUNA`,
+		filename: `SIBEDA-MASTER-PENGGUNA`,
 		headers: [
 			{ header: "No", key: "no", width: 5 },
 			{ header: "Nama Pengguna", key: "username", width: 35 },
@@ -169,7 +169,7 @@ const EXPORT_TARGET = {
 		],
 	},
 	account_base: {
-		filename: `SILARA-MASTER-REKENING-AKUN`,
+		filename: `SIBEDA-MASTER-REKENING-AKUN`,
 		headers: [
 			{ header: "No", key: "no", width: 5 },
 			{ header: "Label", key: "label", width: 10 },
@@ -178,7 +178,7 @@ const EXPORT_TARGET = {
 		],
 	},
 	account_group: {
-		filename: `SILARA-MASTER-REKENING-KELOMPOK`,
+		filename: `SIBEDA-MASTER-REKENING-KELOMPOK`,
 		headers: [
 			{ header: "No", key: "no", width: 5 },
 			{ header: "Akun Rekening", key: "account_base_label", width: 35 },
@@ -188,7 +188,7 @@ const EXPORT_TARGET = {
 		],
 	},
 	account_type: {
-		filename: `SILARA-MASTER-REKENING-JENIS`,
+		filename: `SIBEDA-MASTER-REKENING-JENIS`,
 		headers: [
 			{ header: "No", key: "no", width: 5 },
 			{ header: "Kelompok Rekening", key: "account_group_label", width: 35 },
@@ -198,7 +198,7 @@ const EXPORT_TARGET = {
 		],
 	},
 	account_object: {
-		filename: `SILARA-MASTER-REKENING-OBJEK`,
+		filename: `SIBEDA-MASTER-REKENING-OBJEK`,
 		headers: [
 			{ header: "No", key: "no", width: 5 },
 			{ header: "Jenis Rekening", key: "account_type_label", width: 35 },
@@ -208,7 +208,7 @@ const EXPORT_TARGET = {
 		],
 	},
 	transaction: {
-		filename: `SILARA-MASTER-TRANSAKSI`,
+		filename: `SIBEDA-MASTER-TRANSAKSI`,
 		headers: [
 			{ header: "No", key: "no", width: 5 },
 			{ header: "Tanggal", key: "trans_date", width: 20 },

@@ -5,8 +5,8 @@ import storage from "redux-persist/lib/storage";
 import reducers from "./reducers";
 
 const config = {
-  key: `silarakab`,
-  storage,
+	key: `sibeda`,
+	storage,
 };
 
 const persistReducers = persistReducer(config, reducers);
