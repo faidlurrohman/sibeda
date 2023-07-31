@@ -134,8 +134,8 @@ export const activeColumn = (stateFilter) => ({
 	key: "active",
 	width: 100,
 	filters: [
-		{ text: "Ya", value: true },
-		{ text: "Tidak", value: false },
+		{ text: "Ya", value: 1 },
+		{ text: "Tidak", value: 0 },
 	],
 	filteredValue: stateFilter.active || null,
 	render: (value) => (value ? "Ya" : "Tidak"),
