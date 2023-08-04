@@ -10,8 +10,11 @@ class Role extends REST_Controller {
     function __construct()
     {
         parent::__construct();
-        $this->_authenticate_CORS();
-        $this->_authenticate_BEARER();
+
+        // CORS
+        $this->httpcors->_authenticate_CORS();
+        
+        // MODELS
         $this->load->model('Auth_model');
         $this->load->model('Role_model');
     }
@@ -23,40 +26,18 @@ class Role extends REST_Controller {
 
     private function do_get_list()
     {   
-        $user = $this->Auth_model->check_token();
+        $validate = $this->Auth_model->validate_token();
 
-        if ($user) {
-            $data = $this->Role_model->get_list($user);
-        
-            if ($data['code'] != 0) {
-                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
-            } else {
+        if ($validate['code'] == 200) {
+            $data = $this->Role_model->get_list($validate['data']);
+
+            if ($data['code'] == 200) {
                 $this->response($data, REST_Controller::HTTP_OK);
+            } else {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
             }
         } else {
-            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
-        }
-    }
-
-    protected function _authenticate_CORS()
-    {
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Credentials: true');
-        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-        header('Access-Control-Allow-Headers: ACCEPT, ORIGIN, X-REQUESTED-WITH, CONTENT-TYPE, AUTHORIZATION, Client-ID, Secret-Key, Authorization, User-ID');
-        if ("OPTIONS" === $_SERVER['REQUEST_METHOD']) {
-            die();
-        }
-    }
-
-    protected function _authenticate_BEARER()
-    {   
-        $this->load->helper('common');
-
-        $token = get_token();
-
-        if (!isset($token) || $token == 'undefined') {
-            $this->response(['status' => '401'], REST_Controller::HTTP_UNAUTHORIZED);
+            $this->response($validate, REST_Controller::HTTP_UNAUTHORIZED);
         }
     }
 

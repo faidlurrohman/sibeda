@@ -21,7 +21,7 @@ import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
-import { messageAction, responseGet } from "../../helpers/response";
+import { messageAction } from "../../helpers/response";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { checkParams } from "../../helpers/url";
@@ -58,14 +58,11 @@ export default function Kelompok() {
 			.then(
 				axios.spread((_groups, _export, _bases) => {
 					setLoading(false);
-					setAccountGroup(responseGet(_groups).data);
-					setExports(responseGet(_export).data);
-					setAccountBase(_bases?.data?.data || []);
+					setAccountGroup(_groups.data);
+					setExports(_export.data);
+					setAccountBase(_bases?.data);
 					setTablePage({
-						pagination: {
-							...params.pagination,
-							total: responseGet(_groups).total_count,
-						},
+						pagination: { ...params.pagination, total: _groups?.total },
 					});
 				})
 			);
@@ -130,11 +127,13 @@ export default function Kelompok() {
 	};
 
 	const handleAddUpdate = (values) => {
+		values.mode = isEdit ? "U" : "C";
+
 		setConfirmLoading(true);
 		addAccount("group", values).then((response) => {
 			setConfirmLoading(false);
 
-			if (response?.data?.code === 0) {
+			if (response?.code === 200) {
 				messageAction(isEdit);
 				addUpdateRow();
 				reloadTable();

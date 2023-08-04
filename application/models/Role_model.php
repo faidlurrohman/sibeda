@@ -2,32 +2,24 @@
 
 class Role_model extends CI_Model {
 
-    private $schema = 'get_role';
-    private $table  = 'silarakab.role';
-    private $read   = 'silarakab.main_read';
+    private $procedure = 'data';
+    private $schema = 'role';
 
     function __construct()
     {
         parent::__construct();
+        
+        // HELPER
         $this->load->helper('common');
     }
 
     function get_list($user)
     {
-        $_json = '{"active":"true"}';
-        $sql = "
-            WITH r AS (
-                SELECT * FROM {$this->read}(0, 0, '".$user['username']."', '".$this->schema."', 'remark', '[".$_json."]'::jsonb)
-            ) SELECT 
-                (r.__res_data->>'id')::INT AS id,
-                (r.__res_data->>'id')::INT AS value, 
-                r.__res_data->>'remark' AS label, 
-                r.__code, 
-                r.__res_msg, 
-                COALESCE(r.__res_count,0)::INT AS __res_count
-            FROM r
-        ";
+        $sql = "CALL list_{$this->procedure}('{$user['username']}', 'list_{$this->schema}', '{}', 'label asc', 0, 0, @list)";
         $query = $this->db->query($sql);
+        $query->next_result();
+        $query = $this->db->query("SELECT @list");
+            
         return model_response($query, 1);
     }
 

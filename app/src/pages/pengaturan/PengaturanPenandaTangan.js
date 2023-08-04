@@ -16,7 +16,7 @@ import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ExportButton from "../../components/button/ExportButton";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
-import { messageAction, responseGet } from "../../helpers/response";
+import { messageAction } from "../../helpers/response";
 import axios from "axios";
 
 export default function PengaturanPenandaTangan() {
@@ -49,13 +49,10 @@ export default function PengaturanPenandaTangan() {
 			.then(
 				axios.spread((_data, _export) => {
 					setLoading(false);
-					setSigner(responseGet(_data).data);
-					setExports(responseGet(_export).data);
+					setSigner(_data?.data);
+					setExports(_export?.data);
 					setTablePage({
-						pagination: {
-							...params.pagination,
-							total: responseGet(_data).total_count,
-						},
+						pagination: { ...params.pagination, total: _data?.total },
 					});
 				})
 			);
@@ -113,11 +110,13 @@ export default function PengaturanPenandaTangan() {
 	};
 
 	const handleAddUpdate = (values) => {
+		values.mode = isEdit ? "U" : "C";
+
 		setConfirmLoading(true);
 		addSigner(values).then((response) => {
 			setConfirmLoading(false);
 
-			if (response?.data?.code === 0) {
+			if (response?.code === 200) {
 				messageAction(isEdit);
 				addUpdateRow();
 				reloadTable();

@@ -2,53 +2,55 @@
 
 class User_model extends CI_Model {
 
-    private $schema = 'get_user';
-    private $table  = 'silarakab."user"';
-    private $cud    = 'silarakab.main_cud';
-    private $read   = 'silarakab.main_read';
+    private $procedure = 'data';
+    private $schema = 'user';
 
     function __construct()
     {
         parent::__construct();
+        
+        // HELPER
         $this->load->helper('common');
     }
     
-    function get_all($user, $limit, $offset, $order, $filter)
+    function get_all($user, $filter, $order, $limit, $offset)
     {
         $setOrder = set_order($order);
-        $sql = "SELECT * FROM {$this->read}($limit, $offset, '".$user['username']."', '".$this->schema."', '".$setOrder."', '[".json_encode($filter)."]'::JSONB)";
+        $sql = "CALL read_{$this->procedure}('{$user['username']}', 'get_{$this->schema}', '".json_encode($filter)."', '".$setOrder."', {$limit}, {$offset}, @read)";
         $query = $this->db->query($sql);
+        $query->next_result();
+        $query = $this->db->query("SELECT @read");
+            
         return model_response($query);
     }
 
     function save($user, $params)
     {
-        $id = $params['id'];
-
-        if ($id) {
-            $mode = 'U';
-        } else {
-            $params["id"] = '0';
-            $mode = 'C';
-        }
-
-        $sql = "SELECT * from {$this->cud}('".$mode."', '{$this->table}', '".$user['username']."', '[".json_encode($params)."]'::jsonb)";
-        $query = $this->db->query($sql,$params);
+        $sql = "CALL cud_{$this->procedure}('{$params['mode']}', '{$this->schema}', '{$user['username']}', '[".json_encode($params)."]', @cud)";
+        $query = $this->db->query($sql);
+        $query->next_result();
+        $query = $this->db->query("SELECT @cud");
+            
         return model_response($query, 2);
     }
 
     function delete($user, $params)
     {
-        $sql = "SELECT * from {$this->cud}('D', '{$this->table}', '".$user['username']."', '[".json_encode($params)."]'::jsonb)";
-        $query = $this->db->query($sql,$params);
+        $sql = "CALL cud_{$this->procedure}('D', '{$this->schema}', '{$user['username']}', '[".json_encode($params)."]', @cud)";
+        $query = $this->db->query($sql);
+        $query->next_result();
+        $query = $this->db->query("SELECT @cud");
+
         return model_response($query, 2);
     }
 
     function update_password($user, $params)
     {
-        $params["id"] = '0';
-        $sql = "SELECT * from {$this->cud}('U', '{$this->table}', '".$user['username']."', '[".json_encode($params)."]'::jsonb)";
-        $query = $this->db->query($sql,$params);
+        $sql = "CALL cud_{$this->procedure}('U', '{$this->schema}', '{$user['username']}', '[".json_encode($params)."]', @cud)";
+        $query = $this->db->query($sql);
+        $query->next_result();
+        $query = $this->db->query("SELECT @cud");
+            
         return model_response($query, 2);
     }
 

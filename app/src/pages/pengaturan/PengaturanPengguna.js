@@ -18,7 +18,7 @@ import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ExportButton from "../../components/button/ExportButton";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
-import { messageAction, responseGet } from "../../helpers/response";
+import { messageAction } from "../../helpers/response";
 import axios from "axios";
 
 export default function PengaturanPengguna() {
@@ -55,15 +55,12 @@ export default function PengaturanPengguna() {
 			.then(
 				axios.spread((_users, _export, _cities, _roles) => {
 					setLoading(false);
-					setUsers(responseGet(_users).data);
-					setExports(responseGet(_export).data);
-					setCities(_cities?.data?.data || []);
-					setRoles(_roles?.data?.data || []);
+					setUsers(_users?.data);
+					setExports(_export?.data);
+					setCities(_cities?.data);
+					setRoles(_roles?.data);
 					setTablePage({
-						pagination: {
-							...params.pagination,
-							total: responseGet(_users).total_count,
-						},
+						pagination: { ...params.pagination, total: _users?.total },
 					});
 				})
 			);
@@ -124,11 +121,13 @@ export default function PengaturanPengguna() {
 	};
 
 	const handleAddUpdate = (values) => {
+		values.mode = isEdit ? "U" : "C";
+
 		setConfirmLoading(true);
 		addUser(values).then((response) => {
 			setConfirmLoading(false);
 
-			if (response?.data?.code === 0) {
+			if (response?.code === 200) {
 				messageAction(isEdit);
 				addUpdateRow();
 				reloadTable();

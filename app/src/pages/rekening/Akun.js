@@ -7,7 +7,7 @@ import {
 } from "../../services/account";
 import { PAGINATION } from "../../helpers/constants";
 import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
-import { messageAction, responseGet } from "../../helpers/response";
+import { messageAction } from "../../helpers/response";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
@@ -45,13 +45,10 @@ export default function Akun() {
 			.then(
 				axios.spread((_data, _export) => {
 					setLoading(false);
-					setExports(responseGet(_export).data);
-					setAccountBase(responseGet(_data).data);
+					setExports(_export?.data);
+					setAccountBase(_data?.data);
 					setTablePage({
-						pagination: {
-							...params.pagination,
-							total: responseGet(_data).total_count,
-						},
+						pagination: { ...params.pagination, total: _data?.total },
 					});
 				})
 			);
@@ -111,11 +108,13 @@ export default function Akun() {
 	};
 
 	const handleAddUpdate = (values) => {
+		values.mode = isEdit ? "U" : "C";
+
 		setConfirmLoading(true);
 		addAccount("base", values).then((response) => {
 			setConfirmLoading(false);
 
-			if (response?.data?.code === 0) {
+			if (response?.code === 200) {
 				messageAction(isEdit);
 				addUpdateRow();
 				reloadTable();

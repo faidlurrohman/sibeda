@@ -10,8 +10,11 @@ class Account_group extends REST_Controller {
     function __construct()
     {
         parent::__construct();
-        $this->_authenticate_CORS();
-        $this->_authenticate_BEARER();
+
+        // CORS
+        $this->httpcors->_authenticate_CORS();
+
+        // MODELS
         $this->load->model('Auth_model');
         $this->load->model('Account_group_model');
     }
@@ -23,22 +26,22 @@ class Account_group extends REST_Controller {
 
     private function do_get_all()
     {   
-        $user = $this->Auth_model->check_token();
+        $validate = $this->Auth_model->validate_token();
 
-        if($user){
+        if ($validate['code'] == 200) {
+            $filter = !empty($this->get('filter')) ? $this->get('filter') : new stdClass();
+            $order = !empty($this->get('order')) ? $this->get('order') : 'id desc'; 
             $limit = !empty($this->get('limit')) ? $this->get('limit') : 0; 
             $offset = !empty($this->get('offset')) ? $this->get('offset') : 0; 
-            $order = !empty($this->get('order')) ? $this->get('order') : 'id desc'; 
-            $filter = !empty($this->get('filter')) ? $this->get('filter') : new stdClass();
-            $data = $this->Account_group_model->get_all($user, $limit, $offset, $order, $filter);
-        
-            if ($data['code'] != 0) {
-                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
-            } else {
+            $data = $this->Account_group_model->get_all($validate['data'], $filter, $order, $limit, $offset);
+
+            if ($data['code'] == 200) {
                 $this->response($data, REST_Controller::HTTP_OK);
+            } else {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
             }
         } else {
-            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
+            $this->response($validate, REST_Controller::HTTP_UNAUTHORIZED);
         }
     }
 
@@ -49,18 +52,18 @@ class Account_group extends REST_Controller {
 
     private function do_get_list()
     {   
-        $user = $this->Auth_model->check_token();
+        $validate = $this->Auth_model->validate_token();
 
-        if($user){
-            $data = $this->Account_group_model->get_list($user);
-        
-            if ($data['code'] != 0) {
-                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
-            } else {
+        if ($validate['code'] == 200) {
+            $data = $this->Account_group_model->get_list($validate['data']);
+
+            if ($data['code'] == 200) {
                 $this->response($data, REST_Controller::HTTP_OK);
+            } else {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
             }
         } else {
-            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
+            $this->response($validate, REST_Controller::HTTP_UNAUTHORIZED);
         }
     }
 
@@ -71,18 +74,18 @@ class Account_group extends REST_Controller {
 
     private function do_create()
     {
-        $user = $this->Auth_model->check_token();
+        $validate = $this->Auth_model->validate_token();
 
-        if($user){
-            $data = $this->Account_group_model->save($user, $this->input_fields());
+        if ($validate['code'] == 200) {
+            $data = $this->Account_group_model->save($validate['data'], $this->input_fields());
 
-            if ($data['code'] != 0) {
-                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
-            } else {
+            if ($data['code'] == 200) {
                 $this->response($data, REST_Controller::HTTP_OK);
+            } else {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
             }
         } else {
-            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
+            $this->response($validate, REST_Controller::HTTP_UNAUTHORIZED);
         }
     }
 
@@ -93,18 +96,18 @@ class Account_group extends REST_Controller {
 
     private function do_delete($id)
     {
-        $user = $this->Auth_model->check_token();
+        $validate = $this->Auth_model->validate_token();
 
-        if($user){
-            $data = $this->Account_group_model->delete($user, array('id' => $id));
+        if ($validate['code'] == 200) {
+            $data = $this->Account_group_model->delete($validate['data'], array('id' => $id));
 
-            if ($data['code'] != 0) {
-                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
-            } else {
+            if ($data['code'] == 200) {
                 $this->response($data, REST_Controller::HTTP_OK);
+            } else {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
             }
         } else {
-            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
+            $this->response($validate, REST_Controller::HTTP_UNAUTHORIZED);
         }
     }
 
@@ -115,34 +118,13 @@ class Account_group extends REST_Controller {
             'account_base_id' => $this->post_or_put('account_base_id', $is_edit),
             'label' => $this->post_or_put('label', $is_edit),
             'remark' => $this->post_or_put('remark', $is_edit),
+            'mode' => $this->post_or_put('mode', $is_edit),
         );
     }
 
     private function post_or_put($field, $is_edit = 0)
     {
         return ($is_edit == 0) ? $this->post($field) : $this->put($field);
-    }
-
-    protected function _authenticate_CORS()
-    {
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Credentials: true');
-        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-        header('Access-Control-Allow-Headers: ACCEPT, ORIGIN, X-REQUESTED-WITH, CONTENT-TYPE, AUTHORIZATION, Client-ID, Secret-Key, Authorization, User-ID');
-        if ("OPTIONS" === $_SERVER['REQUEST_METHOD']) {
-            die();
-        }
-    }
-
-    protected function _authenticate_BEARER()
-    {   
-        $this->load->helper('common');
-
-        $token = get_token();
-
-        if (!isset($token) || $token == 'undefined') {
-            $this->response(['status' => '401'], REST_Controller::HTTP_UNAUTHORIZED);
-        }
     }
 
 }

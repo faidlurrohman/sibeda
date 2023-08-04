@@ -18,7 +18,7 @@ import {
 	setAllocationAccount,
 } from "../../services/account";
 import { PAGINATION } from "../../helpers/constants";
-import { messageAction, responseGet } from "../../helpers/response";
+import { messageAction } from "../../helpers/response";
 import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import { getCityList } from "../../services/city";
 import ReloadButton from "../../components/button/ReloadButton";
@@ -64,14 +64,14 @@ export default function Objek() {
 			.then(
 				axios.spread((_objects, _export, _types, _cities) => {
 					setLoading(false);
-					setAccountObject(responseGet(_objects).data);
-					setExports(responseGet(_export).data);
-					setAccountType(_types?.data?.data || []);
-					setCities(_cities?.data?.data || []);
+					setAccountObject(_objects?.data);
+					setExports(_export?.data);
+					setAccountType(_types?.data);
+					setCities(_cities?.data);
 					setTablePage({
 						pagination: {
 							...params.pagination,
-							total: responseGet(_objects).total_count,
+							total: _objects?.total,
 						},
 					});
 				})
@@ -164,11 +164,13 @@ export default function Objek() {
 	};
 
 	const handleAddUpdate = (values) => {
+		values.mode = isEdit ? "U" : "C";
+
 		setConfirmLoading(true);
 		addAccount("object", values).then((response) => {
 			setConfirmLoading(false);
 
-			if (response?.data?.code === 0) {
+			if (response?.code === 200) {
 				messageAction(isEdit);
 				addUpdateRow();
 				reloadTable();

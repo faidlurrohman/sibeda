@@ -21,7 +21,7 @@ import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
-import { messageAction, responseGet } from "../../helpers/response";
+import { messageAction } from "../../helpers/response";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { checkParams } from "../../helpers/url";
@@ -58,13 +58,13 @@ export default function Jenis() {
 			.then(
 				axios.spread((_types, _export, _groups) => {
 					setLoading(false);
-					setAccountType(responseGet(_types).data);
-					setExports(responseGet(_export).data);
-					setAccountGroup(_groups?.data?.data || []);
+					setAccountType(_types?.data);
+					setExports(_export?.data);
+					setAccountGroup(_groups?.data);
 					setTablePage({
 						pagination: {
 							...params.pagination,
-							total: responseGet(_types).total_count,
+							total: _types?.total,
 						},
 					});
 				})
@@ -130,11 +130,13 @@ export default function Jenis() {
 	};
 
 	const handleAddUpdate = (values) => {
+		values.mode = isEdit ? "U" : "C";
+
 		setConfirmLoading(true);
 		addAccount("type", values).then((response) => {
 			setConfirmLoading(false);
 
-			if (response?.data?.code === 0) {
+			if (response?.code === 200) {
 				messageAction(isEdit);
 				addUpdateRow();
 				reloadTable();

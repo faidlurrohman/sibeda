@@ -16,7 +16,7 @@ import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ExportButton from "../../components/button/ExportButton";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
-import { messageAction, responseGet } from "../../helpers/response";
+import { messageAction } from "../../helpers/response";
 import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
 
@@ -50,13 +50,10 @@ export default function PengaturanKota() {
 			.then(
 				axios.spread((_data, _export) => {
 					setLoading(false);
-					setCities(responseGet(_data).data);
-					setExports(responseGet(_export).data);
+					setCities(_data.data);
+					setExports(_export.data);
 					setTablePage({
-						pagination: {
-							...params.pagination,
-							total: responseGet(_data).total_count,
-						},
+						pagination: { ...params.pagination, total: _data?.total },
 					});
 				})
 			);
@@ -119,7 +116,7 @@ export default function PengaturanKota() {
 	};
 
 	const handleAddUpdate = async (values) => {
-		setConfirmLoading(true);
+		values.mode = isEdit ? "U" : "C";
 
 		let customValues = {
 			...values,
@@ -131,10 +128,11 @@ export default function PengaturanKota() {
 					: null,
 		};
 
+		setConfirmLoading(true);
 		addCity(customValues).then((response) => {
 			setConfirmLoading(false);
 
-			if (response?.data?.code === 0) {
+			if (response?.code === 200) {
 				messageAction(isEdit);
 				addUpdateRow();
 				reloadTable();

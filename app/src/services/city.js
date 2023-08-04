@@ -15,6 +15,7 @@ export const addCity = (values) => {
 	formData.append("label", values?.label);
 	formData.append("logo", values?.logo || ``);
 	formData.append("blob", values?.blob);
+	formData.append("mode", values?.mode);
 
 	return axios.post(`/api/city/add`, formData, {
 		headers: {
