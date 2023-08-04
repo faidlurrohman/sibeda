@@ -10,7 +10,11 @@ class Auth extends REST_Controller {
     function __construct()
     {
         parent::__construct();
-        $this->_authenticate_CORS();
+
+        // CORS
+        $this->httpcors->_authenticate_CORS();
+
+        // MODELS
         $this->load->model('Auth_model');
     }
 
@@ -23,23 +27,10 @@ class Auth extends REST_Controller {
     {
         $data = $this->Auth_model->login($this->post('username'),$this->post('password'));
 
-        if ($data['code'] != 0) {
-            $this->response($data, REST_Controller::HTTP_UNAUTHORIZED);
+        if ($data['code'] == 200) {
+            $this->response($data, REST_Controller::HTTP_OK);
         } else {
-            $auth = $this->Auth_model->get_auth($this->post('username'));
-            $this->response($auth, REST_Controller::HTTP_OK);
+            $this->response($data, REST_Controller::HTTP_UNAUTHORIZED);
         }
     }
-
-    protected function _authenticate_CORS()
-    {
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Credentials: true');
-        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-        header('Access-Control-Allow-Headers: ACCEPT, ORIGIN, X-REQUESTED-WITH, CONTENT-TYPE, AUTHORIZATION, Client-ID, Secret-Key, Authorization, User-ID');
-        if ("OPTIONS" === $_SERVER['REQUEST_METHOD']) {
-            die();
-        }
-    }
-
 }
