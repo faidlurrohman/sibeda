@@ -763,7 +763,7 @@ export default function ExportButton({
 		setLoading(true);
 		getSignerList().then((response) => {
 			setLoading(false);
-			setSigners(response?.data?.data);
+			setSigners(response?.data);
 		});
 	}, []);
 
