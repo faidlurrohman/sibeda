@@ -11,10 +11,10 @@ export const loginAction = (user) => (dispatch) => {
 	dispatch({ type: LOGIN_USER_REQUEST });
 
 	doLogin(user).then((response) => {
-		if (response?.data?.code === 200) {
+		if (response?.code === 200) {
 			Cookies.set(
 				process.env.REACT_APP_ACCESS_TOKEN,
-				response?.data?.data?.token,
+				response?.data?.token,
 				{ expires: 1, sameSite: "Strict" }
 				// {
 				// 	expires: new Date(new Date().getTime() + 15 * 1000),
@@ -23,7 +23,7 @@ export const loginAction = (user) => (dispatch) => {
 			);
 			dispatch({
 				type: LOGIN_USER_SUCCESS,
-				user: response?.data?.data,
+				user: response?.data,
 			});
 		} else {
 			dispatch({ type: LOGIN_USER_FAILURE });
