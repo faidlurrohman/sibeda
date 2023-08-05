@@ -4,7 +4,6 @@ import { DATE_FORMAT_VIEW, PAGINATION } from "../../helpers/constants";
 import { searchColumn } from "../../helpers/table";
 import axios from "axios";
 import { getRealPlanCities } from "../../services/report";
-import { responseGet } from "../../helpers/response";
 import ReloadButton from "../../components/button/ReloadButton";
 import { convertDate, dbDate } from "../../helpers/date";
 import useRole from "../../hooks/useRole";
@@ -116,19 +115,16 @@ export default function AnggaranKota() {
 			.then(
 				axios.spread((_data, _export, _cities, _bases) => {
 					setLoading(false);
-					setCities(_cities?.data?.data || []);
-					setData(responseGet(_data).data);
-					setExports(setDataExport(responseGet(_export).data));
-					setAccountBase(_bases?.data?.data || []);
+					setCities(_cities?.data);
+					setData(_data?.data);
+					setExports(setDataExport(_export?.data));
+					setAccountBase(_bases?.data);
 					setTablePage({
-						pagination: {
-							...params.pagination,
-							total: responseGet(_data).total_count,
-						},
+						pagination: { ...params.pagination, total: _data?.total },
 					});
 
-					if (!!(_bases?.data?.data || []).length) {
-						makeChartData(_bases?.data?.data || [], responseGet(_export).data);
+					if (!!(_bases?.data).length) {
+						makeChartData(_bases?.data, _export?.data);
 					}
 				})
 			);

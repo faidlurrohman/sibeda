@@ -6,7 +6,6 @@ import { getCityList } from "../../services/city";
 import { DATE_FORMAT_VIEW, PAGINATION } from "../../helpers/constants";
 import { convertDate, dbDate } from "../../helpers/date";
 import { getRecapitulationCities } from "../../services/report";
-import { responseGet } from "../../helpers/response";
 import { searchColumn } from "../../helpers/table";
 import { formatterNumber } from "../../helpers/number";
 import _ from "lodash";
@@ -63,26 +62,20 @@ export default function PendapatanBelanja() {
 			.then(
 				axios.spread((_data, _export, _cities, _bases) => {
 					setLoading(false);
-					setData(responseGet(_data).data);
-					setCities(_cities?.data?.data || []);
-					setExports(setDataExport(responseGet(_export).data));
+					setData(_data?.data);
+					setCities(_cities?.data);
+					setExports(setDataExport(_export?.data));
 
 					setTablePage({
-						pagination: {
-							...params.pagination,
-							total: responseGet(_data).total_count,
-						},
+						pagination: { ...params.pagination, total: _data?.total },
 					});
 
-					if (
-						!!(_bases?.data?.data || []).length &&
-						!!(_cities?.data?.data || []).length
-					) {
+					if (!!(_bases?.data).length && !!(_cities?.data).length) {
 						makeChartData(
-							_bases?.data?.data || [],
-							_cities?.data?.data || [],
+							_bases?.data,
+							_cities?.data,
 							params?.filters,
-							responseGet(_export).data
+							_export?.data
 						);
 					}
 				})

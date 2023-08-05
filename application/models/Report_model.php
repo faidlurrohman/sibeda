@@ -2,31 +2,37 @@
 
 class Report_model extends CI_Model {
 
-    private $read   = 'silarakab.main_read';
-    private $schema_real_plan_cities = 'get_real_plan_cities';
-    private $schema_recapitulation_cities = 'get_recapitulation_cities';
+    private $procedure = 'data';
+    private $schema_real_plan = 'get_real_plan_cities';
+    private $schema_recapitulation = 'get_recapitulation_cities';
 
     function __construct()
     {
         parent::__construct();
+        
+        // HELPER
         $this->load->helper('common');
     }
-    
-    function get_real_plan_cities($user, $limit, $offset, $order, $filter)
+
+    function get_real_plan_cities($user, $filter, $order, $limit, $offset)
     {
         $setOrder = set_order($order);
-        $sql = "SELECT * FROM {$this->read}($limit, $offset, '".$user['username']."', '".$this->schema_real_plan_cities."', '".$setOrder."', '[".json_encode($filter)."]'::JSONB)";
-        // echo $sql;exit;
+        $sql = "CALL read_{$this->procedure}('{$user['username']}', '{$this->schema_real_plan}', '".json_encode($filter)."', '".$setOrder."', {$limit}, {$offset}, @read)";
         $query = $this->db->query($sql);
+        $query->next_result();
+        $query = $this->db->query("SELECT @read");
+            
         return model_response($query);
     }
 
-    function get_recapitulation_cities($user, $limit, $offset, $order, $filter)
+    function get_recapitulation_cities($user, $filter, $order, $limit, $offset)
     {
         $setOrder = set_order($order);
-        $sql = "SELECT * FROM {$this->read}($limit, $offset, '".$user['username']."', '".$this->schema_recapitulation_cities."', '".$setOrder."', '[".json_encode($filter)."]'::JSONB)";
-        // echo $sql;exit;
+        $sql = "CALL read_{$this->procedure}('{$user['username']}', '{$this->schema_recapitulation}', '".json_encode($filter)."', '".$setOrder."', {$limit}, {$offset}, @read)";
         $query = $this->db->query($sql);
+        $query->next_result();
+        $query = $this->db->query("SELECT @read");
+            
         return model_response($query);
     }
 

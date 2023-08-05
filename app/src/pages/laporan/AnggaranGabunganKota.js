@@ -6,7 +6,6 @@ import { getCityList } from "../../services/city";
 import { DATE_FORMAT_VIEW, PAGINATION } from "../../helpers/constants";
 import { convertDate, dbDate } from "../../helpers/date";
 import { getRealPlanCities } from "../../services/report";
-import { responseGet } from "../../helpers/response";
 import { searchColumn } from "../../helpers/table";
 import { formatterNumber } from "../../helpers/number";
 import { lower, upper } from "../../helpers/typo";
@@ -60,22 +59,18 @@ export default function AnggaranGabunganKota() {
 			.then(
 				axios.spread((_data, _export, _cities) => {
 					setLoading(false);
-					setData(responseGet(_data).data);
-					setExports(setDataExport(responseGet(_export).data));
-					setCities(_cities?.data?.data || []);
+					setData(_data?.data);
+					setExports(setDataExport(_export?.data));
+					setCities(_cities?.data);
 					setTablePage({
 						pagination: {
 							...params.pagination,
-							total: responseGet(_data).total_count,
+							total: _data?.total,
 						},
 					});
 
-					if (!!(_cities?.data?.data || []).length) {
-						makeChartData(
-							_cities?.data?.data || [],
-							params?.filters,
-							responseGet(_export).data
-						);
+					if (!!(_cities?.data).length) {
+						makeChartData(_cities?.data, params?.filters, _export?.data);
 					}
 				})
 			);
