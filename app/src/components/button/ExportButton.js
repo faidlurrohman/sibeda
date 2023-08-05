@@ -760,11 +760,13 @@ export default function ExportButton({
 	};
 
 	useEffect(() => {
-		setLoading(true);
-		getSignerList().then((response) => {
-			setLoading(false);
-			setSigners(response?.data);
-		});
+		if (!master) {
+			setLoading(true);
+			getSignerList().then((response) => {
+				setLoading(false);
+				setSigners(response?.data);
+			});
+		}
 	}, []);
 
 	return (
