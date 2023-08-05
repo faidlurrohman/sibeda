@@ -566,7 +566,7 @@ export default function PDFFile({
 					<View style={{ flex: 1 }}></View>
 					<View style={{ flex: 1 }}>
 						<Text style={{ fontSize: 10, paddingHorizontal: 60 }}>
-							{`_________________, ${viewDate(signer?.export_date)}`}
+							{`_________________, ${signer?.export_date}`}
 						</Text>
 					</View>
 				</View>
