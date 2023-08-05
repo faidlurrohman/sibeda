@@ -19,7 +19,6 @@ import { lower, upper } from "../helpers/typo";
 import ReloadButton from "../components/button/ReloadButton";
 import { getDashboard, getRecapYears } from "../services/dashboard";
 import axios from "axios";
-import { responseGet } from "../helpers/response";
 import { getCityList } from "../services/city";
 import useRole from "../hooks/useRole";
 import CountUp from "react-countup";
@@ -86,9 +85,9 @@ export default function Beranda() {
 			.then(
 				axios.spread((_data, _recap, _cities) => {
 					setLoading(false);
-					setData(responseGet(_data).data);
-					setCities(_cities?.data?.data || []);
-					makeGraph(responseGet(_recap).data, params, isDefaultFilter);
+					setData(_data?.data);
+					setCities(_cities?.data);
+					makeGraph(_recap?.data, params, isDefaultFilter);
 				})
 			);
 	};
