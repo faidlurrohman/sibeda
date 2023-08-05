@@ -107,9 +107,11 @@ export default function PengaturanKota() {
 			cancelText: "Tidak",
 			centered: true,
 			onOk() {
-				setActiveCity(value?.id).then(() => {
-					messageAction(true);
-					reloadTable();
+				setActiveCity(value?.id).then((response) => {
+					if (response?.code === 200) {
+						messageAction(true);
+						reloadTable();
+					}
 				});
 			},
 		});

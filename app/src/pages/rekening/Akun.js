@@ -99,9 +99,11 @@ export default function Akun() {
 			cancelText: "Tidak",
 			centered: true,
 			onOk() {
-				setActiveAccount("base", value?.id).then(() => {
-					messageAction(true);
-					reloadTable();
+				setActiveAccount("base", value?.id).then((response) => {
+					if (response?.code === 200) {
+						messageAction(true);
+						reloadTable();
+					}
 				});
 			},
 		});

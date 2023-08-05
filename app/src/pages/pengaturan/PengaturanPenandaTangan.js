@@ -101,9 +101,11 @@ export default function PengaturanPenandaTangan() {
 			cancelText: "Tidak",
 			centered: true,
 			onOk() {
-				setActiveSigner(value?.id).then(() => {
-					messageAction(true);
-					reloadTable();
+				setActiveSigner(value?.id).then((response) => {
+					if (response?.code === 200) {
+						messageAction(true);
+						reloadTable();
+					}
 				});
 			},
 		});

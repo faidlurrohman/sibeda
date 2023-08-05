@@ -36,7 +36,7 @@ export default function Objek() {
 
 	const [accountObject, setAccountObject] = useState([]);
 	const [accountType, setAccountType] = useState([]);
-	const [cities, setCities] = useState([]);
+	// const [cities, setCities] = useState([]);
 	const [exports, setExports] = useState([]);
 	const [loading, setLoading] = useState(false);
 
@@ -49,8 +49,8 @@ export default function Objek() {
 	const [isEdit, setEdit] = useState(false);
 	const [confirmLoading, setConfirmLoading] = useState(false);
 
-	const [isShowAllocation, setShowAllocation] = useState(false);
-	const [selectedObject, setSelectedObject] = useState({});
+	// const [isShowAllocation, setShowAllocation] = useState(false);
+	// const [selectedObject, setSelectedObject] = useState({});
 
 	const getData = (params) => {
 		setLoading(true);
@@ -59,7 +59,7 @@ export default function Objek() {
 				getAccount("object", checkParams(params, id, "account_type_id")),
 				getAccount("object", checkParams(params, id, "account_type_id", true)),
 				getAccountList("type"),
-				getCityList(),
+				// getCityList(),
 			])
 			.then(
 				axios.spread((_objects, _export, _types, _cities) => {
@@ -67,7 +67,7 @@ export default function Objek() {
 					setAccountObject(_objects?.data);
 					setExports(_export?.data);
 					setAccountType(_types?.data);
-					setCities(_cities?.data);
+					// setCities(_cities?.data);
 					setTablePage({
 						pagination: {
 							...params.pagination,
@@ -128,40 +128,42 @@ export default function Objek() {
 			cancelText: "Tidak",
 			centered: true,
 			onOk() {
-				setActiveAccount("object", value?.id).then(() => {
-					messageAction(true);
-					reloadTable();
+				setActiveAccount("object", value?.id).then((response) => {
+					if (response?.code === 200) {
+						messageAction(true);
+						reloadTable();
+					}
 				});
 			},
 		});
 	};
 
-	const onAllocationChange = (isShowAllocation = false, value = {}) => {
-		setShowAllocation(isShowAllocation);
+	// const onAllocationChange = (isShowAllocation = false, value = {}) => {
+	// 	setShowAllocation(isShowAllocation);
 
-		if (isShowAllocation) {
-			setSelectedObject(value);
-			form.setFieldsValue({
-				id: value?.id,
-				allocation_cities: value?.allocation_cities || [],
-			});
-		} else {
-			form.resetFields();
-			setSelectedObject({});
-		}
-	};
+	// 	if (isShowAllocation) {
+	// 		setSelectedObject(value);
+	// 		form.setFieldsValue({
+	// 			id: value?.id,
+	// 			allocation_cities: value?.allocation_cities || [],
+	// 		});
+	// 	} else {
+	// 		form.resetFields();
+	// 		setSelectedObject({});
+	// 	}
+	// };
 
-	const handleAddAllocation = (values) => {
-		setConfirmLoading(true);
-		setAllocationAccount("object", values).then((response) => {
-			setConfirmLoading(false);
-			if (response?.data?.code === 0) {
-				messageAction(true);
-				onAllocationChange();
-				reloadTable();
-			}
-		});
-	};
+	// const handleAddAllocation = (values) => {
+	// 	setConfirmLoading(true);
+	// 	setAllocationAccount("object", values).then((response) => {
+	// 		setConfirmLoading(false);
+	// 		if (response?.data?.code === 0) {
+	// 			messageAction(true);
+	// 			onAllocationChange();
+	// 			reloadTable();
+	// 		}
+	// 	});
+	// };
 
 	const handleAddUpdate = (values) => {
 		values.mode = isEdit ? "U" : "C";
@@ -204,7 +206,8 @@ export default function Objek() {
 			tableSorted
 		),
 		activeColumn(tableFiltered),
-		actionColumn(addUpdateRow, onActiveChange, onAllocationChange),
+		actionColumn(addUpdateRow, onActiveChange),
+		// actionColumn(addUpdateRow, onActiveChange, onAllocationChange),
 	];
 
 	useEffect(() => getData(PAGINATION), []);
@@ -319,6 +322,7 @@ export default function Objek() {
 					</Form.Item>
 				</Form>
 			</Modal>
+			{/*
 			<Modal
 				style={{ margin: 10 }}
 				centered
@@ -370,6 +374,7 @@ export default function Objek() {
 					</Form.Item>
 				</Form>
 			</Modal>
+			*/}
 		</>
 	);
 }

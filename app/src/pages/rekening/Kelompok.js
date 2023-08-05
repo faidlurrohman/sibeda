@@ -118,9 +118,11 @@ export default function Kelompok() {
 			cancelText: "Tidak",
 			centered: true,
 			onOk() {
-				setActiveAccount("group", value?.id).then(() => {
-					messageAction(true);
-					reloadTable();
+				setActiveAccount("group", value?.id).then((response) => {
+					if (response?.code === 200) {
+						messageAction(true);
+						reloadTable();
+					}
 				});
 			},
 		});

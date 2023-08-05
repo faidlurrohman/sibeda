@@ -121,9 +121,11 @@ export default function Jenis() {
 			cancelText: "Tidak",
 			centered: true,
 			onOk() {
-				setActiveAccount("type", value?.id).then(() => {
-					messageAction(true);
-					reloadTable();
+				setActiveAccount("type", value?.id).then((response) => {
+					if (response?.code === 200) {
+						messageAction(true);
+						reloadTable();
+					}
 				});
 			},
 		});
