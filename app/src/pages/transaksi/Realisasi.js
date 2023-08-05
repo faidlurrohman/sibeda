@@ -19,7 +19,7 @@ import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
-import { messageAction, responseGet } from "../../helpers/response";
+import { messageAction } from "../../helpers/response";
 import {
 	addTransaction,
 	getLastTransaction,
@@ -71,15 +71,12 @@ export default function Realisasi() {
 			.then(
 				axios.spread((_transactions, _export, _cities, _objects) => {
 					setLoading(false);
-					setTransactions(responseGet(_transactions).data);
-					setExports(responseGet(_export).data);
-					setCities(_cities?.data?.data || []);
-					setAccountObject(_objects?.data?.data || []);
+					setTransactions(_transactions?.data);
+					setExports(_export?.data);
+					setCities(_cities?.data);
+					setAccountObject(_objects?.data);
 					setTablePage({
-						pagination: {
-							...params.pagination,
-							total: responseGet(_transactions).total_count,
-						},
+						pagination: { ...params.pagination, total: _transactions?.total },
 					});
 				})
 			);
@@ -125,9 +122,11 @@ export default function Realisasi() {
 			cancelText: "Tidak",
 			centered: true,
 			onOk() {
-				setActiveTransaction(value?.id).then(() => {
-					messageAction(true);
-					reloadTable();
+				setActiveTransaction(value?.id).then((response) => {
+					if (response?.code === 200) {
+						messageAction(true);
+						reloadTable();
+					}
 				});
 			},
 		});
@@ -139,6 +138,7 @@ export default function Realisasi() {
 			trans_date: dbDate(values?.trans_date),
 			city_id: !!cities.length ? cities[0]?.id : 0,
 			plan_amount: 0,
+			mode: "C",
 		};
 
 		if (
@@ -148,15 +148,19 @@ export default function Realisasi() {
 			cur = {
 				...cur,
 				id: lastTransaction?.id,
+				mode: "U",
 			};
 		}
 
 		setConfirmLoading(true);
-		addTransaction(cur).then(() => {
-			messageAction();
+		addTransaction(cur).then((response) => {
 			setConfirmLoading(false);
-			setShow(false);
-			reloadTable();
+
+			if (response?.code === 200) {
+				messageAction();
+				setShow(false);
+				reloadTable();
+			}
 		});
 	};
 
@@ -171,9 +175,9 @@ export default function Realisasi() {
 			}).then((response) => {
 				setLastTransactionLoading(false);
 
-				if (responseGet(response)?.total_count > 0) {
+				if (response?.code === 200 && response?.total > 0) {
 					setShowCard(true);
-					setLastTransaction(responseGet(response)?.data[0]);
+					setLastTransaction(response?.data[0]);
 				} else {
 					setShowCard(false);
 					setLastTransaction({});
