@@ -110,6 +110,7 @@ class Account_type extends REST_Controller {
             $this->response($validate, REST_Controller::HTTP_UNAUTHORIZED);
         }
     }
+
     private function input_fields($is_edit = 0)
     {
         return array(
@@ -121,4 +122,8 @@ class Account_type extends REST_Controller {
         );
     }
 
+    private function post_or_put($field, $is_edit = 0)
+    {
+        return ($is_edit == 0) ? $this->post($field) : $this->put($field);
+    }
 }
