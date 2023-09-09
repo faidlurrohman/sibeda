@@ -20,6 +20,7 @@ class REST_Controller extends CI_Controller
     {
         //set response code
         http_response_code($status); 
+        $data['code'] = $status;
         $this->to_json($data);
         exit();
     }
