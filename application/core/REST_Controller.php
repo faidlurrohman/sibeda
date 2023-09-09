@@ -16,6 +16,9 @@ class REST_Controller extends CI_Controller
         $this->httpcors->_authenticate_CORS();
     }
 
+    /**
+     * Return response JSON 
+     */
     protected function response($data, $status = 200)
     {
         //set response code
@@ -23,6 +26,14 @@ class REST_Controller extends CI_Controller
         $data['code'] = $status;
         $this->to_json($data);
         exit();
+    }
+
+    /**
+     * Retreive POST INPUT
+     */
+    protected function get_param($input)
+    {
+        return $this->input->get($input);
     }
 
     /**
