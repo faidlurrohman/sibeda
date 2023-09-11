@@ -138,7 +138,7 @@ export const activeColumn = (stateFilter) => ({
 		{ text: "Tidak", value: 0 },
 	],
 	filteredValue: stateFilter.active || null,
-	render: (value) => (value ? "Ya" : "Tidak"),
+	render: (value) => (parseInt(value) ? "Ya" : "Tidak"),
 });
 
 export const actionColumn = (
@@ -164,11 +164,13 @@ export const actionColumn = (
 				{onNavigateDetail && (
 					<Button
 						size="small"
-						disabled={!value?.active}
+						disabled={!parseInt(value?.active)}
 						icon={<EllipsisOutlined />}
 						style={{
-							color: value?.active ? COLORS.main : COLORS.disable,
-							borderColor: value?.active ? COLORS.main : COLORS.disable,
+							color: parseInt(value?.active) ? COLORS.main : COLORS.disable,
+							borderColor: parseInt(value?.active)
+								? COLORS.main
+								: COLORS.disable,
 						}}
 						onClick={() => onNavigateDetail(value)}
 					>
@@ -178,11 +180,13 @@ export const actionColumn = (
 				{onAddUpdate && (
 					<Button
 						size="small"
-						disabled={!value?.active}
+						disabled={!parseInt(value?.active)}
 						icon={<EditOutlined />}
 						style={{
-							color: value?.active ? COLORS.info : COLORS.disable,
-							borderColor: value?.active ? COLORS.info : COLORS.disable,
+							color: parseInt(value?.active) ? COLORS.info : COLORS.disable,
+							borderColor: parseInt(value?.active)
+								? COLORS.info
+								: COLORS.disable,
 						}}
 						onClick={() => onAddUpdate(true, value)}
 					>
@@ -192,11 +196,11 @@ export const actionColumn = (
 				{/* {value?.use_allocation_button && (
 					<Button
 						size="small"
-						disabled={!value?.active}
+						disabled={!parseInt(value?.active)}
 						icon={<ClusterOutlined />}
 						style={{
-							color: value?.active ? COLORS.secondary : COLORS.disable,
-							borderColor: value?.active ? COLORS.secondary : COLORS.disable,
+							color: parseInt(value?.active) ? COLORS.secondary : COLORS.disable,
+							borderColor: parseInt(value?.active) ? COLORS.secondary : COLORS.disable,
 						}}
 						onClick={() => onAllocationChange(true, value)}
 					>
@@ -207,15 +211,23 @@ export const actionColumn = (
 					<>
 						<Button
 							size="small"
-							icon={value?.active ? <StopOutlined /> : <CheckCircleOutlined />}
-							danger={value?.active}
+							icon={
+								parseInt(value?.active) ? (
+									<StopOutlined />
+								) : (
+									<CheckCircleOutlined />
+								)
+							}
+							danger={parseInt(value?.active)}
 							style={{
-								color: value?.active ? COLORS.danger : COLORS.success,
-								borderColor: value?.active ? COLORS.danger : COLORS.success,
+								color: parseInt(value?.active) ? COLORS.danger : COLORS.success,
+								borderColor: parseInt(value?.active)
+									? COLORS.danger
+									: COLORS.success,
 							}}
 							onClick={() => onActiveChange(value)}
 						>
-							{value?.active ? `Nonaktifkan` : `Aktifkan`}
+							{parseInt(value?.active) ? `Nonaktifkan` : `Aktifkan`}
 						</Button>
 					</>
 				)}

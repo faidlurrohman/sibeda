@@ -50,7 +50,7 @@ export default function Header({ onDrawer }) {
 		setConfirmLoading(true);
 		updatePasswordUser(values).then((response) => {
 			setConfirmLoading(false);
-			if (response?.data?.code === 0) {
+			if (response?.code === 200) {
 				messageAction(true);
 				showChangePassword(false);
 			}
@@ -64,7 +64,7 @@ export default function Header({ onDrawer }) {
 			cancelText: "Tidak",
 			centered: true,
 			onOk() {
-				dispatch(logoutAction());
+				dispatch(logoutAction(session));
 			},
 		});
 	};

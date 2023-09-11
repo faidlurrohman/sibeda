@@ -5,7 +5,7 @@ import {
 	LOGIN_USER_REQUEST,
 	LOGIN_USER_SUCCESS,
 } from "../types";
-import { doLogin } from "../../services/auth";
+import { doLogin, doLogout } from "../../services/auth";
 
 export const loginAction = (user) => (dispatch) => {
 	dispatch({ type: LOGIN_USER_REQUEST });
@@ -31,7 +31,11 @@ export const loginAction = (user) => (dispatch) => {
 	});
 };
 
-export const logoutAction = () => (dispatch) => {
-	Cookies.remove(process.env.REACT_APP_ACCESS_TOKEN);
-	dispatch({ type: CLEAR_SESSION });
+export const logoutAction = (user) => (dispatch) => {
+	doLogout(user).then((response) => {
+		if (response?.code === 200) {
+			Cookies.remove(process.env.REACT_APP_ACCESS_TOKEN);
+			dispatch({ type: CLEAR_SESSION });
+		}
+	});
 };

@@ -88,7 +88,7 @@ export default function PengaturanKota() {
 					logo: [
 						{
 							name: value?.logo,
-							url: `${process.env.REACT_APP_BASE_URL_API}/uploads/${value?.logo}`,
+							url: `${process.env.REACT_APP_BASE_URL}/uploads/${value?.logo}`,
 						},
 					],
 				}),

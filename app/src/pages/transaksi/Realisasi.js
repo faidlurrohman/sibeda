@@ -23,8 +23,8 @@ import { messageAction } from "../../helpers/response";
 import {
 	addTransaction,
 	getLastTransaction,
-	getTransaction,
-	getTransactionObjectList,
+	getTransactionReal,
+	getTransactionAccountObjectReal,
 	setActiveTransaction,
 } from "../../services/transaction";
 import { getCityList } from "../../services/city";
@@ -60,13 +60,13 @@ export default function Realisasi() {
 		setLoading(true);
 		axios
 			.all([
-				getTransaction(params),
-				getTransaction({
+				getTransactionReal(params),
+				getTransactionReal({
 					...params,
 					pagination: { ...params.pagination, pageSize: 0 },
 				}),
 				getCityList(),
-				getTransactionObjectList("real"),
+				getTransactionAccountObjectReal(),
 			])
 			.then(
 				axios.spread((_transactions, _export, _cities, _objects) => {
@@ -87,7 +87,7 @@ export default function Realisasi() {
 		setTableSorted(sorter);
 		getData({
 			pagination,
-			filters: { ...filters, use_mode: ["real"] },
+			filters: { ...filters },
 			...sorter,
 		});
 
@@ -100,7 +100,7 @@ export default function Realisasi() {
 	const reloadTable = () => {
 		setTableFiltered({});
 		setTableSorted({});
-		getData({ ...PAGINATION, filters: { use_mode: ["real"] } });
+		getData(PAGINATION);
 	};
 
 	const addData = () => {
@@ -222,10 +222,7 @@ export default function Realisasi() {
 		),
 	];
 
-	useEffect(
-		() => getData({ ...PAGINATION, filters: { use_mode: ["real"] } }),
-		[]
-	);
+	useEffect(() => getData(PAGINATION), []);
 
 	return (
 		<>

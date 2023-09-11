@@ -1,14 +1,4 @@
-import {
-	App,
-	Button,
-	Divider,
-	Form,
-	Input,
-	InputNumber,
-	Modal,
-	Space,
-	Table,
-} from "antd";
+import { App, Button, Divider, Form, Input, Modal, Space, Table } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { addSigner, getSigner, setActiveSigner } from "../../services/signer";
 import { PAGINATION } from "../../helpers/constants";
@@ -224,7 +214,7 @@ export default function PengaturanPenandaTangan() {
 							},
 						]}
 					>
-						<InputNumber className="w-full" disabled={confirmLoading} />
+						<Input disabled={confirmLoading} />
 					</Form.Item>
 					<Form.Item
 						label="Nama"

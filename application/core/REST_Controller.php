@@ -14,6 +14,25 @@ class REST_Controller extends CI_Controller
         
         // CORS
         $this->httpcors->_authenticate_CORS();
+
+        // HELPER
+        $this->load->helper("common");
+
+        // CORE MODEL
+        $this->load->model("v1/Auth_model");  
+        $this->load->model("v1/Log_model"); 
+        // ANY MODEL
+        $this->load->model("v1/City_model");   
+        $this->load->model("v1/Role_model");  
+        $this->load->model("v1/User_model");    
+        $this->load->model("v1/Signer_model");
+        $this->load->model("v1/Account_base_model");  
+        $this->load->model("v1/Account_group_model");  
+        $this->load->model("v1/Account_type_model");  
+        $this->load->model("v1/Account_object_model");  
+        $this->load->model('v1/Transaction_model');
+        $this->load->model('v1/Report_model');
+        $this->load->model('v1/Dashboard_model');
     }
 
     /**

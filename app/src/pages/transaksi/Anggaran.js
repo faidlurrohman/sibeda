@@ -22,8 +22,8 @@ import { messageAction } from "../../helpers/response";
 import {
 	addTransaction,
 	getLastTransaction,
-	getTransaction,
-	getTransactionObjectList,
+	getTransactionPlan,
+	getTransactionAccountObjectPlan,
 	setActiveTransaction,
 } from "../../services/transaction";
 import { getCityList } from "../../services/city";
@@ -60,13 +60,13 @@ export default function Anggaran() {
 		setLoading(true);
 		axios
 			.all([
-				getTransaction(params),
-				getTransaction({
+				getTransactionPlan(params),
+				getTransactionPlan({
 					...params,
 					pagination: { ...params.pagination, pageSize: 0 },
 				}),
 				getCityList(),
-				getTransactionObjectList("plan"),
+				getTransactionAccountObjectPlan(),
 			])
 			.then(
 				axios.spread((_transactions, _export, _cities, _objects) => {
@@ -87,7 +87,7 @@ export default function Anggaran() {
 		setTableSorted(sorter);
 		getData({
 			pagination,
-			filters: { ...filters, use_mode: ["plan"] },
+			filters: { ...filters },
 			...sorter,
 		});
 
@@ -100,7 +100,7 @@ export default function Anggaran() {
 	const reloadTable = () => {
 		setTableFiltered({});
 		setTableSorted({});
-		getData({ ...PAGINATION, filters: { use_mode: ["plan"] } });
+		getData(PAGINATION);
 	};
 
 	const addUpdateRow = (isEdit = false, value = null) => {
@@ -214,10 +214,7 @@ export default function Anggaran() {
 		),
 	];
 
-	useEffect(
-		() => getData({ ...PAGINATION, filters: { use_mode: ["plan"] } }),
-		[]
-	);
+	useEffect(() => getData(PAGINATION), []);
 
 	return (
 		<>

@@ -1,7 +1,7 @@
 <?php
 
 if (!defined('BASEPATH'))
-    exit('No direct script access allowed');
+    exit("No direct script access allowed");
     
 function get_token() 
 {
@@ -9,76 +9,218 @@ function get_token()
     $auth = $CI->input->get_request_header('Authorization');
     $token = explode("Bearer ", $auth)[1];
 
-    return isset($token) ? $token : '';
+    return isset($token) ? $token : "";
 }
 
 function model_response($query, $type = 0)
 {
     $CI = &get_instance();
-    $e = $CI->db->error();
-    $response = res_type($type, $query);
+    $error = $CI->db->error();
 
-    if ($response['code'] == 200 && $e['code'] == '00000') {
-        return $response;
+    if ($error["code"] == "0") {
+        return success_handler($query, $type);
     } else {
-        return err_msg($response);
+        return error_handler(0, $error);
     }
 }
 
-function res_type($type, $query)
+function success_handler($query, $type)
 {
-    $row = $query->row_array();
-    $arr = $query->result_array();
-
     switch ($type) {
-        // read data -> read_data procedure
+        // (data || list) 
         case 0:
-            $data = json_decode($row['@read'], true);
-            $data['data'] = $data['total'] == 0 ? [] : $data['data'];
+            $status = true; 
+            $code = 200;
+            $data = $query->result();
+            $message = "";
+            $total = intval($data[0]->total);
             break;
-
-        // list data -> list_data procedure
+        // (save || update || delete) 
         case 1:
-            $data = json_decode($row['@list'], true);
-            $data['data'] = $data['total'] == 0 ? [] : $data['data'];
+            $status = true; 
+            $code = 200;
+            $data = [];
+            $message = "";
+            $total = 0;
             break;
-
-        // (save || update || delete) data -> cud_data procedure 
+        // (login) 
         case 2:
-            $data = json_decode($row['@cud'], true);
+            $status = true; 
+            $code = 200;
+            $data = $query->row();
+            $message = "";
+            $total = 1;
             break;
-
-        // auth -> login function
-        case 10:
-            $data = json_decode($row['login'], true);
+        // (generate_token) 
+        case 3:
+            $status = true; 
+            $code = 200;
+            $data = $query->row()->token;
+            $message = "";
+            $total = 1;
             break;
-
-        // validating token -> validate_token function
-        case 11:
-            $data = json_decode($row['validate_token'], true);
-            break;
+        default :
+            $status = false; 
+            $code = 500;
+            $data = [];
+            $message = "HELPER ::: No response type";
+            $total = 0;
     }
 
-    return $data;
+    return ["status" => $status, "code" =>  $code, "data" => $data, "message" => $message, "total" => $total];
 }
 
 // MYSQL ERROR REFERENCE => https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html
-function err_msg($error){
-    $code = $error['code'];
+function error_handler($target, $error, $error_message = ""){
+    $code = $target == 0 ? $error["code"] : $error;
 
     switch ($code) {
-        // data duplicate
+        // mysql error here
+        // duplicate
         case 1062:
-            $message = 'Data sudah ada';
+            $message = "Data sudah ada";
+            break;
+
+        // manual error here
+        // authorized
+        case 401:
+            $message = "Data User tidak ditemukan, hubungi admin";
+            break;
+        // 500 
+        case 500:
+            $message = $error_message;
             break;
 
         default : 
-            $message = $error['message'];
+            $message = $error["message"];
     }
 
-    return ['code' =>  $code, 'message' => $message, 'data' => [], 'query' => $error['query']];
+    return ["status" => false, "code" =>  $code, "data" => [], "message" => $message, "total" => 0];
+}
+
+function set_filter($filters, $table_name, $additional = []) {
+
+    $generate_filter = "";
+    $fields = "";
+
+    if (count((array)$filters)) {
+        if($table_name != ""){
+            $CI = &get_instance();
+            $CI->load->model("v1/Schema_model");
+            $fields = $CI->Schema_model->get_field_type($table_name);
+        }
+
+        foreach ($filters as $kf => $filter) {
+            // default from field type from table
+            if ($fields && count($fields) > 0) {
+                foreach ($fields as $kt => $field) {
+                    if ($fields[$kt]->COLUMN_NAME == $kf) {
+                        if (
+                            $fields[$kt]->DATA_TYPE == 'int' ||
+                            $fields[$kt]->DATA_TYPE == 'tinyint' ||
+                            $fields[$kt]->DATA_TYPE == 'float'
+                        ) {
+                        $generate_filter .= " AND " . $kf . " = " . intval($filter);
+                        } else if (
+                            $fields[$kt]->DATA_TYPE == 'text' ||
+                            $fields[$kt]->DATA_TYPE == 'varchar'
+                        ) {
+                            $generate_filter .= " AND " . $kf . " LIKE '%" . $filter . "%'";
+                        } else if (
+                            $fields[$kt]->DATA_TYPE == 'date'
+                        ) {
+                        $generate_filter .= " AND " . $kf . " = '" . $filter . "'";
+                        }
+                    }
+                }
+            }
+            // modified filter and clause here
+            if (count($additional) > 0) {
+                foreach ($additional as $adt) {
+                    $spl_clause = set_clause($adt, $kf, $filter);
+
+                    if ($spl_clause != "") {
+                        $generate_filter .= $spl_clause;
+                    } else {
+                        $spl_field = explode("_TYPE_", $adt)[0];
+                        $spl_type = explode("_TYPE_", $adt)[1];
+
+                        if ($spl_field == $kf && $filter) {
+                            if (
+                                $spl_type == 'int' ||
+                                $spl_type == 'tinyint' ||
+                                $spl_type == 'float'
+                            ) {
+                                $generate_filter .= " AND " . $kf . " = " . intval($filter);
+                            } else if (
+                                $spl_type == 'text' ||
+                                $spl_type == 'varchar'
+                            ) {
+                                $generate_filter .= " AND " . $kf . " LIKE '%" . $filter . "%'";
+                            } else if (
+                                $spl_type == 'date'
+                            ) {
+                                $generate_filter .= " AND " . $kf . " = '" . $filter . "'";
+                            } else if (
+                                $spl_type == 'daterange_start'
+                            ) {
+                                $spl_kf = explode("_", $kf);
+                                $generate_filter .= " AND " . $spl_kf[0] . "_" . $spl_kf[1] . " >= '" . $filter . "'";
+                            } else if (
+                                $spl_type == 'daterange_end'
+                            ) {
+                                $spl_kf = explode("_", $kf);
+                                $generate_filter .= " AND " . $spl_kf[0] . "_" . $spl_kf[1] . " <= '" . $filter . "'";
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return $generate_filter;
+}
+
+function set_clause($value, $key, $filter) {
+    $clause = "";
+    $spl_clause = explode("_CLAUSE_", $value);
+
+    if ($spl_clause[1] && $spl_clause[1] != "") {
+        $spl_field = explode("_TYPE_", $spl_clause[0])[0];
+        $spl_type = explode("_TYPE_", $spl_clause[0])[1];
+
+        if ($spl_field == $key && $spl_clause[1] == "IN") {
+            if (
+                $filter &&
+                (
+                    $spl_type == 'int' ||
+                    $spl_type == 'tinyint' ||
+                    $spl_type == 'float'
+                )
+            ) {
+                $clause = " AND " . $spl_field . " IN (" . $filter . ")";
+            }
+        }
+    }
+
+    return $clause;
 }
 
 function set_order($value){
-    return str_replace('%20',' ',$value);
+    return str_replace("%20"," ",$value);
+}
+
+function set_limit_offset($limit, $offset) {
+    $generate_limit_offset = "";
+
+    if ($limit != 0) {
+        $generate_limit_offset .= " LIMIT " . $limit;
+    }
+
+    if ($offset != 0) {
+        $generate_limit_offset .= " OFFSET " . $limit;
+    }
+
+    return $generate_limit_offset;
 }

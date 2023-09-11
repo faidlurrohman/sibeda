@@ -153,6 +153,10 @@ export default function Beranda() {
 						o?.trans_date.split("-")[1] === _mi
 				);
 
+				console.log("_fpl", _fpl);
+				console.log("_fpl2", _fpl2);
+				console.log("_fpl3", _fpl3);
+
 				// jika ada pendapatan langsung jumlah
 				if (_fpl && !!_fpl.length) {
 					_result.push({
@@ -298,9 +302,14 @@ export default function Beranda() {
 		if ([null, undefined, ""].includes(value1)) value1 = 0;
 		if ([null, undefined, ""].includes(value2)) value2 = 0;
 
+		console.log("value1", value1);
+		console.log("value2", value2);
+
 		results = parseFloat((value1 / value2) * 100).toFixed(0);
 
 		if (isNaN(results) || !isFinite(Number(results))) return 0;
+
+		console.log("results", results);
 
 		return results;
 	};

@@ -2,11 +2,11 @@ import axios from "./axios";
 import { getUrl } from "../helpers/url";
 
 export const getCities = (params) => {
-	return axios.get(getUrl(`/api/city/data`, params));
+	return axios.get(getUrl(`/city`, params));
 };
 
 export const getCityList = () => {
-	return axios.get(`/api/city/list`);
+	return axios.get(`/city/list`);
 };
 
 export const addCity = (values) => {
@@ -17,7 +17,7 @@ export const addCity = (values) => {
 	formData.append("blob", values?.blob);
 	formData.append("mode", values?.mode);
 
-	return axios.post(`/api/city/add`, formData, {
+	return axios.post(`/city/add`, formData, {
 		headers: {
 			"content-type": "multipart/form-data",
 		},
@@ -25,5 +25,5 @@ export const addCity = (values) => {
 };
 
 export const setActiveCity = (id) => {
-	return axios.delete(`/api/city/remove/${id}`);
+	return axios.delete(`/city/remove/${id}`);
 };
