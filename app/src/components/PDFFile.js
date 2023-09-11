@@ -437,11 +437,11 @@ export default function PDFFile({
 			_.map(data?.bases, (base) => {
 				total[`${base?.base_id}_plan_amount`] = _.sumBy(
 					base?.children,
-					`account_base_plan_amount`
+					(item) => Number(item?.account_base_plan_amount)
 				);
 				total[`${base?.base_id}_real_amount`] = _.sumBy(
 					base?.children,
-					`account_base_real_amount`
+					(item) => Number(item?.account_base_real_amount)
 				);
 				total[`${base?.base_id}_percentage`] = parseFloat(
 					(total[`${base?.base_id}_real_amount`] /

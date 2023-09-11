@@ -163,7 +163,10 @@ export default function AnggaranKota() {
 		setPiePlan(
 			_.map(_piePlan, (item) => ({
 				...item,
-				value: parseNaN((item?.value / _.sumBy(_piePlan, "value")) * percent),
+				value: parseNaN(
+					(item?.value / _.sumBy(_piePlan, (item) => Number(item?.value))) *
+						percent
+				),
 			}))
 		);
 
@@ -171,7 +174,10 @@ export default function AnggaranKota() {
 		setPieReal(
 			_.map(_pieReal, (item) => ({
 				...item,
-				value: parseNaN((item?.value / _.sumBy(_pieReal, "value")) * percent),
+				value: parseNaN(
+					(item?.value / _.sumBy(_pieReal, (item) => Number(item?.value))) *
+						percent
+				),
 			}))
 		);
 	};

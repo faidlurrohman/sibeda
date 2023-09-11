@@ -513,8 +513,12 @@ export default function ExportButton({
 						tra = 0,
 						tp = 0;
 
-					tpa = _.sumBy(base?.children, `account_base_plan_amount`);
-					tra = _.sumBy(base?.children, `account_base_real_amount`);
+					tpa = _.sumBy(base?.children, (item) =>
+						Number(item?.account_base_plan_amount)
+					);
+					tra = _.sumBy(base?.children, (item) =>
+						Number(item?.account_base_real_amount)
+					);
 					tp = parseFloat((tra / tpa) * 100).toFixed(2);
 
 					total.push(formatterNumber(tpa));

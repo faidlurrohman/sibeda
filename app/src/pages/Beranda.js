@@ -25,7 +25,7 @@ import CountUp from "react-countup";
 import _ from "lodash";
 import { Line } from "@ant-design/plots";
 import { PercentageOutlined } from "@ant-design/icons";
-import { parserNumber } from "../helpers/number";
+import { formatterNumber } from "../helpers/number";
 
 const { RangePicker } = DatePicker;
 
@@ -52,7 +52,7 @@ export default function Beranda() {
 		seriesField: "name",
 		yAxis: {
 			label: {
-				formatter: (v) => parserNumber(v),
+				formatter: (v) => formatterNumber(v),
 			},
 		},
 		legend: {
@@ -153,16 +153,14 @@ export default function Beranda() {
 						o?.trans_date.split("-")[1] === _mi
 				);
 
-				console.log("_fpl", _fpl);
-				console.log("_fpl2", _fpl2);
-				console.log("_fpl3", _fpl3);
-
 				// jika ada pendapatan langsung jumlah
 				if (_fpl && !!_fpl.length) {
 					_result.push({
 						name: "Pendapatan",
 						month_year: `${MONTHS[b]} (${_sy})`,
-						value: _.sumBy(_fpl, "account_base_real_amount"),
+						value: _.sumBy(_fpl, (item) =>
+							Number(item?.account_base_real_amount)
+						),
 					});
 				} else {
 					_result.push({
@@ -177,7 +175,9 @@ export default function Beranda() {
 					_result.push({
 						name: "Pembiayaan",
 						month_year: `${MONTHS[b]} (${_sy})`,
-						value: _.sumBy(_fpl2, "account_base_real_amount"),
+						value: _.sumBy(_fpl2, (item) =>
+							Number(item?.account_base_real_amount)
+						),
 					});
 				} else {
 					_result.push({
@@ -192,7 +192,9 @@ export default function Beranda() {
 					_result.push({
 						name: "Belanja",
 						month_year: `${MONTHS[b]} (${_sy})`,
-						value: _.sumBy(_fpl3, "account_base_real_amount"),
+						value: _.sumBy(_fpl3, (item) =>
+							Number(item?.account_base_real_amount)
+						),
 					});
 				} else {
 					_result.push({
@@ -291,8 +293,9 @@ export default function Beranda() {
 			let _ft = _.filter(data, (o) =>
 				lower(o?.account_base_label).includes(lower(target))
 			);
-
-			return _.sumBy(_ft, `account_base_${useFor}_amount`);
+			return _.sumBy(_ft, (item) =>
+				Number(item[`account_base_${useFor}_amount`])
+			);
 		} else {
 			return 0;
 		}
@@ -302,14 +305,9 @@ export default function Beranda() {
 		if ([null, undefined, ""].includes(value1)) value1 = 0;
 		if ([null, undefined, ""].includes(value2)) value2 = 0;
 
-		console.log("value1", value1);
-		console.log("value2", value2);
-
 		results = parseFloat((value1 / value2) * 100).toFixed(0);
 
 		if (isNaN(results) || !isFinite(Number(results))) return 0;
-
-		console.log("results", results);
 
 		return results;
 	};
@@ -410,7 +408,9 @@ export default function Beranda() {
 								Anggaran<span className="pl-9">:</span>
 							</span>
 						}
-						value={_.sumBy(data, "account_base_plan_amount")}
+						value={_.sumBy(data, (item) =>
+							Number(item?.account_base_plan_amount)
+						)}
 						formatter={(value) => (
 							<CountUp
 								end={value}
@@ -425,7 +425,9 @@ export default function Beranda() {
 								Realisasi<span className="pl-10">:</span>
 							</span>
 						}
-						value={_.sumBy(data, "account_base_real_amount")}
+						value={_.sumBy(data, (item) =>
+							Number(item?.account_base_real_amount)
+						)}
 						formatter={(value) => (
 							<CountUp
 								end={value}
@@ -435,24 +437,23 @@ export default function Beranda() {
 						)}
 					/>
 					<div className="h-auto w-auto pt-2">
-						{/*
-						<span class="absolute text-secondary pt-[0.2em] left-[48%] z-10">
-							{`${sumPercentage(
-								_.sumBy(data, "account_base_real_amount"),
-								_.sumBy(data, "account_base_plan_amount")
-							)}%`}
-						</span> */}
 						<Progress
 							className="font-bold"
 							format={() =>
 								`${sumPercentage(
-									_.sumBy(data, "account_base_real_amount") / 2,
-									_.sumBy(data, "account_base_plan_amount")
+									_.sumBy(data, (item) =>
+										Number(item?.account_base_real_amount)
+									) / 2,
+									_.sumBy(data, (item) =>
+										Number(item?.account_base_plan_amount)
+									)
 								)}%`
 							}
 							percent={sumPercentage(
-								_.sumBy(data, "account_base_real_amount") / 2,
-								_.sumBy(data, "account_base_plan_amount")
+								_.sumBy(data, (item) =>
+									Number(item?.account_base_real_amount)
+								) / 2,
+								_.sumBy(data, (item) => Number(item?.account_base_plan_amount))
 							)}
 							size={[_, 25]}
 							strokeColor={COLORS.secondary}
