@@ -38,6 +38,16 @@ export default function AnggaranGabunganKota() {
 		isGroup: true,
 		xField: "city",
 		yField: "value",
+		yAxis: {
+			label: {
+				formatter: (v) => formatterNumber(v),
+			},
+		},
+		tooltip: {
+			formatter: (v) => {
+				return { ...v, value: formatterNumber(v?.value) };
+			},
+		},
 		seriesField: "name",
 		legend: false,
 		color: ["#1ca9e6", "#f88c24"],

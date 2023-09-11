@@ -58,6 +58,11 @@ export default function Beranda() {
 		legend: {
 			position: "top",
 		},
+		tooltip: {
+			formatter: (v) => {
+				return { ...v, value: formatterNumber(v?.value) };
+			},
+		},
 		scrollbar: { type: "horizontal" },
 		color: [COLORS.success, COLORS.info, COLORS.danger],
 	};
@@ -187,7 +192,7 @@ export default function Beranda() {
 					});
 				}
 
-				// jika ada pembiayaan langsung jumlah
+				// jika ada belanja langsung jumlah
 				if (_fpl3 && !!_fpl3.length) {
 					_result.push({
 						name: "Belanja",
