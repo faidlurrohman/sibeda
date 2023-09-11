@@ -82,8 +82,8 @@ class Transaction_model extends CI_Model {
                 VALUES (
                     " . $params['account_object_id'] . ",
                     " . $params['city_id'] . ",
-                    " . $params['plan_amount'] . ",
-                    " . $params['real_amount'] . ",
+                    '" . $params['plan_amount'] . "',
+                    '" . $params['real_amount'] . "',
                     '" . $params['trans_date'] . "'
                 )
             ";
@@ -91,8 +91,8 @@ class Transaction_model extends CI_Model {
         } else if ($params["mode"] == "U") {
             $sql = "
                 UPDATE transaction 
-                    SET plan_amount = " . $params['plan_amount'] . ",
-                        real_amount = " . $params['real_amount'] . "
+                    SET plan_amount = '" . $params['plan_amount'] . "',
+                        real_amount = '" . $params['real_amount'] . "'
                 WHERE id = " . $params['id'] . "
             ";
             $query = $this->db->query($sql);
@@ -188,7 +188,9 @@ class Transaction_model extends CI_Model {
         $sql = "
             WITH p AS (
                 SELECT 
-                    MIN(id) plan_id
+                    MIN(id) plan_id,
+                    account_object_id,
+                    city_id
                 FROM transaction
                 WHERE plan_amount >= 0 AND real_amount = 0
                 GROUP BY YEAR(trans_date), account_object_id, city_id
@@ -197,13 +199,13 @@ class Transaction_model extends CI_Model {
                     st.id, 
                     st.account_object_id, 
                     st.city_id, 
-                    (SELECT plan_amount FROM transaction st JOIN p ON p.plan_id=st.id) plan_amount, 
+                    COALESCE((SELECT plan_amount FROM transaction t WHERE t.id=p.plan_id), st.plan_amount, 0) plan_amount, 
                     st.real_amount, 
                     st.trans_date, 
                     st.active 
                 FROM transaction st
                 JOIN city c ON c.id=st.city_id AND c.active
-                LEFT JOIN p ON p.plan_id=st.id
+                LEFT JOIN p ON p.account_object_id=st.account_object_id
                 WHERE st.active
             ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
             $filter 
