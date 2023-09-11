@@ -166,7 +166,7 @@ class Account_object extends REST_Controller {
     {
         return array(
             "id" => intval($this->get_post("id")),
-            "account_group_id" => intval($this->get_post("account_group_id")),
+            "account_type_id" => intval($this->get_post("account_type_id")),
             "label" => $this->get_post("label"),
             "remark" => $this->get_post("remark"),
             "mode" => $this->get_post("mode"),
