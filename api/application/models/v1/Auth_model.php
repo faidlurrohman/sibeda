@@ -89,7 +89,7 @@ class Auth_model extends CI_Model {
     {
         $sql = "
             SELECT JSON_CONTAINS(
-                (SELECT CAST(value AS JSON) FROM setting WHERE name = 'role_exception'), 
+                (SELECT value FROM setting WHERE name = 'role_exception'), 
                 CONCAT('\"', (SELECT role_id FROM user WHERE username = '$username'), '\"'), 
                 \"$\"
             ) AS check_exception
