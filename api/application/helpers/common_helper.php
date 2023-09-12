@@ -6,8 +6,24 @@ if (!defined('BASEPATH'))
 function get_token() 
 {
     $CI = &get_instance();
-    $auth = $CI->input->get_request_header('Authorization');
-    $token = explode("Bearer ", $auth)[1];
+    
+    /**
+     * ! DO CHECK
+     * ??? why in server not read authorization header
+     */
+
+    // use cookie in server
+    $ck = $CI->input->get_request_header('Cookie', TRUE);
+    // use authorization in local
+    $auth = $CI->input->get_request_header('Authorization', TRUE);
+    
+    if (isset($ck)) {
+        $token = explode("=", $ck)[1];
+    } else if (isset($auth)) {
+        $token = explode("Bearer ", $auth)[1];
+    } else {
+        $token = "";
+    }
 
     return isset($token) ? $token : "";
 }
