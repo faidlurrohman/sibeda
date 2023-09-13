@@ -12,18 +12,22 @@ function get_token()
      * ??? why in server not read authorization header
      */
 
-    // use cookie in server
-    $ck = $CI->input->get_request_header('Cookie', TRUE);
-    // use authorization in local
-    $auth = $CI->input->get_request_header('Authorization', TRUE);
-    
-    if (isset($ck)) {
-        $token = explode("=", $ck)[1];
-    } else if (isset($auth)) {
-        $token = explode("Bearer ", $auth)[1];
+    $_authorization = $CI->input->get_request_header('AUTHORIZATION', TRUE);
+    $_xclientid = $CI->input->get_request_header('X-CLIENT-ID', TRUE);
+    $_secretkey = $CI->input->get_request_header('SECRET-KEY', TRUE);
+
+    if (isset($_authorization)) {
+        $token = explode("Bearer ", $_authorization)[1];
+    } else if (isset($_xclientid)) {
+        $token = explode("Bearer ", $_xclientid)[1];
+    } else if (isset($_secretkey)) {
+        $token = explode("Bearer ", $_secretkey)[1];
     } else {
         $token = "";
     }
+
+    echo $token;
+    exit;
 
     return isset($token) ? $token : "";
 }
