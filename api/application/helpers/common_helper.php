@@ -12,9 +12,9 @@ function get_token()
      * ??? why in server not read authorization header
      */
 
-    $_authorization = $CI->input->get_request_header('AUTHORIZATION', TRUE);
-    $_xclientid = $CI->input->get_request_header('X-CLIENT-ID', TRUE);
-    $_secretkey = $CI->input->get_request_header('SECRET-KEY', TRUE);
+    $_authorization = $CI->input->get_request_header("AUTHORIZATION", TRUE);
+    $_xclientid = $CI->input->get_request_header("X-CLIENT-ID", TRUE);
+    $_secretkey = $CI->input->get_request_header("SECRET-KEY", TRUE);
 
     if (isset($_authorization)) {
         $token = explode("Bearer ", $_authorization)[1];
