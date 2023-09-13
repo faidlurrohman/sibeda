@@ -26,9 +26,6 @@ function get_token()
         $token = "";
     }
 
-    echo $token;
-    exit;
-
     return isset($token) ? $token : "";
 }
 
