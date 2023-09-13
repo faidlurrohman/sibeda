@@ -4,16 +4,14 @@ import { store } from "../store";
 import { logoutAction } from "../store/actions/session";
 import { swal } from "../helpers/swal";
 
-const bearer = `Bearer ${Cookies.get(process.env.REACT_APP_ACCESS_TOKEN)}`;
-
 const axiosInstance = axios.create({
   baseURL: process.env.REACT_APP_BASE_URL_API,
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
-    Authorization: bearer,
-    "X-Client-ID": bearer,
-    "Secret-Key": bearer,
+    Authorization: `Bearer ${Cookies.get(process.env.REACT_APP_ACCESS_TOKEN)}`,
+    "X-Client-ID": `Bearer ${Cookies.get(process.env.REACT_APP_ACCESS_TOKEN)}`,
+    "Secret-Key": `Bearer ${Cookies.get(process.env.REACT_APP_ACCESS_TOKEN)}`,
   },
 });
 
@@ -22,9 +20,13 @@ axiosInstance.interceptors.request.use((config) => {
     ...config,
     headers: {
       ...config.headers,
-      Authorization: bearer,
-      "X-Client-ID": bearer,
-      "Secret-Key": bearer,
+      Authorization: `Bearer ${Cookies.get(
+        process.env.REACT_APP_ACCESS_TOKEN
+      )}`,
+      "X-Client-ID": `Bearer ${Cookies.get(
+        process.env.REACT_APP_ACCESS_TOKEN
+      )}`,
+      "Secret-Key": `Bearer ${Cookies.get(process.env.REACT_APP_ACCESS_TOKEN)}`,
     },
   };
 });
