@@ -10,7 +10,7 @@ import useRole from "../../hooks/useRole";
 import { getCityList } from "../../services/city";
 import _ from "lodash";
 import { formatterNumber, parseNaN } from "../../helpers/number";
-import { lower, upper } from "../../helpers/typo";
+import { isEmpty, lower, upper } from "../../helpers/typo";
 import ExportButton from "../../components/button/ExportButton";
 import { Pie } from "@ant-design/plots";
 import { getAccountList } from "../../services/account";
@@ -389,8 +389,8 @@ export default function AnggaranKota() {
 	};
 
 	const sumPercentage = (value1 = 0, value2 = 0, results = 0) => {
-		if ([null, undefined, ""].includes(value1)) value1 = 0;
-		if ([null, undefined, ""].includes(value2)) value2 = 0;
+		if (isEmpty(value1)) value1 = 0;
+		if (isEmpty(value2)) value2 = 0;
 
 		results = parseFloat((value1 / value2) * 100).toFixed(2);
 
