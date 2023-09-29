@@ -2,7 +2,7 @@
   "name": "sibeda",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/sibeda_live",
+  "homepage": "/sibeda",
   "dependencies": {
     "@ant-design/charts": "^1.4.2",
     "@ant-design/icons": "^5.0.1",
