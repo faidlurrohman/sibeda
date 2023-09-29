@@ -330,7 +330,7 @@ export default function Beranda() {
     );
   }, [isNoFilter, dateRangeFilter, _cy, _by]);
 
-  useEffect(() => getData(PAGINATION), []);
+  useEffect(() => reloadData(), []);
 
   return (
     <>
