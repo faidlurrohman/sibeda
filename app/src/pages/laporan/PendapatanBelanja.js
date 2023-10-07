@@ -366,7 +366,7 @@ export default function PendapatanBelanja() {
     return results;
   };
 
-  useEffect(() => getData(PAGINATION), []);
+  useEffect(() => reloadTable(), []);
 
   return (
     <>

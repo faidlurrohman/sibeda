@@ -450,7 +450,7 @@ export default function AnggaranGabunganKota() {
     return results;
   };
 
-  useEffect(() => getData(PAGINATION), []);
+  useEffect(() => reloadTable(), []);
 
   return (
     <>
