@@ -18,7 +18,7 @@ class Dashboard extends REST_Controller {
         $validated = $this->Auth_model->validating_token();
 
         if ($validated) {
-            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : new stdClass();
+            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
             $order = !empty($this->get_param("order")) ? $this->get_param("order") : "account_base_id desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 0; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
@@ -26,7 +26,7 @@ class Dashboard extends REST_Controller {
             $exception = $this->Auth_model->user_exception($validated->username);
 
             if ($exception == "0") {
-                $filter->city_id = $validated->city_id;
+                $filter["city_id"] = $validated->city_id;
             }
 
             $data = $this->Dashboard_model->get_dashboard($filter, $order, $limit, $offset);
@@ -57,7 +57,7 @@ class Dashboard extends REST_Controller {
         $validated = $this->Auth_model->validating_token();
 
         if ($validated) {
-            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : new stdClass();
+            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
             $order = !empty($this->get_param("order")) ? $this->get_param("order") : "account_base_id desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 0; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
@@ -65,7 +65,7 @@ class Dashboard extends REST_Controller {
             $exception = $this->Auth_model->user_exception($validated->username);
 
             if ($exception == "0") {
-                $filter->city_id = $validated->city_id;
+                $filter["city_id"] = $validated->city_id;
             }
 
             $data = $this->Dashboard_model->get_recap_years($filter, $order, $limit, $offset);

@@ -18,7 +18,7 @@ class Report extends REST_Controller {
         $validated = $this->Auth_model->validating_token();
 
         if ($validated) {
-            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : new stdClass();
+            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
             $order = !empty($this->get_param("order")) ? $this->get_param("order") : "city_label desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 0; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
@@ -26,7 +26,7 @@ class Report extends REST_Controller {
             $exception = $this->Auth_model->user_exception($validated->username);
 
             if ($exception == "0") {
-                $filter->city_id = $validated->city_id;
+                $filter["city_id"] = $validated->city_id;
             }
 
             $data = $this->Report_model->get_real_plan_cities($filter, $order, $limit, $offset);
@@ -57,7 +57,7 @@ class Report extends REST_Controller {
         $validated = $this->Auth_model->validating_token();
 
         if ($validated) {
-            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : new stdClass();
+            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
             $order = !empty($this->get_param("order")) ? $this->get_param("order") : "city_label desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 0; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
@@ -65,7 +65,7 @@ class Report extends REST_Controller {
             $exception = $this->Auth_model->user_exception($validated->username);
 
             if ($exception == "0") {
-                $filter->city_id = $validated->city_id;
+                $filter["city_id"] = $validated->city_id;
             }
 
             $data = $this->Report_model->get_recapitulation_cities($filter, $order, $limit, $offset);

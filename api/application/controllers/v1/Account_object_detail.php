@@ -1,6 +1,6 @@
 <?php
 
-class Account_object extends REST_Controller {
+class Account_object_detail extends REST_Controller {
 
     /**
      * INDEX
@@ -11,7 +11,7 @@ class Account_object extends REST_Controller {
     }
 
     /**
-     * GET ALL ACCOUNT OBJECT
+     * GET ALL ACCOUNT OBJECT DETAIL
      */
     private function do_get_all() 
     {
@@ -22,7 +22,7 @@ class Account_object extends REST_Controller {
             $order = !empty($this->get_param("order")) ? $this->get_param("order") : "label desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 0; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
-            $data = $this->Account_object_model->get_all($filter, $order, $limit, $offset);
+            $data = $this->Account_object_detail_model->get_all($filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -35,7 +35,7 @@ class Account_object extends REST_Controller {
     }
 
     /**
-     * GET ALL ACCOUNT OBJECT ACTIVE
+     * GET ALL ACCOUNT OBJECT DETAIL ACTIVE
      */
     public function list()
     {
@@ -48,7 +48,7 @@ class Account_object extends REST_Controller {
 
         if ($validated) {
             $order = !empty($this->get_param("order")) ? $this->get_param("order") : "id desc"; 
-            $list = $this->Account_object_model->get_list($order);
+            $list = $this->Account_object_detail_model->get_list($order);
 
             if ($list['code'] == 200) {
                 $this->response($list);
@@ -61,7 +61,7 @@ class Account_object extends REST_Controller {
     }
 
     /**
-     * ADD ACCOUNT OBJECT
+     * ADD ACCOUNT OBJECT DETAIL
      */
     public function add() 
     {
@@ -74,7 +74,7 @@ class Account_object extends REST_Controller {
 
         if ($validated) {
             $id = $this->get_post("id");
-            $account_type_id = $this->get_post("account_type_id");
+            $account_object_id = $this->get_post("account_object_id");
             $label = $this->get_post("label");
             $remark = $this->get_post("remark");
             $mode = $this->get_post("mode");
@@ -82,8 +82,8 @@ class Account_object extends REST_Controller {
             $error = [];
 
             // check parameter format
-            if (!$account_type_id || intval($account_type_id) <= 0) {
-                $error[] = "Insert/Update Data Failed, `account_type_id` Expected INT";
+            if (!$account_object_id || intval($account_object_id) <= 0) {
+                $error[] = "Insert/Update Data Failed, `account_object_id` Expected INT";
             }
             if (!$label || gettype($label) != "string") {
                 $error[] = "Insert/Update Data Failed, `label` Expected STRING";
@@ -106,12 +106,12 @@ class Account_object extends REST_Controller {
             }
 
             $params = $this->input_fields();
-            $save = $this->Account_object_model->save($params);
+            $save = $this->Account_object_detail_model->save($params);
 
             if ($save['code'] == 200) {
                 $this->response($save);
                 // insert log
-                $this->Log_model->log("account_object", $mode, $params, $validated->username);
+                $this->Log_model->log("account_object_detail", $mode, $params, $validated->username);
             } else {
                 $this->response($save, $save["code"]);
             }
@@ -121,7 +121,7 @@ class Account_object extends REST_Controller {
     }
 
     /**
-     * DISABLE ACCOUNT OBJECT
+     * DISABLE ACCOUNT OBJECT DETAIL
      * @param id [INT]
      */
     public function remove($id)
@@ -145,12 +145,12 @@ class Account_object extends REST_Controller {
                return $this->response(error_handler(1, 500, $error[0]), 500);
             }
             
-            $remove = $this->Account_object_model->delete(intval($id));
+            $remove = $this->Account_object_detail_model->delete(intval($id));
 
             if ($remove['code'] == 200) {
                 $this->response($remove);
                 // insert log
-                $this->Log_model->log("account_object", "D", array("id" => intval($id)), $validated->username);
+                $this->Log_model->log("account_object_detail", "D", array("id" => intval($id)), $validated->username);
             } else {
                 $this->response($remove, $remove["code"]);
             }
@@ -166,7 +166,7 @@ class Account_object extends REST_Controller {
     {
         return array(
             "id" => intval($this->get_post("id")),
-            "account_type_id" => intval($this->get_post("account_type_id")),
+            "account_object_id" => intval($this->get_post("account_object_id")),
             "label" => $this->get_post("label"),
             "remark" => $this->get_post("remark"),
             "mode" => $this->get_post("mode"),

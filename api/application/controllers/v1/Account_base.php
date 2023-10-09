@@ -18,7 +18,7 @@ class Account_base extends REST_Controller {
         $validated = $this->Auth_model->validating_token();
 
         if ($validated) {
-            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : new stdClass();
+            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
             $order = !empty($this->get_param("order")) ? $this->get_param("order") : "label desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 0; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
