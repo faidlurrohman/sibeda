@@ -193,20 +193,6 @@ export const actionColumn = (
             Ubah
           </Button>
         )}
-        {/* {value?.use_allocation_button && (
-					<Button
-						size="small"
-						disabled={!parseInt(value?.active)}
-						icon={<ClusterOutlined />}
-						style={{
-							color: parseInt(value?.active) ? COLORS.secondary : COLORS.disable,
-							borderColor: parseInt(value?.active) ? COLORS.secondary : COLORS.disable,
-						}}
-						onClick={() => onAllocationChange(true, value)}
-					>
-						Alokasi
-					</Button>
-				)} */}
         {onActiveChange && value?.role_id !== 1 && (
           <>
             <Button

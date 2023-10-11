@@ -3,7 +3,12 @@ import { Breadcrumb, Drawer, Layout, Menu } from "antd";
 import HeaderComponent from "./Header";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Copyright from "./Copyright";
-import { COLORS, MENU_ITEM, MENU_NAVIGATION } from "../helpers/constants";
+import {
+  COLORS,
+  CUSTOM_ROUTE_ACCOUNT,
+  MENU_ITEM,
+  MENU_NAVIGATION,
+} from "../helpers/constants";
 import useRole from "../hooks/useRole";
 import { CloseOutlined } from "@ant-design/icons";
 import _ from "lodash";
@@ -86,14 +91,8 @@ export default function Wrapper({ children }) {
     if (sizeSnippets) {
       if (pathSnippets[0] === "rekening") {
         const _menu = [].concat(navLink);
-        const _customRoute = {
-          rekening: ["beranda", "rekening"],
-          kelompok: ["beranda", "rekening", "kelompok"],
-          jenis: ["beranda", "rekening", "kelompok", "jenis"],
-          objek: ["beranda", "rekening", "kelompok", "jenis", "objek"],
-        };
         const _route = pathSnippets[1] || pathSnippets[0];
-        const _path = _customRoute[_route];
+        const _path = CUSTOM_ROUTE_ACCOUNT[_route];
 
         if (!isEmpty(_route) && !isEmpty(_path)) {
           _.remove(_menu, (__, i) => i > _.size(_path) - 1);

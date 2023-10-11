@@ -26,6 +26,8 @@ import Akun from "./pages/rekening/Akun";
 import Kelompok from "./pages/rekening/Kelompok";
 import Jenis from "./pages/rekening/Jenis";
 import Objek from "./pages/rekening/Objek";
+import ObjekDetail from "./pages/rekening/ObjekDetail";
+import ObjekDetailSub from "./pages/rekening/ObjekDetailSub";
 
 import Anggaran from "./pages/transaksi/Anggaran";
 import Realisasi from "./pages/transaksi/Realisasi";
@@ -89,6 +91,28 @@ function App() {
                   element={
                     <DynamicWrapper>
                       <Objek />
+                    </DynamicWrapper>
+                  }
+                />
+              </Route>
+              <Route path="objek_detail" element={<Outlet />}>
+                <Route index element={<ObjekDetail />} />
+                <Route
+                  path=":id"
+                  element={
+                    <DynamicWrapper>
+                      <ObjekDetail />
+                    </DynamicWrapper>
+                  }
+                />
+              </Route>
+              <Route path="objek_detail_sub" element={<Outlet />}>
+                <Route index element={<ObjekDetailSub />} />
+                <Route
+                  path=":id"
+                  element={
+                    <DynamicWrapper>
+                      <ObjekDetailSub />
                     </DynamicWrapper>
                   }
                 />

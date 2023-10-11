@@ -17,24 +17,23 @@ import {
   setActiveAccount,
 } from "../../services/account";
 import { PAGINATION } from "../../helpers/constants";
-import { messageAction } from "../../helpers/response";
 import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
+import { messageAction } from "../../helpers/response";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { checkParams } from "../../helpers/url";
 import { lower } from "../../helpers/typo";
 
-export default function Objek() {
+export default function ObjekDetailSub() {
   const { modal } = App.useApp();
   const [form] = Form.useForm();
-  const navigate = useNavigate();
   const { id } = useParams();
 
-  const [accountObject, setAccountObject] = useState([]);
-  const [accountType, setAccountType] = useState([]);
+  const [accountObjectDetailSub, setAccountObjectDetailSub] = useState([]);
+  const [accountObjectDetail, setAccountObjectDetail] = useState([]);
   const [exports, setExports] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -51,20 +50,26 @@ export default function Objek() {
     setLoading(true);
     axios
       .all([
-        getAccount("object", checkParams(params, id, "account_type_id")),
-        getAccount("object", checkParams(params, id, "account_type_id", true)),
-        getAccountList("type"),
+        getAccount(
+          "object_detail_sub",
+          checkParams(params, id, "account_object_detail_id")
+        ),
+        getAccount(
+          "object_detail_sub",
+          checkParams(params, id, "account_object_detail_id", true)
+        ),
+        getAccountList("object"),
       ])
       .then(
-        axios.spread((_objects, _export, _types) => {
+        axios.spread((_object_detail_sub, _export, _bases) => {
           setLoading(false);
-          setAccountObject(_objects?.data);
-          setExports(_export?.data);
-          setAccountType(_types?.data);
+          setAccountObjectDetailSub(_object_detail_sub.data);
+          setExports(_export.data);
+          setAccountObjectDetail(_bases?.data);
           setTablePage({
             pagination: {
               ...params.pagination,
-              total: _objects?.total,
+              total: _object_detail_sub?.total,
             },
           });
         })
@@ -78,7 +83,7 @@ export default function Objek() {
 
     // `dataSource` is useless since `pageSize` changed
     if (pagination.pageSize !== tablePage.pagination?.pageSize) {
-      setAccountObject([]);
+      setAccountObjectDetailSub([]);
     }
   };
 
@@ -95,7 +100,7 @@ export default function Objek() {
       setEdit(true);
       form.setFieldsValue({
         id: value?.id,
-        account_type_id: value?.account_type_id,
+        account_object_detail_id: value?.account_object_detail_id,
         label: value?.label,
         remark: value?.remark,
       });
@@ -103,8 +108,8 @@ export default function Objek() {
       form.resetFields();
       setEdit(false);
 
-      if (id && accountType.find((i) => i?.id === Number(id))) {
-        form.setFieldsValue({ account_type_id: Number(id) });
+      if (id && accountObjectDetail.find((i) => i?.id === Number(id))) {
+        form.setFieldsValue({ account_object_detail_id: Number(id) });
       }
     }
   };
@@ -121,7 +126,7 @@ export default function Objek() {
       cancelText: "Tidak",
       centered: true,
       onOk() {
-        setActiveAccount("object", value?.id).then((response) => {
+        setActiveAccount("object_detail_sub", value?.id).then((response) => {
           if (response?.code === 200) {
             messageAction(true);
             reloadTable();
@@ -135,7 +140,7 @@ export default function Objek() {
     values.mode = isEdit ? "U" : "C";
 
     setConfirmLoading(true);
-    addAccount("object", values).then((response) => {
+    addAccount("object_detail_sub", values).then((response) => {
       setConfirmLoading(false);
 
       if (response?.code === 200) {
@@ -146,15 +151,11 @@ export default function Objek() {
     });
   };
 
-  const onNavigateDetail = (values) => {
-    navigate(`/rekening/objek_detail/${values?.id}`);
-  };
-
   const columns = [
     searchColumn(
       tableFilterInputRef,
-      "account_type_label",
-      "Jenis Rekening",
+      "account_object_detail_label",
+      "Objek Detail Rekening",
       tableFiltered,
       true,
       tableSorted
@@ -176,7 +177,7 @@ export default function Objek() {
       tableSorted
     ),
     activeColumn(tableFiltered),
-    actionColumn(addUpdateRow, onActiveChange, null, onNavigateDetail),
+    actionColumn(addUpdateRow, onActiveChange),
   ];
 
   useEffect(() => getData(PAGINATION), []);
@@ -189,7 +190,7 @@ export default function Objek() {
         {!!exports?.length && (
           <ExportButton
             data={exports}
-            master={`account_object`}
+            master={`account_object_detail_sub`}
             pdfOrientation={`landscape`}
           />
         )}
@@ -202,7 +203,7 @@ export default function Objek() {
         bordered
         size="small"
         loading={loading}
-        dataSource={accountObject}
+        dataSource={accountObjectDetailSub}
         columns={columns}
         rowKey={(record) => record?.id}
         onChange={onTableChange}
@@ -213,14 +214,14 @@ export default function Objek() {
         style={{ margin: 10 }}
         centered
         open={isShow}
-        title={`${isEdit ? `Ubah` : `Tambah`} Data Rekening Objek`}
+        title={`${isEdit ? `Ubah` : `Tambah`} Data Rekening Objek Detail Sub`}
         onCancel={() => addUpdateRow()}
         footer={null}
       >
         <Divider />
         <Form
           form={form}
-          name="action"
+          name="basic"
           labelCol={{ span: 8 }}
           labelAlign="left"
           onFinish={handleAddUpdate}
@@ -231,12 +232,12 @@ export default function Objek() {
             <Input />
           </Form.Item>
           <Form.Item
-            label="Jenis Rekening"
-            name="account_type_id"
+            label="Objek Rekening"
+            name="account_object_detail_id"
             rules={[
               {
                 required: true,
-                message: "Jenis Rekening tidak boleh kosong!",
+                message: "Objek Detail Rekening tidak boleh kosong!",
               },
             ]}
           >
@@ -248,7 +249,7 @@ export default function Objek() {
               }
               disabled={confirmLoading}
               loading={loading}
-              options={accountType}
+              options={accountObjectDetail}
             />
           </Form.Item>
           <Form.Item
