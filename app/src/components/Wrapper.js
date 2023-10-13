@@ -157,7 +157,7 @@ export default function Wrapper({ children }) {
     MENU_ITEM.filter((i) => i.roles.includes(role_id)),
     (nest, ind) => {
       if (nest?.children) {
-        console.log("nest", nest?.children);
+        // console.log("nest", nest?.children);
         if (nest?.children[ind]?.children) {
           // console.log(nest?.children[ind]);
           //     nest.children[ind] = {
@@ -188,7 +188,7 @@ export default function Wrapper({ children }) {
     }
   );
 
-  console.log("items", items);
+  // console.log("items", items);
 
   return (
     <Layout>
