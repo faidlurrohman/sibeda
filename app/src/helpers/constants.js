@@ -59,17 +59,55 @@ const MENU_ITEM = [
     roles: [1, 2, 3, 4],
     children: [
       {
-        key: "/transaksi/anggaran",
+        key: "/anggaran",
         label: "Anggaran",
-        nav: "transaksi/anggaran",
         roles: [1, 2, 3, 4],
+        children: [
+          {
+            key: "/anggaran/pendapatan",
+            label: "Pendapatan",
+            nav: "transaksi/anggaran/pendapatan",
+            roles: [1, 2, 3, 4],
+          },
+          {
+            key: "/anggaran/belanja",
+            label: "Belanja",
+            nav: "transaksi/anggaran/belanja",
+            roles: [1, 2, 3, 4],
+          },
+          {
+            key: "/anggaran/pembiayaan",
+            label: "Pembiayaan",
+            nav: "transaksi/anggaran/pembiayaan",
+            roles: [1, 2, 3, 4],
+          },
+        ],
       },
-      {
-        key: "/transaksi/realisasi",
-        label: "Realisasi",
-        nav: "transaksi/realisasi",
-        roles: [1, 2, 3, 4],
-      },
+      // {
+      //   key: "/realisasi",
+      //   label: "Realisasi",
+      //   roles: [1, 2, 3, 4],
+      //   children: [
+      //     {
+      //       key: "/transaksi/realisasi/pendapatan",
+      //       label: "Pendapatan",
+      //       nav: "transaksi/realisasi/pendapatan",
+      //       roles: [1, 2, 3, 4],
+      //     },
+      //     {
+      //       key: "/transaksi/realisasi/belanja",
+      //       label: "Belanja",
+      //       nav: "transaksi/realisasi/belanja",
+      //       roles: [1, 2, 3, 4],
+      //     },
+      //     {
+      //       key: "/transaksi/realisasi/pembiayaan",
+      //       label: "Pembiayaan",
+      //       nav: "transaksi/realisasi/pembiayaan",
+      //       roles: [1, 2, 3, 4],
+      //     },
+      //   ],
+      // },
     ],
   },
   {
@@ -131,6 +169,9 @@ const MENU_NAVIGATION = {
   objek_detail: "Rekening Objek Detail",
   objek_detail_sub: "Rekening Objek Detail Sub",
   "/transaksi/anggaran": "Transaksi Anggaran",
+  "/anggaran/pendapatan": "Transaksi Anggaran Pendapatan",
+  "/anggaran/belanja": "Transaksi Anggaran Belanja",
+  "/anggaran/pembiayaan": "Transaksi Anggaran Pembiayaan",
   "/transaksi/realisasi": "Transaksi Realisasi",
   "/laporan/realisasi-anggaran-kota": "Laporan Realisasi Anggaran Kota",
   "/laporan/realisasi-anggaran-gabungan-kota":

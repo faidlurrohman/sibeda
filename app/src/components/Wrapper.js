@@ -155,17 +155,31 @@ export default function Wrapper({ children }) {
 
   const items = _.map(
     MENU_ITEM.filter((i) => i.roles.includes(role_id)),
-    (nest) => {
+    (nest, ind) => {
       if (nest?.children) {
-        nest = {
-          ...nest,
-          children: nest?.children
-            .filter((j) => j.roles.includes(role_id))
-            .map((k) => ({
-              ...k,
-              onClick: () => navigating(k?.nav),
-            })),
-        };
+        console.log("nest", nest?.children);
+        if (nest?.children[ind]?.children) {
+          // console.log(nest?.children[ind]);
+          //     nest.children[ind] = {
+          //       ...nest.children[ind],
+          //       children: nest.children[ind]
+          //         .filter((j) => j.roles.includes(role_id))
+          //         .map((k) => ({
+          //           ...k,
+          //           onClick: () => navigating(k?.nav),
+          //         })),
+          //     };
+        } else {
+          //     nest = {
+          //       ...nest,
+          //       children: nest?.children
+          //         .filter((j) => j.roles.includes(role_id))
+          //         .map((k) => ({
+          //           ...k,
+          //           onClick: () => navigating(k?.nav),
+          //         })),
+          //     };
+        }
       } else {
         nest = { ...nest, onClick: () => navigating(nest?.nav) };
       }
@@ -173,6 +187,8 @@ export default function Wrapper({ children }) {
       return nest;
     }
   );
+
+  console.log("items", items);
 
   return (
     <Layout>

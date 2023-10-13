@@ -31,6 +31,12 @@ import ObjekDetailSub from "./pages/rekening/ObjekDetailSub";
 
 import Anggaran from "./pages/transaksi/Anggaran";
 import Realisasi from "./pages/transaksi/Realisasi";
+import AnggaranPendapatan from "./pages/transaksi/anggaran/Pendapatan";
+import AnggaranBelanja from "./pages/transaksi/anggaran/Belanja";
+import AnggaranPembiayaan from "./pages/transaksi/anggaran/Pembiayaan";
+import RealisasiPendapatan from "./pages/transaksi/realisasi/Pendapatan";
+import RealisasiBelanja from "./pages/transaksi/realisasi/Belanja";
+import RealisasiPembiayaan from "./pages/transaksi/realisasi/Pembiayaan";
 
 function DynamicWrapper({ children }) {
   const { id } = useParams();
@@ -120,8 +126,22 @@ function App() {
             </Route>
           )}
           <Route path="/transaksi" element={<Outlet />}>
-            <Route path="anggaran" element={<Anggaran />} />
-            <Route path="realisasi" element={<Realisasi />} />
+            {/* <Route path="anggaran" element={<Outlet />}> */}
+            <Route
+              path="anggaran/pendapatan"
+              element={<AnggaranPendapatan />}
+            />
+            <Route path="anggaran/belanja" element={<AnggaranBelanja />} />
+            <Route
+              path="anggaran/pembiayaan"
+              element={<AnggaranPembiayaan />}
+            />
+            {/* </Route> */}
+            {/* <Route path="/anggaran" element={<Outlet />}>
+              <Route path="pendapatan" element={<RealisasiPendapatan />} />
+              <Route path="belanja" element={<RealisasiBelanja />} />
+              <Route path="pembiayaan" element={<RealisasiPembiayaan />} />
+            </Route> */}
           </Route>
           <Route path="/laporan" element={<Outlet />}>
             <Route path="realisasi-anggaran-kota" element={<AnggaranKota />} />
