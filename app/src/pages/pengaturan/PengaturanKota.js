@@ -265,7 +265,7 @@ export default function PengaturanKota() {
                 return false;
               }}
             >
-              <Button icon={<UploadOutlined />}>Unggah Berkas</Button>
+              <Button icon={<UploadOutlined />}>Unggah</Button>
             </Upload>
           </Form.Item>
           <Divider />
