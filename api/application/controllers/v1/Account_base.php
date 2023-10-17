@@ -105,9 +105,10 @@ class Account_base extends REST_Controller {
             $save = $this->Account_base_model->save($params);
 
             if ($save['code'] == 200) {
-                $this->response($save);
                 // insert log
                 $this->Log_model->log("account_base", $mode, $params, $validated->username);
+                
+                $this->response($save);
             } else {
                 $this->response($save, $save["code"]);
             }
@@ -144,9 +145,10 @@ class Account_base extends REST_Controller {
             $remove = $this->Account_base_model->delete(intval($id));
 
             if ($remove['code'] == 200) {
-                $this->response($remove);
                 // insert log
                 $this->Log_model->log("account_base", "D", array("id" => intval($id)), $validated->username);
+                
+                $this->response($remove);
             } else {
                 $this->response($remove, $remove["code"]);
             }
