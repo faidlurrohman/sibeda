@@ -26,7 +26,6 @@ class Account_object_model extends CI_Model {
         ";
         $query = $this->db->query($sql);
 
-
         return model_response($query);
     }
 
