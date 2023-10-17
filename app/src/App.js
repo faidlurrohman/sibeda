@@ -29,8 +29,6 @@ import Objek from "./pages/rekening/Objek";
 import ObjekDetail from "./pages/rekening/ObjekDetail";
 import ObjekDetailSub from "./pages/rekening/ObjekDetailSub";
 
-import Anggaran from "./pages/transaksi/Anggaran";
-import Realisasi from "./pages/transaksi/Realisasi";
 import AnggaranPendapatan from "./pages/transaksi/anggaran/Pendapatan";
 import AnggaranBelanja from "./pages/transaksi/anggaran/Belanja";
 import AnggaranPembiayaan from "./pages/transaksi/anggaran/Pembiayaan";
@@ -126,7 +124,6 @@ function App() {
             </Route>
           )}
           <Route path="/transaksi" element={<Outlet />}>
-            {/* <Route path="anggaran" element={<Outlet />}> */}
             <Route
               path="anggaran/pendapatan"
               element={<AnggaranPendapatan />}
@@ -136,12 +133,15 @@ function App() {
               path="anggaran/pembiayaan"
               element={<AnggaranPembiayaan />}
             />
-            {/* </Route> */}
-            {/* <Route path="/anggaran" element={<Outlet />}>
-              <Route path="pendapatan" element={<RealisasiPendapatan />} />
-              <Route path="belanja" element={<RealisasiBelanja />} />
-              <Route path="pembiayaan" element={<RealisasiPembiayaan />} />
-            </Route> */}
+            <Route
+              path="realisasi/pendapatan"
+              element={<RealisasiPendapatan />}
+            />
+            <Route path="realisasi/belanja" element={<RealisasiBelanja />} />
+            <Route
+              path="realisasi/pembiayaan"
+              element={<RealisasiPembiayaan />}
+            />
           </Route>
           <Route path="/laporan" element={<Outlet />}>
             <Route path="realisasi-anggaran-kota" element={<AnggaranKota />} />

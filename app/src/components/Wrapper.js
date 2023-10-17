@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Breadcrumb, Drawer, Layout, Menu } from "antd";
 import HeaderComponent from "./Header";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -51,14 +51,25 @@ export default function Wrapper({ children }) {
     if (current?.pathname) {
       let spl = current?.pathname.split("/");
 
-      if (_.size(spl) > 2) {
+      if (_.size(spl) === 3) {
+        // for level 1
         onOpenChange([`/${spl[1]}`]);
+      } else if (_.size(spl) === 4) {
+        // for level 2
+        onOpenChange([`/${spl[1]}`, `/${spl[2]}`]);
       } else {
         onOpenChange([]);
       }
 
-      if (current?.pathname.includes("rekening")) setCurrentMenu(`/${spl[1]}`);
-      else setCurrentMenu(current?.pathname);
+      if (current?.pathname.includes("rekening")) {
+        setCurrentMenu(`/${spl[1]}`);
+      } else if (current?.pathname.includes("transaksi")) {
+        setCurrentMenu(`/${spl[1]}`);
+        setCurrentMenu(`/${spl[2]}`);
+        setCurrentMenu(`/${spl[2]}/${spl[3]}`);
+      } else {
+        setCurrentMenu(current?.pathname);
+      }
     }
     // trigger from on click menu
     else {
@@ -81,6 +92,67 @@ export default function Wrapper({ children }) {
 
     navigate(route);
   };
+
+  const createMenu = useMemo(() => {
+    // find all access menu
+    const menus = _.map(
+      _.filter(MENU_ITEM, (i) => i.roles.includes(role_id)),
+      (menu) => {
+        // currently until 2 level
+        // check children
+        if (!isEmpty(menu?.children) && !!menu?.children.length) {
+          // filter access level 1
+          menu = {
+            ...menu,
+            children: _.filter(menu?.children, (lvl1) =>
+              lvl1.roles.includes(role_id)
+            ),
+          };
+
+          menu = {
+            ...menu,
+            children: _.map(menu?.children, (lvl1) => {
+              // check children
+              if (!isEmpty(lvl1?.children) && !!lvl1?.children.length) {
+                // filter access level 2
+                lvl1.children = _.filter(lvl1.children, (lvl2) =>
+                  lvl2.roles.includes(role_id)
+                );
+
+                lvl1.children = _.map(lvl1.children, (lvl2) => {
+                  // add button click on menu if have navigation
+                  if (!isEmpty(lvl2?.nav)) {
+                    lvl2 = { ...lvl2, onClick: () => navigating(lvl2?.nav) };
+                  }
+
+                  return lvl2;
+                });
+              }
+
+              if (!isEmpty(lvl1?.nav)) {
+                // add button click on menu if have navigation
+                lvl1 = {
+                  ...lvl1,
+                  onClick: () => navigating(lvl1?.nav),
+                };
+              }
+
+              return lvl1;
+            }),
+          };
+        }
+
+        // add button click on menu if have navigation
+        if (!isEmpty(menu?.nav)) {
+          menu = { ...menu, onClick: () => navigating(menu?.nav) };
+        }
+
+        return menu;
+      }
+    );
+
+    return menus;
+  }, [role_id]);
 
   useEffect(() => {
     onMenuClick(location);
@@ -153,43 +225,6 @@ export default function Wrapper({ children }) {
     }
   }, [location]);
 
-  const items = _.map(
-    MENU_ITEM.filter((i) => i.roles.includes(role_id)),
-    (nest, ind) => {
-      if (nest?.children) {
-        // console.log("nest", nest?.children);
-        if (nest?.children[ind]?.children) {
-          // console.log(nest?.children[ind]);
-          //     nest.children[ind] = {
-          //       ...nest.children[ind],
-          //       children: nest.children[ind]
-          //         .filter((j) => j.roles.includes(role_id))
-          //         .map((k) => ({
-          //           ...k,
-          //           onClick: () => navigating(k?.nav),
-          //         })),
-          //     };
-        } else {
-          //     nest = {
-          //       ...nest,
-          //       children: nest?.children
-          //         .filter((j) => j.roles.includes(role_id))
-          //         .map((k) => ({
-          //           ...k,
-          //           onClick: () => navigating(k?.nav),
-          //         })),
-          //     };
-        }
-      } else {
-        nest = { ...nest, onClick: () => navigating(nest?.nav) };
-      }
-
-      return nest;
-    }
-  );
-
-  // console.log("items", items);
-
   return (
     <Layout>
       <Sider
@@ -217,7 +252,7 @@ export default function Wrapper({ children }) {
           openKeys={openKeys}
           onOpenChange={onOpenChange}
           onClick={onMenuClick}
-          items={items}
+          items={createMenu}
         />
       </Sider>
       <Drawer
@@ -237,7 +272,7 @@ export default function Wrapper({ children }) {
           openKeys={openKeys}
           onOpenChange={onOpenChange}
           onClick={onMenuClick}
-          items={items}
+          items={createMenu}
         />
       </Drawer>
       <Layout>
