@@ -53,7 +53,7 @@ export default function ExportButton({
       table: "",
       export: {
         detail: data,
-        fileName,
+        fileName: fileName,
         type: "xlsx",
         sign: formValues,
       },
@@ -69,7 +69,7 @@ export default function ExportButton({
 
       // table export
       exportLog.table = master;
-      exportLog.data.fileName = fileName;
+      exportLog.export.fileName = fileName;
 
       // data
       sheet.addRows(
