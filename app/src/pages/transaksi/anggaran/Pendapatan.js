@@ -261,7 +261,9 @@ export default function AnggaranPendapatan() {
         style={{ margin: 10 }}
         centered
         open={isShow}
-        title={`${isEdit ? `Ubah` : `Tambah`} Data Transaksi`}
+        title={`${
+          isEdit ? `Ubah` : `Tambah`
+        } Data Transaksi Anggaran Pendapatan`}
         onCancel={() => setShow(false)}
         footer={null}
       >
@@ -303,7 +305,7 @@ export default function AnggaranPendapatan() {
           <Form
             form={form}
             name="basic"
-            labelCol={{ span: 8 }}
+            labelCol={{ span: 9 }}
             labelAlign="left"
             onFinish={handleAddUpdate}
             autoComplete="off"
@@ -333,7 +335,7 @@ export default function AnggaranPendapatan() {
               />
             </Form.Item>
             <Form.Item
-              label="Objek Rekening"
+              label="Objek Detail Sub Rekening"
               name="account_object_detail_sub_id"
               rules={[
                 {

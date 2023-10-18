@@ -273,7 +273,7 @@ export default function RealisasiPembiayaan() {
         style={{ margin: 10 }}
         centered
         open={isShow}
-        title={`Tambah Data Transaksi Realisasi Pendapatan`}
+        title={`Tambah Data Transaksi Realisasi Pembiayaan`}
         onCancel={() => setShow(false)}
         footer={null}
       >
