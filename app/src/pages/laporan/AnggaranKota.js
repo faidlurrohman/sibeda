@@ -56,15 +56,15 @@ export default function AnggaranKota() {
     ),
     searchColumn(
       tableFilterInputRef,
-      "account_object_label",
-      "Objek Rekening",
+      "account_object_detail_sub_label",
+      "Objek Detail Sub Rekening",
       tableFiltered,
       true,
       tableSorted
     ),
     searchColumn(
       tableFilterInputRef,
-      "account_object_plan_amount",
+      "account_object_detail_sub_plan_amount",
       "Anggaran",
       tableFiltered,
       true,
@@ -73,7 +73,7 @@ export default function AnggaranKota() {
     ),
     searchColumn(
       tableFilterInputRef,
-      "account_object_real_amount",
+      "account_object_detail_sub_real_amount",
       "Realisasi",
       tableFiltered,
       true,

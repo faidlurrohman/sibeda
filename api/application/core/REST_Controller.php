@@ -32,9 +32,13 @@ class REST_Controller extends CI_Controller
         $this->load->model("v1/Account_object_model");  
         $this->load->model("v1/Account_object_detail_model");  
         $this->load->model("v1/Account_object_detail_sub_model");  
-        $this->load->model('v1/Transaction_model');
+        $this->load->model('v1/Plan_model');
+        $this->load->model('v1/Real_model');
         $this->load->model('v1/Report_model');
         $this->load->model('v1/Dashboard_model');
+
+        // will be deleted
+        $this->load->model('v1/Transaction_model');
     }
 
     /**
