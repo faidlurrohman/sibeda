@@ -281,7 +281,11 @@ const EXPORT_TARGET = {
       { header: "No", key: "no", width: 5 },
       { header: "Tanggal", key: "trans_date", width: 20 },
       { header: "Kota", key: "city_label", width: 35 },
-      { header: "Objek Rekening", key: "account_object_label", width: 35 },
+      {
+        header: "Objek Detail Sub Rekening",
+        key: "account_object_detail_sub_label",
+        width: 35,
+      },
       { header: "Anggaran", key: "plan_amount", width: 20 },
       { header: "Realisasi", key: "real_amount", width: 20 },
     ],
