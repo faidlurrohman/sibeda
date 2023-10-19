@@ -5,7 +5,7 @@ class Plan_model extends CI_Model {
     function get_all_in($filter, $order, $limit, $offset)
     {
         $additional = ["city_label_TYPE_text", "account_object_detail_sub_label_TYPE_text", "trans_date_start_TYPE_daterange_start", "trans_date_end_TYPE_daterange_end"];
-        $filter = set_filter($filter, "transaction_new", $additional);
+        $filter = set_filter($filter, "transaction", $additional);
         $order = set_order($order);
         $limit_offset = set_limit_offset($limit, $offset);
 
@@ -13,7 +13,7 @@ class Plan_model extends CI_Model {
             WITH p AS (
                 SELECT 
                     MIN(id) plan_id
-                FROM transaction_new
+                FROM transaction
                 WHERE plan_amount >= 0 AND real_amount = 0
                 GROUP BY YEAR(trans_date), account_object_detail_sub_id, city_id
             ), r AS (
@@ -22,7 +22,7 @@ class Plan_model extends CI_Model {
                     c.label AS city_label, 
                     CONCAT('(', CONCAT_WS('.', ab.label, ag.label, at.label, ao.label, aod.label, aods.label), ') ', aods.remark) AS account_object_detail_sub_label,
                     YEAR(st.trans_date) = YEAR(CURRENT_DATE) AS is_editable
-                FROM transaction_new st
+                FROM transaction st
                 JOIN city c ON c.id=st.city_id AND c.active
                 JOIN account_object_detail_sub aods ON aods.id=st.account_object_detail_sub_id AND aods.active
                 JOIN account_object_detail aod ON aod.id=aods.account_object_detail_id AND aod.active
@@ -44,7 +44,7 @@ class Plan_model extends CI_Model {
     function get_all_out($filter, $order, $limit, $offset)
     {
         $additional = ["city_label_TYPE_text", "account_object_detail_sub_label_TYPE_text", "trans_date_start_TYPE_daterange_start", "trans_date_end_TYPE_daterange_end"];
-        $filter = set_filter($filter, "transaction_new", $additional);
+        $filter = set_filter($filter, "transaction", $additional);
         $order = set_order($order);
         $limit_offset = set_limit_offset($limit, $offset);
 
@@ -52,7 +52,7 @@ class Plan_model extends CI_Model {
             WITH p AS (
                 SELECT 
                     MIN(id) plan_id
-                FROM transaction_new
+                FROM transaction
                 WHERE plan_amount >= 0 AND real_amount = 0
                 GROUP BY YEAR(trans_date), account_object_detail_sub_id, city_id
             ), r AS (
@@ -61,7 +61,7 @@ class Plan_model extends CI_Model {
                     c.label AS city_label, 
                     CONCAT('(', CONCAT_WS('.', ab.label, ag.label, at.label, ao.label, aod.label, aods.label), ') ', aods.remark) AS account_object_detail_sub_label,
                     YEAR(st.trans_date) = YEAR(CURRENT_DATE) AS is_editable
-                FROM transaction_new st
+                FROM transaction st
                 JOIN city c ON c.id=st.city_id AND c.active
                 JOIN account_object_detail_sub aods ON aods.id=st.account_object_detail_sub_id AND aods.active
                 JOIN account_object_detail aod ON aod.id=aods.account_object_detail_id AND aod.active
@@ -83,7 +83,7 @@ class Plan_model extends CI_Model {
     function get_all_cost($filter, $order, $limit, $offset)
     {
         $additional = ["city_label_TYPE_text", "account_object_detail_sub_label_TYPE_text", "trans_date_start_TYPE_daterange_start", "trans_date_end_TYPE_daterange_end"];
-        $filter = set_filter($filter, "transaction_new", $additional);
+        $filter = set_filter($filter, "transaction", $additional);
         $order = set_order($order);
         $limit_offset = set_limit_offset($limit, $offset);
 
@@ -91,7 +91,7 @@ class Plan_model extends CI_Model {
             WITH p AS (
                 SELECT 
                     MIN(id) plan_id
-                FROM transaction_new
+                FROM transaction
                 WHERE plan_amount >= 0 AND real_amount = 0
                 GROUP BY YEAR(trans_date), account_object_detail_sub_id, city_id
             ), r AS (
@@ -100,7 +100,7 @@ class Plan_model extends CI_Model {
                     c.label AS city_label, 
                     CONCAT('(', CONCAT_WS('.', ab.label, ag.label, at.label, ao.label, aod.label, aods.label), ') ', aods.remark) AS account_object_detail_sub_label,
                     YEAR(st.trans_date) = YEAR(CURRENT_DATE) AS is_editable
-                FROM transaction_new st
+                FROM transaction st
                 JOIN city c ON c.id=st.city_id AND c.active
                 JOIN account_object_detail_sub aods ON aods.id=st.account_object_detail_sub_id AND aods.active
                 JOIN account_object_detail aod ON aod.id=aods.account_object_detail_id AND aod.active
@@ -127,7 +127,7 @@ class Plan_model extends CI_Model {
             WITH p AS (
                 SELECT 
                     MAX(st.id) transaction_id, st.account_object_detail_sub_id
-                FROM transaction_new st
+                FROM transaction st
                 JOIN city c ON c.id=st.city_id AND c.active 
                 WHERE st.active 
                     AND st.plan_amount >= 0 AND st.real_amount = 0
@@ -162,7 +162,7 @@ class Plan_model extends CI_Model {
             WITH p AS (
                 SELECT 
                     MAX(st.id) transaction_id, st.account_object_detail_sub_id
-                FROM transaction_new st
+                FROM transaction st
                 JOIN city c ON c.id=st.city_id AND c.active 
                 WHERE st.active 
                     AND st.plan_amount >= 0 AND st.real_amount = 0
@@ -197,7 +197,7 @@ class Plan_model extends CI_Model {
             WITH p AS (
                 SELECT 
                     MAX(st.id) transaction_id, st.account_object_detail_sub_id
-                FROM transaction_new st
+                FROM transaction st
                 JOIN city c ON c.id=st.city_id AND c.active 
                 WHERE st.active 
                     AND st.plan_amount >= 0 AND st.real_amount = 0
@@ -226,7 +226,7 @@ class Plan_model extends CI_Model {
 
     function get_last_in($filter, $order, $limit, $offset)
     {
-        $filter = set_filter($filter, "transaction_new");
+        $filter = set_filter($filter, "transaction");
         $order = set_order($order);
         $limit_offset = set_limit_offset($limit, $offset);
 
@@ -236,7 +236,7 @@ class Plan_model extends CI_Model {
                     MIN(t.id) plan_id,
                     t.account_object_detail_sub_id,
                     t.city_id
-                FROM transaction_new t
+                FROM transaction t
                 JOIN city c ON c.id=t.city_id AND c.active
                 JOIN account_object_detail_sub aods ON aods.id=t.account_object_detail_sub_id AND aods.active
                 JOIN account_object_detail aod ON aod.id=aods.account_object_detail_id AND aod.active
@@ -251,11 +251,11 @@ class Plan_model extends CI_Model {
                     st.id, 
                     st.account_object_detail_sub_id, 
                     st.city_id, 
-                    COALESCE((SELECT plan_amount FROM transaction_new t WHERE t.id=p.plan_id), st.plan_amount, 0) plan_amount, 
+                    COALESCE((SELECT plan_amount FROM transaction t WHERE t.id=p.plan_id), st.plan_amount, 0) plan_amount, 
                     st.real_amount, 
                     st.trans_date, 
                     st.active 
-                FROM transaction_new st
+                FROM transaction st
                 LEFT JOIN p ON p.account_object_detail_sub_id=st.account_object_detail_sub_id
                 WHERE st.active
             ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
@@ -270,7 +270,7 @@ class Plan_model extends CI_Model {
 
     function get_last_out($filter, $order, $limit, $offset)
     {
-        $filter = set_filter($filter, "transaction_new");
+        $filter = set_filter($filter, "transaction");
         $order = set_order($order);
         $limit_offset = set_limit_offset($limit, $offset);
 
@@ -280,7 +280,7 @@ class Plan_model extends CI_Model {
                     MIN(t.id) plan_id,
                     t.account_object_detail_sub_id,
                     t.city_id
-                FROM transaction_new t
+                FROM transaction t
                 JOIN city c ON c.id=t.city_id AND c.active
                 JOIN account_object_detail_sub aods ON aods.id=t.account_object_detail_sub_id AND aods.active
                 JOIN account_object_detail aod ON aod.id=aods.account_object_detail_id AND aod.active
@@ -295,11 +295,11 @@ class Plan_model extends CI_Model {
                     st.id, 
                     st.account_object_detail_sub_id, 
                     st.city_id, 
-                    COALESCE((SELECT plan_amount FROM transaction_new t WHERE t.id=p.plan_id), st.plan_amount, 0) plan_amount, 
+                    COALESCE((SELECT plan_amount FROM transaction t WHERE t.id=p.plan_id), st.plan_amount, 0) plan_amount, 
                     st.real_amount, 
                     st.trans_date, 
                     st.active 
-                FROM transaction_new st
+                FROM transaction st
                 LEFT JOIN p ON p.account_object_detail_sub_id=st.account_object_detail_sub_id
                 WHERE st.active
             ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
@@ -314,7 +314,7 @@ class Plan_model extends CI_Model {
 
     function get_last_cost($filter, $order, $limit, $offset)
     {
-        $filter = set_filter($filter, "transaction_new");
+        $filter = set_filter($filter, "transaction");
         $order = set_order($order);
         $limit_offset = set_limit_offset($limit, $offset);
 
@@ -324,7 +324,7 @@ class Plan_model extends CI_Model {
                     MIN(t.id) plan_id,
                     t.account_object_detail_sub_id,
                     t.city_id
-                FROM transaction_new t
+                FROM transaction t
                 JOIN city c ON c.id=t.city_id AND c.active
                 JOIN account_object_detail_sub aods ON aods.id=t.account_object_detail_sub_id AND aods.active
                 JOIN account_object_detail aod ON aod.id=aods.account_object_detail_id AND aod.active
@@ -339,11 +339,11 @@ class Plan_model extends CI_Model {
                     st.id, 
                     st.account_object_detail_sub_id, 
                     st.city_id, 
-                    COALESCE((SELECT plan_amount FROM transaction_new t WHERE t.id=p.plan_id), st.plan_amount, 0) plan_amount, 
+                    COALESCE((SELECT plan_amount FROM transaction t WHERE t.id=p.plan_id), st.plan_amount, 0) plan_amount, 
                     st.real_amount, 
                     st.trans_date, 
                     st.active 
-                FROM transaction_new st
+                FROM transaction st
                 LEFT JOIN p ON p.account_object_detail_sub_id=st.account_object_detail_sub_id
                 WHERE st.active
             ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
@@ -360,7 +360,7 @@ class Plan_model extends CI_Model {
     {
         if ($params["mode"] == "C") {
             $sql = "
-                INSERT INTO transaction_new(account_object_detail_sub_id, city_id, plan_amount, real_amount, trans_date)
+                INSERT INTO transaction(account_object_detail_sub_id, city_id, plan_amount, real_amount, trans_date)
                 VALUES (
                     " . $params['account_object_detail_sub_id'] . ",
                     " . $params['city_id'] . ",
@@ -372,7 +372,7 @@ class Plan_model extends CI_Model {
             $query = $this->db->query($sql);
         } else if ($params["mode"] == "U") {
             $sql = "
-                UPDATE transaction_new 
+                UPDATE transaction 
                     SET plan_amount = '" . $params['plan_amount'] . "',
                         real_amount = '" . $params['real_amount'] . "'
                 WHERE id = " . $params['id'] . "
@@ -386,7 +386,7 @@ class Plan_model extends CI_Model {
     function delete($id)
     {
         $sql = "
-            UPDATE transaction_new 
+            UPDATE transaction 
                 SET active = NOT active
             WHERE id = " . $id . "
         ";

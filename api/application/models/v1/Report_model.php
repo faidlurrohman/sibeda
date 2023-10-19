@@ -41,7 +41,7 @@ class Report_model extends CI_Model {
             ), p AS (
                 SELECT 
                     MIN(id) plan_id
-                FROM transaction_new
+                FROM transaction
                 WHERE plan_amount >= 0 AND real_amount = 0
                 GROUP BY account_object_detail_sub_id, city_id, EXTRACT(YEAR FROM trans_date)
             ), anggaran AS (
@@ -52,7 +52,7 @@ class Report_model extends CI_Model {
                     c.logo AS city_logo,
                     st.plan_amount,
                     st.trans_date
-                FROM transaction_new st
+                FROM transaction st
                 JOIN city c ON c.id=st.city_id AND c.active
                 JOIN p ON p.plan_id=st.id
             ), realisasi AS (
@@ -61,7 +61,7 @@ class Report_model extends CI_Model {
                     st.city_id,
                     st.real_amount,
                     st.trans_date
-                FROM transaction_new st
+                FROM transaction st
                 JOIN city c ON c.id=st.city_id AND c.active
                 WHERE st.id NOT IN (SELECT plan_id FROM p)
                 ORDER BY st.trans_date DESC
@@ -195,7 +195,7 @@ class Report_model extends CI_Model {
             ), p AS (
                 SELECT 
                     MIN(id) plan_id
-                FROM transaction_new
+                FROM transaction
                 WHERE plan_amount >= 0 AND real_amount = 0
                 GROUP BY account_object_detail_sub_id, city_id, EXTRACT(YEAR FROM trans_date)
             ), anggaran AS (
@@ -206,7 +206,7 @@ class Report_model extends CI_Model {
                     c.logo AS city_logo,
                     st.plan_amount,
                     st.trans_date
-                FROM transaction_new st
+                FROM transaction st
                 JOIN city c ON c.id=st.city_id AND c.active
                 JOIN p ON p.plan_id=st.id
             ), realisasi AS (
@@ -215,7 +215,7 @@ class Report_model extends CI_Model {
                     st.city_id,
                     st.real_amount,
                     st.trans_date
-                FROM transaction_new st
+                FROM transaction st
                 JOIN city c ON c.id=st.city_id AND c.active
                 WHERE st.id NOT IN (SELECT plan_id FROM p)
                 ORDER BY st.trans_date DESC

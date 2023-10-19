@@ -404,7 +404,7 @@ class Real extends REST_Controller {
             if ($save['code'] == 200) {
                 $this->response($save);
                 // insert log
-                $this->Log_model->log("transaction_new", $mode, $params, $validated->username);
+                $this->Log_model->log("transaction", $mode, $params, $validated->username);
             } else {
                 $this->response($save, $save["code"]);
             }
@@ -443,7 +443,7 @@ class Real extends REST_Controller {
             if ($remove['code'] == 200) {
                 $this->response($remove);
                 // insert log
-                $this->Log_model->log("transaction_new", "D", array("id" => intval($id)), $validated->username);
+                $this->Log_model->log("transaction", "D", array("id" => intval($id)), $validated->username);
             } else {
                 $this->response($remove, $remove["code"]);
             }
