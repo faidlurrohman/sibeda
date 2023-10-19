@@ -262,11 +262,14 @@ export default function AnggaranKota() {
       "account_group_label",
       "account_type_label",
       "account_object_label",
+      "account_object_detail_label",
+      "account_object_detail_sub_label",
     ]);
     // grouping
     let grp = _.chain(srt)
       .groupBy("account_base_label")
       .map((base, baseKey) => ({
+        account_level: 1,
         city_label: base[0]?.city_label,
         city_logo: base[0]?.city_logo,
         code: normalizeLabel(baseKey).code,
@@ -280,6 +283,7 @@ export default function AnggaranKota() {
         children: _.chain(base)
           .groupBy("account_group_label")
           .map((group, groupKey) => ({
+            account_level: 2,
             code: normalizeLabel(groupKey).code,
             label: upper(normalizeLabel(groupKey).label),
             plan_amount: formatterNumber(group[0]?.account_group_plan_amount),
@@ -291,6 +295,7 @@ export default function AnggaranKota() {
             children: _.chain(group)
               .groupBy("account_type_label")
               .map((type, typeKey) => ({
+                account_level: 3,
                 code: normalizeLabel(typeKey).code,
                 label: normalizeLabel(typeKey).label,
                 plan_amount: formatterNumber(type[0]?.account_type_plan_amount),
@@ -299,20 +304,61 @@ export default function AnggaranKota() {
                   type[0]?.account_type_real_amount,
                   type[0]?.account_type_plan_amount
                 ),
-                children: _.map(type, (object) => ({
-                  code: normalizeLabel(object?.account_object_label).code,
-                  label: normalizeLabel(object?.account_object_label).label,
-                  plan_amount: formatterNumber(
-                    object?.account_object_plan_amount
-                  ),
-                  real_amount: formatterNumber(
-                    object?.account_object_real_amount
-                  ),
-                  percentage: sumPercentage(
-                    object?.account_object_real_amount,
-                    object?.account_object_plan_amount
-                  ),
-                })),
+                children: _.chain(type)
+                  .groupBy("account_object_label")
+                  .map((object, objectKey) => ({
+                    account_level: 4,
+                    code: normalizeLabel(objectKey).code,
+                    label: normalizeLabel(objectKey).label,
+                    plan_amount: formatterNumber(
+                      object[0]?.account_object_plan_amount
+                    ),
+                    real_amount: formatterNumber(
+                      object[0]?.account_object_real_amount
+                    ),
+                    percentage: sumPercentage(
+                      object[0]?.account_object_real_amount,
+                      object[0]?.account_object_plan_amount
+                    ),
+                    children: _.chain(object)
+                      .groupBy("account_object_detail_label")
+                      .map((objectDetail, objectDetailKey) => ({
+                        account_level: 5,
+                        code: normalizeLabel(objectDetailKey).code,
+                        label: normalizeLabel(objectDetailKey).label,
+                        plan_amount: formatterNumber(
+                          objectDetail[0]?.account_object_detail_plan_amount
+                        ),
+                        real_amount: formatterNumber(
+                          objectDetail[0]?.account_object_detail_real_amount
+                        ),
+                        percentage: sumPercentage(
+                          objectDetail[0]?.account_object_detail_real_amount,
+                          objectDetail[0]?.account_object_detail_plan_amount
+                        ),
+                        children: _.map(objectDetail, (objectDetailSub) => ({
+                          account_level: 6,
+                          code: normalizeLabel(
+                            objectDetailSub?.account_object_detail_sub_label
+                          ).code,
+                          label: normalizeLabel(
+                            objectDetailSub?.account_object_detail_sub_label
+                          ).label,
+                          plan_amount: formatterNumber(
+                            objectDetailSub?.account_object_detail_sub_plan_amount
+                          ),
+                          real_amount: formatterNumber(
+                            objectDetailSub?.account_object_detail_sub_real_amount
+                          ),
+                          percentage: sumPercentage(
+                            objectDetailSub?.account_object_detail_sub_real_amount,
+                            objectDetailSub?.account_object_detail_sub_plan_amount
+                          ),
+                        })),
+                      }))
+                      .value(),
+                  }))
+                  .value(),
               }))
               .value(),
           }))
@@ -335,6 +381,7 @@ export default function AnggaranKota() {
         group = item?.code;
         results.push(
           {
+            account_level: 0,
             code: "",
             label: `JUMLAH ${item?.label}`,
             plan_amount: item?.plan_amount,
@@ -342,6 +389,7 @@ export default function AnggaranKota() {
             percentage: item?.percentage,
           },
           {
+            account_level: 0,
             code: "",
             label: "",
             plan_amount: "",
@@ -356,6 +404,7 @@ export default function AnggaranKota() {
 
         results.push(
           {
+            account_level: 0,
             code: "",
             label: `JUMLAH ${item?.label}`,
             plan_amount: item?.plan_amount,
@@ -363,6 +412,7 @@ export default function AnggaranKota() {
             percentage: item?.percentage,
           },
           {
+            account_level: 0,
             code: "",
             label: "",
             plan_amount: "",
@@ -392,7 +442,7 @@ export default function AnggaranKota() {
     if (isEmpty(value1)) value1 = 0;
     if (isEmpty(value2)) value2 = 0;
 
-    results = parseFloat((value1 / value2) * 100).toFixed(2);
+    results = parseFloat(((value1 - value2) / value1) * 100).toFixed(2);
 
     if (isNaN(results) || !isFinite(Number(results))) return 0;
 

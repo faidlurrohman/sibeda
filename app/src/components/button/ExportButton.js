@@ -10,7 +10,7 @@ import {
 } from "antd";
 import { DownOutlined, ExportOutlined } from "@ant-design/icons";
 import { convertDate, dbDate, viewDate } from "../../helpers/date";
-import { lower, upper } from "../../helpers/typo";
+import { isEmpty, lower, upper } from "../../helpers/typo";
 import { DATE_FORMAT_VIEW, EXPORT_TARGET } from "../../helpers/constants";
 import { pdf } from "@react-pdf/renderer";
 import PDFFile from "../PDFFile";
@@ -27,6 +27,15 @@ import { addExportLog } from "../../services/export";
 
 const ExcelJS = require("exceljs");
 
+const account_level = [
+  { id: 1, value: "Akun" },
+  { id: 2, value: "Kelompok" },
+  { id: 3, value: "Jenis" },
+  { id: 4, value: "Objek" },
+  { id: 5, value: "Objek Detail" },
+  { id: 6, value: "Objek Detail Sub" },
+];
+
 export default function ExportButton({
   master = null,
   report = null,
@@ -42,6 +51,7 @@ export default function ExportButton({
   const [signers, setSigners] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingPdf, setLoadingPdf] = useState(false);
+  const [accountModal, setAccountModal] = useState(false);
   const [signerModal, setSignerModal] = useState(false);
   const [doNext, setDoNext] = useState(null);
 
@@ -112,8 +122,16 @@ export default function ExportButton({
 
     if (report) {
       if (report === "kota") {
-        const chooseCity = data[0].city_label || "";
-        const chooseCityLogo = data[0].city_logo || "";
+        // set level from which prefer account
+        if (!isEmpty(formValues?.account_level)) {
+          exportLog.export.detail = _.filter(
+            data,
+            (i) => i?.account_level <= formValues?.account_level
+          );
+        }
+
+        const chooseCity = exportLog.export.detail[0].city_label || "";
+        const chooseCityLogo = exportLog.export.detail[0].city_logo || "";
 
         // table export
         exportLog.table = "realisasi anggaran kota";
@@ -207,9 +225,9 @@ export default function ExportButton({
           { key: "real_amount", width: 18 },
           { key: "percentage", width: 18 },
         ];
-
+        // return;
         // data
-        sheet.addRows(data, "i");
+        sheet.addRows(exportLog.export.detail, "i");
         sheet.eachRow((row, number) => {
           if ([9, 10, 11].includes(number)) {
             if (number === 9) row.height = 50;
@@ -266,6 +284,16 @@ export default function ExportButton({
           }
         });
       } else if (report === "gabungankota") {
+        // set level from which prefer account
+        if (!isEmpty(formValues?.account_level)) {
+          exportLog.export.detail["modified"] = _.filter(
+            data?.data,
+            (c) => c?.account_level <= formValues?.account_level
+          );
+        } else {
+          exportLog.export.detail["modified"] = data?.data;
+        }
+
         // table export
         exportLog.table = "realisasi anggaran gabungan kota";
 
@@ -290,7 +318,7 @@ export default function ExportButton({
             { key: "label", width: 50 },
           ],
           scol = ["1", "2"];
-        _.map(data?.cities, (item) => {
+        _.map(exportLog.export.detail.cities, (item) => {
           sheet.mergeCells(sr, sc, sr, sc + 2);
 
           const cr = sheet.getRow(sr);
@@ -330,7 +358,7 @@ export default function ExportButton({
         sheet.columns = col;
 
         // data
-        sheet.addRows(data?.data, "i");
+        sheet.addRows(exportLog.export.detail.modified, "i");
         sheet.eachRow((row, number) => {
           if ([8, 9, 10, 11].includes(number)) {
             row.eachCell((cell) => {
@@ -770,11 +798,19 @@ export default function ExportButton({
       mode: "E",
     };
 
+    // set level from which prefer account
+    if (!isEmpty(formValues?.account_level)) {
+      exportLog.export.detail = _.filter(
+        data,
+        (i) => i?.account_level <= formValues?.account_level
+      );
+    }
+
     const doc = (
       <PDFFile
         master={master}
         report={report}
-        data={data}
+        data={exportLog.export.detail}
         date={date}
         orientation={pdfOrientation}
         signer={dataSigner}
@@ -800,6 +836,14 @@ export default function ExportButton({
     });
   };
 
+  // either of admin see this modal
+  const onAccountModal = (show) => {
+    setAccountModal(show);
+
+    if (show) form.resetFields();
+  };
+
+  // only admin see this modal
   const onSignerModal = (show) => {
     setSignerModal(show);
 
@@ -829,6 +873,9 @@ export default function ExportButton({
                   if (is_super_admin && report) {
                     onSignerModal(true);
                     setDoNext("xlsx");
+                  } else if (report) {
+                    onAccountModal(true);
+                    setDoNext("xlsx");
                   } else {
                     xlsx();
                   }
@@ -841,8 +888,11 @@ export default function ExportButton({
                   if (is_super_admin && report) {
                     onSignerModal(true);
                     setDoNext("pdfx");
+                  } else if (report) {
+                    onAccountModal(true);
+                    setDoNext("pdfx");
                   } else {
-                    pdfx();
+                    pdf();
                   }
                 },
               },
@@ -882,6 +932,7 @@ export default function ExportButton({
             signer_id: "",
             know_id: "",
             export_date: convertDate(),
+            account_level: "",
           }}
         >
           <Divider orientation="left" plain>
@@ -958,12 +1009,101 @@ export default function ExportButton({
                 ))}
             </Select>
           </Form.Item>
+          <Form.Item
+            label="Rekening"
+            name="account_level"
+            rules={[
+              {
+                required: true,
+                message: "Rekening tidak boleh kosong!",
+              },
+            ]}
+          >
+            <Select
+              disabled={loadingPdf}
+              loading={loading}
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (lower(option?.children) ?? "").includes(lower(input))
+              }
+            >
+              {_.map(account_level, (item) => (
+                <Select.Option key={String(item?.id)} value={item?.id}>
+                  {item?.value}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
           <Divider />
           <Form.Item className="text-right mb-0">
             <Space direction="horizontal">
               <Button
                 disabled={loadingPdf}
                 onClick={() => onSignerModal(false)}
+              >
+                Kembali
+              </Button>
+              <Button loading={loadingPdf} htmlType="submit" type="primary">
+                Simpan
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        style={{ margin: 10 }}
+        centered
+        open={accountModal}
+        title={`Ekspor Data`}
+        onCancel={() => onAccountModal(false)}
+        footer={null}
+      >
+        <Form
+          form={form}
+          name="basic"
+          labelCol={{ span: 8 }}
+          labelAlign="left"
+          onFinish={(v) =>
+            doNext === "xlsx" ? xlsx(v) : doNext === "pdfx" ? pdfx(v) : null
+          }
+          autoComplete="off"
+          initialValues={{
+            account_level: "",
+          }}
+        >
+          <Divider />
+          <Form.Item
+            label="Rekening"
+            name="account_level"
+            rules={[
+              {
+                required: true,
+                message: "Rekening tidak boleh kosong!",
+              },
+            ]}
+          >
+            <Select
+              disabled={loadingPdf}
+              loading={loading}
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (lower(option?.children) ?? "").includes(lower(input))
+              }
+            >
+              {_.map(account_level, (item) => (
+                <Select.Option key={String(item?.id)} value={item?.id}>
+                  {item?.value}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Divider />
+          <Form.Item className="text-right mb-0">
+            <Space direction="horizontal">
+              <Button
+                disabled={loadingPdf}
+                onClick={() => onAccountModal(false)}
               >
                 Kembali
               </Button>

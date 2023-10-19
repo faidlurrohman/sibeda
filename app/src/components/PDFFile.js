@@ -110,50 +110,148 @@ export default function PDFFile({
 
     if (report === "kota") {
       return (
-        <View style={styles.tableRowHeader}>
-          <View
-            style={{
-              ...styles.tableMasterColIndex,
-              width: "15%",
-            }}
-          >
-            <Text style={styles.tableCellHeaderReport}>KODE REKENING</Text>
+        <>
+          <View style={styles.tableRowHeader}>
+            <View
+              style={{
+                ...styles.tableMasterColIndex,
+                width: "15%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}>KODE REKENING</Text>
+            </View>
+            <View
+              style={{
+                ...styles.tableMasterColInherit,
+                width: "35%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}>URAIAN</Text>
+            </View>
+            <View
+              style={{
+                ...styles.tableMasterColInherit,
+                width: "15%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}>ANGGARAN</Text>
+            </View>
+            <View
+              style={{
+                ...styles.tableMasterColInherit,
+                width: "15%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}>REALISASI</Text>
+            </View>
+            <View
+              style={{
+                ...styles.tableMasterColInherit,
+                width: "15%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}>
+                {`% ${viewDate(date[1]).split(" ").pop()}`}
+              </Text>
+            </View>
           </View>
-          <View
-            style={{
-              ...styles.tableMasterColInherit,
-              width: "35%",
-            }}
-          >
-            <Text style={styles.tableCellHeaderReport}>URAIAN</Text>
+          <View style={{ ...styles.tableRowHeader, height: 14 }}>
+            <View
+              style={{
+                ...styles.tableMasterColIndex,
+                borderTopWidth: 0,
+                width: "15%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}>1</Text>
+            </View>
+            <View
+              style={{
+                ...styles.tableMasterColInherit,
+                borderTopWidth: 0,
+                width: "35%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}>2</Text>
+            </View>
+            <View
+              style={{
+                ...styles.tableMasterColInherit,
+                borderTopWidth: 0,
+                width: "15%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}>3</Text>
+            </View>
+            <View
+              style={{
+                ...styles.tableMasterColInherit,
+                borderTopWidth: 0,
+                width: "15%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}>4</Text>
+            </View>
+            <View
+              style={{
+                ...styles.tableMasterColInherit,
+                borderTopWidth: 0,
+                width: "15%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}>
+                5 = (4 / 3) * 100
+              </Text>
+            </View>
           </View>
-          <View
-            style={{
-              ...styles.tableMasterColInherit,
-              width: "15%",
-            }}
-          >
-            <Text style={styles.tableCellHeaderReport}>ANGGARAN</Text>
+          <View style={{ ...styles.tableRowHeader, height: 14 }}>
+            <View
+              style={{
+                ...styles.tableMasterColIndex,
+                borderTopWidth: 0,
+                width: "15%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}></Text>
+            </View>
+            <View
+              style={{
+                ...styles.tableMasterColInherit,
+                borderTopWidth: 0,
+                width: "35%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}></Text>
+            </View>
+            <View
+              style={{
+                ...styles.tableMasterColInherit,
+                borderTopWidth: 0,
+                width: "15%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}></Text>
+            </View>
+            <View
+              style={{
+                ...styles.tableMasterColInherit,
+                borderTopWidth: 0,
+                width: "15%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}></Text>
+            </View>
+            <View
+              style={{
+                ...styles.tableMasterColInherit,
+                borderTopWidth: 0,
+                width: "15%",
+              }}
+            >
+              <Text style={styles.tableCellHeaderReport}></Text>
+            </View>
           </View>
-          <View
-            style={{
-              ...styles.tableMasterColInherit,
-              width: "15%",
-            }}
-          >
-            <Text style={styles.tableCellHeaderReport}>REALISASI</Text>
-          </View>
-          <View
-            style={{
-              ...styles.tableMasterColInherit,
-              width: "15%",
-            }}
-          >
-            <Text style={styles.tableCellHeaderReport}>
-              {`% ${viewDate(date[1]).split(" ").pop()}`}
-            </Text>
-          </View>
-        </View>
+        </>
       );
     }
 
@@ -402,8 +500,7 @@ export default function PDFFile({
             }}
           >
             <Text style={{ ...styles.tableCellReport, textAlign: "right" }}>
-              {parent?.plan_amount !== "" &&
-                formatterNumber(parent?.plan_amount)}
+              {!isEmpty(parent?.plan_amount) ? parent?.plan_amount : 0}
             </Text>
           </View>
           <View
@@ -413,8 +510,7 @@ export default function PDFFile({
             }}
           >
             <Text style={{ ...styles.tableCellReport, textAlign: "right" }}>
-              {parent?.real_amount !== "" &&
-                formatterNumber(parent?.real_amount)}
+              {!isEmpty(parent?.real_amount) ? parent?.real_amount : 0}
             </Text>
           </View>
           <View
@@ -677,15 +773,17 @@ const styles = StyleSheet.create({
     display: "table",
     width: "auto",
   },
-  // tableSigner: {
-  // 	display: "table",
-  // 	width: "auto",
-  // 	paddingTop: 10,
-  // },
   tableRowHeader: {
     margin: "auto",
     flexDirection: "row",
     height: 25,
+  },
+  tableRowSubHeader: {
+    margin: "auto",
+    flexDirection: "row",
+    height: 25,
+    borderWidth: 1,
+    borderTopWidth: 0,
   },
   tableRow: {
     margin: "auto",

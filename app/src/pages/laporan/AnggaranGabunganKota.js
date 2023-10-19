@@ -254,6 +254,8 @@ export default function AnggaranGabunganKota() {
       "account_group_label",
       "account_type_label",
       "account_object_label",
+      "account_object_detail_label",
+      "account_object_detail_sub_label",
     ]);
 
     // take all city
@@ -271,26 +273,53 @@ export default function AnggaranGabunganKota() {
       _.chain(_.uniqBy(srt, "account_object_label"))
         .groupBy("account_base_label")
         .map((base, baseKey) => ({
+          level: 1,
           code: normalizeLabel(baseKey).code,
           label: upper(normalizeLabel(baseKey).label),
           origin: baseKey,
           children: _.chain(base)
             .groupBy("account_group_label")
             .map((group, groupKey) => ({
+              level: 2,
               code: normalizeLabel(groupKey).code,
               label: upper(normalizeLabel(groupKey).label),
               origin: groupKey,
               children: _.chain(group)
                 .groupBy("account_type_label")
                 .map((type, typeKey) => ({
+                  level: 3,
                   code: normalizeLabel(typeKey).code,
                   label: normalizeLabel(typeKey).label,
                   origin: typeKey,
-                  children: _.map(type, (object) => ({
-                    code: normalizeLabel(object?.account_object_label).code,
-                    label: normalizeLabel(object?.account_object_label).label,
-                    origin: object?.account_object_label,
-                  })),
+                  children: _.chain(type)
+                    .groupBy("account_object_label")
+                    .map((object, objectKey) => ({
+                      level: 4,
+                      code: normalizeLabel(objectKey).code,
+                      label: normalizeLabel(objectKey).label,
+                      origin: objectKey,
+                      children: _.chain(object)
+                        .groupBy("account_object_detail_label")
+                        .map((objectDetail, objectDetailKey) => ({
+                          level: 5,
+                          code: normalizeLabel(objectDetailKey).code,
+                          label: normalizeLabel(objectDetailKey).label,
+                          origin: objectDetailKey,
+                          children: _.map(objectDetail, (objectDetailSub) => ({
+                            level: 6,
+                            code: normalizeLabel(
+                              objectDetailSub?.account_object_detail_sub_label
+                            ).code,
+                            label: normalizeLabel(
+                              objectDetailSub?.account_object_detail_sub_label
+                            ).label,
+                            origin:
+                              objectDetailSub?.account_object_detail_sub_label,
+                          })),
+                        }))
+                        .value(),
+                    }))
+                    .value(),
                 }))
                 .value(),
             }))
@@ -315,8 +344,39 @@ export default function AnggaranGabunganKota() {
         let fo = cities?.children.find(
           (i) => i?.account_object_label === codes?.origin
         );
+        let fod = cities?.children.find(
+          (i) => i?.account_object_detail_label === codes?.origin
+        );
+        let fods = cities?.children.find(
+          (i) => i?.account_object_detail_sub_label === codes?.origin
+        );
 
-        if (fo) {
+        if (fods) {
+          d["account_level"] = 6;
+          d[`${cities?.city_id}_plan_amount`] = formatterNumber(
+            fods?.account_object_detail_sub_plan_amount
+          );
+          d[`${cities?.city_id}_real_amount`] = formatterNumber(
+            fods?.account_object_detail_sub_real_amount
+          );
+          d[`${cities?.city_id}_percentage`] = sumPercentage(
+            fods?.account_object_detail_sub_real_amount,
+            fods?.account_object_detail_sub_plan_amount
+          );
+        } else if (fod) {
+          d["account_level"] = 5;
+          d[`${cities?.city_id}_plan_amount`] = formatterNumber(
+            fod?.account_object_detail_plan_amount
+          );
+          d[`${cities?.city_id}_real_amount`] = formatterNumber(
+            fod?.account_object_detail_real_amount
+          );
+          d[`${cities?.city_id}_percentage`] = sumPercentage(
+            fod?.account_object_detail_real_amount,
+            fod?.account_object_detail_plan_amount
+          );
+        } else if (fo) {
+          d["account_level"] = 4;
           d[`${cities?.city_id}_plan_amount`] = formatterNumber(
             fo?.account_object_plan_amount
           );
@@ -328,6 +388,7 @@ export default function AnggaranGabunganKota() {
             fo?.account_object_plan_amount
           );
         } else if (ft) {
+          d["account_level"] = 3;
           d[`${cities?.city_id}_plan_amount`] = formatterNumber(
             ft?.account_type_plan_amount
           );
@@ -339,6 +400,7 @@ export default function AnggaranGabunganKota() {
             ft?.account_type_plan_amount
           );
         } else if (fg) {
+          d["account_level"] = 2;
           d[`${cities?.city_id}_plan_amount`] = formatterNumber(
             fg?.account_group_plan_amount
           );
@@ -350,6 +412,7 @@ export default function AnggaranGabunganKota() {
             fg?.account_group_plan_amount
           );
         } else if (fb) {
+          d["account_level"] = 1;
           d[`${cities?.city_id}_plan_amount`] = formatterNumber(
             fb?.account_base_plan_amount
           );
@@ -361,6 +424,7 @@ export default function AnggaranGabunganKota() {
             fb?.account_base_plan_amount
           );
         } else {
+          d["account_level"] = 0;
           d[`${cities?.city_id}_plan_amount`] = codes?.code ? 0 : ``;
           d[`${cities?.city_id}_real_amount`] = codes?.code ? 0 : ``;
           d[`${cities?.city_id}_percentage`] = codes?.code ? 0 : ``;
@@ -384,6 +448,7 @@ export default function AnggaranGabunganKota() {
         group = item?.code;
         results.push(
           {
+            level: 0,
             code: "",
             origin: item?.origin,
             label: `JUMLAH ${item?.label}`,
@@ -392,6 +457,7 @@ export default function AnggaranGabunganKota() {
             percentage: item?.percentage,
           },
           {
+            level: 0,
             code: "",
             label: "",
             plan_amount: "",
@@ -406,6 +472,7 @@ export default function AnggaranGabunganKota() {
 
         results.push(
           {
+            level: 0,
             code: "",
             label: `JUMLAH ${item?.label}`,
             origin: item?.origin,
@@ -414,6 +481,7 @@ export default function AnggaranGabunganKota() {
             percentage: item?.percentage,
           },
           {
+            level: 0,
             code: "",
             label: "",
             plan_amount: "",
@@ -443,7 +511,7 @@ export default function AnggaranGabunganKota() {
     if (isEmpty(value1)) value1 = 0;
     if (isEmpty(value2)) value2 = 0;
 
-    results = parseFloat((value1 / value2) * 100).toFixed(2);
+    results = parseFloat(((value1 - value2) / value1) * 100).toFixed(2);
 
     if (isNaN(results) || !isFinite(Number(results))) return 0;
 
