@@ -442,7 +442,7 @@ export default function AnggaranKota() {
     if (isEmpty(value1)) value1 = 0;
     if (isEmpty(value2)) value2 = 0;
 
-    results = parseFloat(((value1 - value2) / value1) * 100).toFixed(2);
+    results = ((value1 / value2) * 100).toFixed(2);
 
     if (isNaN(results) || !isFinite(Number(results))) return 0;
 
@@ -538,7 +538,9 @@ export default function AnggaranKota() {
         loading={loading}
         dataSource={data}
         columns={columns}
-        rowKey={(record) => `${record?.account_object_id}_${record?.city_id}`}
+        rowKey={(record) =>
+          `${record?.account_object_detail_sub_id}_${record?.city_id}`
+        }
         onChange={onTableChange}
         pagination={tablePage.pagination}
         tableLayout="auto"

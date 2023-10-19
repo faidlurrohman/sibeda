@@ -359,7 +359,7 @@ export default function PendapatanBelanja() {
     if (isEmpty(value1)) value1 = 0;
     if (isEmpty(value2)) value2 = 0;
 
-    results = parseFloat((value1 / value2) * 100).toFixed(2);
+    results = ((value1 / value2) * 100).toFixed(2);
 
     if (isNaN(results) || !isFinite(Number(results))) return 0;
 

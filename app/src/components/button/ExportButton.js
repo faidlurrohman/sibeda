@@ -570,7 +570,7 @@ export default function ExportButton({
           tra = _.sumBy(base?.children, (item) =>
             Number(item?.account_base_real_amount)
           );
-          tp = parseFloat((tra / tpa) * 100).toFixed(2);
+          tp = ((tra / tpa) * 100).toFixed(2);
 
           total.push(formatterNumber(tpa));
           total.push(formatterNumber(tra));
@@ -1012,9 +1012,10 @@ export default function ExportButton({
           <Form.Item
             label="Rekening"
             name="account_level"
+            hidden={report === "rekapitulasi"}
             rules={[
               {
-                required: true,
+                required: report !== "rekapitulasi",
                 message: "Rekening tidak boleh kosong!",
               },
             ]}

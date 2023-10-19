@@ -539,10 +539,10 @@ export default function PDFFile({
           base?.children,
           (item) => Number(item?.account_base_real_amount)
         );
-        total[`${base?.base_id}_percentage`] = parseFloat(
+        total[`${base?.base_id}_percentage`] = (
           (total[`${base?.base_id}_real_amount`] /
             total[`${base?.base_id}_plan_amount`]) *
-            100
+          100
         ).toFixed(2);
       });
       data?.data.push(total);
