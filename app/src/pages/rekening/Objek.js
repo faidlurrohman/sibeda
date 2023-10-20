@@ -214,13 +214,13 @@ export default function Objek() {
         centered
         open={isShow}
         title={`${isEdit ? `Ubah` : `Tambah`} Data Rekening Objek`}
-        onCancel={() => addUpdateRow()}
+        onCancel={() => (confirmLoading ? null : addUpdateRow())}
+        closable={false}
         footer={null}
       >
         <Divider />
         <Form
           form={form}
-          name="action"
           labelCol={{ span: 8 }}
           labelAlign="left"
           onFinish={handleAddUpdate}

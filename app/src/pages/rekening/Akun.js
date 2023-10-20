@@ -182,13 +182,13 @@ export default function Akun() {
         centered
         open={isShow}
         title={`${isEdit ? `Ubah` : `Tambah`} Data Rekening Akun`}
-        onCancel={() => addUpdateRow()}
+        onCancel={() => (confirmLoading ? null : addUpdateRow())}
+        closable={false}
         footer={null}
       >
         <Divider />
         <Form
           form={form}
-          name="basic"
           labelCol={{ span: 8 }}
           labelAlign="left"
           onFinish={handleAddUpdate}

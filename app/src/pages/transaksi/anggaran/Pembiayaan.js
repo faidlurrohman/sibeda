@@ -264,7 +264,8 @@ export default function AnggaranPembiayaan() {
         title={`${
           isEdit ? `Ubah` : `Tambah`
         } Data Transaksi Anggaran Pembiayaan`}
-        onCancel={() => setShow(false)}
+        onCancel={() => (confirmLoading ? null : setShow(false))}
+        closable={false}
         footer={null}
       >
         <Spin spinning={lastTransactionLoading}>
@@ -304,7 +305,6 @@ export default function AnggaranPembiayaan() {
           )}
           <Form
             form={form}
-            name="basic"
             labelCol={{ span: 9 }}
             labelAlign="left"
             onFinish={handleAddUpdate}

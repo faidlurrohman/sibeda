@@ -921,7 +921,6 @@ export default function ExportButton({
       >
         <Form
           form={form}
-          name="basic"
           labelCol={{ span: 8 }}
           labelAlign="left"
           onFinish={(v) =>
@@ -1062,7 +1061,6 @@ export default function ExportButton({
       >
         <Form
           form={form}
-          name="basic"
           labelCol={{ span: 8 }}
           labelAlign="left"
           onFinish={(v) =>

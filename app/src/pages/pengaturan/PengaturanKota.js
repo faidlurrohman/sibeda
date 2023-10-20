@@ -193,13 +193,13 @@ export default function PengaturanKota() {
         centered
         open={isShow}
         title={`${isEdit ? `Ubah` : `Tambah`} Data Kota`}
-        onCancel={() => addUpdateRow()}
+        onCancel={() => (confirmLoading ? null : addUpdateRow())}
+        closable={false}
         footer={null}
       >
         <Divider />
         <Form
           form={form}
-          name="basic"
           labelCol={{ span: 6 }}
           labelAlign="left"
           onFinish={handleAddUpdate}

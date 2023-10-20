@@ -242,12 +242,12 @@ export default function ImportButton({ title = "Impor", type = "", onFinish }) {
         centered
         open={importAccountModal}
         title={`Impor Data`}
-        footer={null}
+        onCancel={() => (confirmLoading ? null : handleImportModal(false))}
         closable={false}
+        footer={null}
       >
         <Form
           form={form}
-          name="basic"
           labelCol={{ span: 4 }}
           labelAlign="left"
           onFinish={onFinishImport}
