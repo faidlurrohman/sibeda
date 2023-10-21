@@ -884,7 +884,7 @@ export default function ExportButton({
               {
                 key: "pdf",
                 label: ".PDF",
-                onClick: async () => {
+                onClick: () => {
                   if (is_super_admin && report) {
                     onSignerModal(true);
                     setDoNext("pdfx");
@@ -892,7 +892,7 @@ export default function ExportButton({
                     onAccountModal(true);
                     setDoNext("pdfx");
                   } else {
-                    pdf();
+                    pdfx();
                   }
                 },
               },
