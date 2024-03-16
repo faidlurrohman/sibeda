@@ -88,7 +88,8 @@ function success_handler($query, $type)
 }
 
 // MYSQL ERROR REFERENCE => https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html
-function error_handler($target, $error, $error_message = ""){
+function error_handler($target, $error, $error_message = "")
+{
     $code = $target == 0 ? $error["code"] : $error;
 
     switch ($code) {
@@ -115,7 +116,8 @@ function error_handler($target, $error, $error_message = ""){
     return ["status" => false, "code" =>  $code, "data" => [], "message" => $message, "total" => 0];
 }
 
-function set_filter($filters, $table_name, $additional = []) {
+function set_filter($filters, $table_name, $additional = []) 
+{
 
     $generate_filter = "";
     $fields = "";
@@ -199,7 +201,8 @@ function set_filter($filters, $table_name, $additional = []) {
     return $generate_filter;
 }
 
-function set_clause($value, $key, $filter) {
+function set_clause($value, $key, $filter) 
+{
     $clause = "";
     $spl_clause = explode("_CLAUSE_", $value);
 
@@ -224,11 +227,13 @@ function set_clause($value, $key, $filter) {
     return $clause;
 }
 
-function set_order($value){
+function set_order($value)
+{
     return str_replace("%20"," ",$value);
 }
 
-function set_limit_offset($limit, $offset) {
+function set_limit_offset($limit, $offset) 
+{
     $generate_limit_offset = "";
 
     if ($limit != 0) {
