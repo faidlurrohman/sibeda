@@ -22,3 +22,11 @@ export const addZeroTime = (value) => {
 
   return value;
 };
+
+export const yearList = (treshold = 2020, list = []) => {
+  for (let i = treshold; i <= dayjs().year() + 1; i++) {
+    list.push({ label: String(i), value: i });
+  }
+
+  return list;
+};
