@@ -8,8 +8,14 @@ class Auth extends REST_Controller {
     public function login() 
     {   
         $error = [];
+        $which_year = $this->get_post("year");
         $username = $this->get_post("username");
         $password = $this->get_post("password");
+
+        // check parameter format
+        if (!$which_year || intval($which_year) <= 0) {
+            $error[] = "Login Failed, `year` Expected INT";
+        }
 
         // check parameter format
         if (!$username || gettype($username) != "string") {
@@ -33,12 +39,15 @@ class Auth extends REST_Controller {
                 // generate token
                 $token = $this->generate_token($username);
 
-                if ($token["code"] == 200) {
+                if ($token["code"]) {
                     // update token
                     $update_token = $this->Auth_model->do_update_token($username, $token["data"]);
+                    // update which year
+                    $update_which_year = $this->Auth_model->do_update_which_year($username, $which_year);
 
-                    if ($update_token["code"] == 200) {
+                    if ($update_token["code"] == 200 && $update_which_year["code"] == 200) {
                         $login["data"]->token = $token["data"];
+                        $login["data"]->which_year = $which_year;
                         $this->response($login);
                     } else {
                         $this->response(error_handler(1, 500, "Nama Pengguna tidak ditemukan atau Kata Sandi tidak benar"), 500);

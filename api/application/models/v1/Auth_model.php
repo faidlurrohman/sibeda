@@ -5,7 +5,7 @@ class Auth_model extends CI_Model {
     function do_login($username, $password)
     {
         $sql = "
-            SELECT u.username, u.fullname, u.title, u.token
+            SELECT u.username, u.fullname, u.title
             FROM user u
             JOIN city c ON c.id = u.city_id AND c.active
             WHERE u.username = '$username' AND u.password = '$password' AND u.active
@@ -19,7 +19,20 @@ class Auth_model extends CI_Model {
     {
         $sql = "
             UPDATE user
-                SET token = NULL
+                SET token = NULL,
+                    which_year = NULL
+            WHERE username = '$username'
+        ";
+        $query = $this->db->query($sql);
+
+        return model_response($query, 1);
+    }
+
+    function do_update_which_year($username, $which_year)
+    {
+        $sql = "
+            UPDATE user 
+                SET which_year = '$which_year' 
             WHERE username = '$username'
         ";
         $query = $this->db->query($sql);
