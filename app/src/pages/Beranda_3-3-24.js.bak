@@ -1,13 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  Avatar,
-  Card,
-  DatePicker,
-  Progress,
-  Select,
-  Space,
-  Statistic,
-} from "antd";
+import { Card, DatePicker, Select } from "antd";
 import {
   COLORS,
   DATE_FORMAT_VIEW,
@@ -15,17 +7,15 @@ import {
   PAGINATION,
 } from "../helpers/constants";
 import { convertDate, dbDate, viewDate } from "../helpers/date";
-import { formatterNumber } from "../helpers/number";
-import { isEmpty, lower, upper } from "../helpers/typo";
+import { lower, upper } from "../helpers/typo";
 import ReloadButton from "../components/button/ReloadButton";
-import { getDashboard, getRecapYears } from "../services/dashboard";
+import { getRecapYears } from "../services/dashboard";
 import axios from "axios";
 import { getCityList } from "../services/city";
 import useRole from "../hooks/useRole";
 import _ from "lodash";
 import { Line } from "@ant-design/plots";
-import { PercentageOutlined } from "@ant-design/icons";
-import CountUp from "react-countup";
+import { formatterNumber } from "../helpers/number";
 
 const { RangePicker } = DatePicker;
 
@@ -36,7 +26,6 @@ export default function Beranda() {
   let _by = convertDate().startOf("year").subtract(2, "year");
 
   const { is_super_admin } = useRole();
-  const [data, setData] = useState([]);
   const [recap, setRecap] = useState([]);
   const [isNoFilter, setIsNoFilter] = useState(true);
   const [cities, setCities] = useState([]);
@@ -71,10 +60,6 @@ export default function Beranda() {
     setLoading(true);
     axios
       .all([
-        getDashboard({
-          ...params,
-          pagination: { ...params.pagination, pageSize: 0 },
-        }),
         getRecapYears({
           ...params,
           filters: {
@@ -88,9 +73,8 @@ export default function Beranda() {
         getCityList(),
       ])
       .then(
-        axios.spread((_data, _recap, _cities) => {
+        axios.spread((_recap, _cities) => {
           setLoading(false);
-          setData(_data?.data);
           makeGraph(_recap?.data, params, isDefaultFilter);
           setCities(_cities?.data);
         })
@@ -283,30 +267,6 @@ export default function Beranda() {
     );
   };
 
-  const countBy = (target, useFor) => {
-    if (data && !!data.length) {
-      let _ft = _.filter(data, (o) =>
-        lower(o?.account_base_label).includes(lower(target))
-      );
-      return _.sumBy(_ft, (item) =>
-        Number(item[`account_base_${useFor}_amount`])
-      );
-    } else {
-      return 0;
-    }
-  };
-
-  const sumPercentage = (value1 = 0, value2 = 0, results = 0) => {
-    if (isEmpty(value1)) value1 = 0;
-    if (isEmpty(value2)) value2 = 0;
-
-    results = parseFloat((value1 / value2) * 100).toFixed(0);
-
-    if (isNaN(results) || !isFinite(Number(results))) return 0;
-
-    return results;
-  };
-
   const graphTitle = useMemo(() => {
     let sd1 = !isNoFilter
       ? viewDate(dateRangeFilter[0]).split(" ")
@@ -378,281 +338,6 @@ export default function Beranda() {
             stateLoading={loading}
           />
         )}
-      </div>
-      <div className="flex flex-col mx-0.5 pb-2">
-        <Card
-          loading={loading}
-          size="small"
-          title={
-            <Space>
-              <Avatar
-                size="small"
-                className="bg-secondary"
-                icon={<PercentageOutlined />}
-              />
-              <span className="text-xs">
-                TOTAL PENDAPATAN, PEMBIAYAAN DAN BELANJA DAERAH
-              </span>
-            </Space>
-          }
-          className="text-center w-full md:text-left"
-        >
-          <Statistic
-            prefix={
-              <span className="text-xs">
-                Anggaran<span className="pl-9">:</span>
-              </span>
-            }
-            value={_.sumBy(data, (item) =>
-              Number(item?.account_base_plan_amount)
-            )}
-            formatter={(value) => (
-              <CountUp
-                end={value}
-                className="text-xs font-bold"
-                prefix="Rp. "
-              />
-            )}
-          />
-          <Statistic
-            prefix={
-              <span className="text-xs">
-                Realisasi<span className="pl-10">:</span>
-              </span>
-            }
-            value={_.sumBy(data, (item) =>
-              Number(item?.account_base_real_amount)
-            )}
-            formatter={(value) => (
-              <CountUp
-                end={value}
-                className="text-xs font-bold"
-                prefix="Rp. "
-              />
-            )}
-          />
-          <div className="h-auto w-auto pt-2">
-            <Progress
-              className="font-bold"
-              format={() =>
-                `${sumPercentage(
-                  _.sumBy(data, (item) =>
-                    Number(item?.account_base_real_amount)
-                  ) / 2,
-                  _.sumBy(data, (item) =>
-                    Number(item?.account_base_plan_amount)
-                  )
-                )}%`
-              }
-              percent={sumPercentage(
-                _.sumBy(data, (item) =>
-                  Number(item?.account_base_real_amount)
-                ) / 2,
-                _.sumBy(data, (item) => Number(item?.account_base_plan_amount))
-              )}
-              size={[_, 25]}
-              strokeColor={COLORS.secondary}
-              status="normal"
-            />
-          </div>
-        </Card>
-      </div>
-      <div className="flex flex-col mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0 md:flex-row">
-        {/* PENDAPATAN DAERAH */}
-        <Card
-          loading={loading}
-          size="small"
-          title={
-            <Space>
-              <Avatar
-                size="small"
-                className="bg-success"
-                icon={<PercentageOutlined />}
-              />
-              <span className="text-xs">PENDAPATAN DAERAH</span>
-            </Space>
-          }
-          className="text-center w-full md:w-1/3 md:text-left"
-        >
-          <Statistic
-            prefix={
-              <span className="text-xs">
-                Anggaran<span className="pl-9">:</span>
-              </span>
-            }
-            value={countBy("pendapatan", "plan")}
-            formatter={(value) => (
-              <CountUp
-                end={value}
-                className="text-xs font-bold"
-                prefix="Rp. "
-              />
-            )}
-          />
-          <Statistic
-            prefix={
-              <span className="text-xs">
-                Realisasi<span className="pl-10">:</span>
-              </span>
-            }
-            value={countBy("pendapatan", "real")}
-            formatter={(value) => (
-              <CountUp
-                end={value}
-                className="text-xs font-bold"
-                prefix="Rp. "
-              />
-            )}
-          />
-          <div className="h-auto w-auto pt-2">
-            <Progress
-              className="font-bold"
-              format={() =>
-                `${sumPercentage(
-                  countBy("pendapatan", "real"),
-                  countBy("pendapatan", "plan")
-                )}%`
-              }
-              percent={sumPercentage(
-                countBy("pendapatan", "real"),
-                countBy("pendapatan", "plan")
-              )}
-              size={[_, 25]}
-              strokeColor={COLORS.success}
-              status="normal"
-            />
-          </div>
-        </Card>
-        {/* PEMBIAYAAN DAERAH */}
-        <Card
-          loading={loading}
-          size="small"
-          title={
-            <Space>
-              <Avatar
-                size="small"
-                className="bg-info"
-                icon={<PercentageOutlined />}
-              />
-              <span className="text-xs">PEMBIAYAAN DAERAH</span>
-            </Space>
-          }
-          className="text-center w-full md:w-1/3 md:text-left"
-        >
-          <Statistic
-            prefix={
-              <span className="text-xs">
-                Anggaran<span className="pl-9">:</span>
-              </span>
-            }
-            value={countBy("pembiayaan", "plan")}
-            formatter={(value) => (
-              <CountUp
-                end={value}
-                className="text-xs font-bold"
-                prefix="Rp. "
-              />
-            )}
-          />
-          <Statistic
-            prefix={
-              <span className="text-xs">
-                Realisasi<span className="pl-10">:</span>
-              </span>
-            }
-            value={countBy("pembiayaan", "real")}
-            formatter={(value) => (
-              <CountUp
-                end={value}
-                className="text-xs font-bold"
-                prefix="Rp. "
-              />
-            )}
-          />
-          <div className="h-auto w-auto pt-2">
-            <Progress
-              className="font-bold"
-              format={() =>
-                `${sumPercentage(
-                  countBy("pembiayaan", "real"),
-                  countBy("pembiayaan", "plan")
-                )}%`
-              }
-              percent={sumPercentage(
-                countBy("pembiayaan", "real"),
-                countBy("pembiayaan", "plan")
-              )}
-              size={[_, 25]}
-              strokeColor={COLORS.info}
-              status="normal"
-            />
-          </div>
-        </Card>
-        {/* BELANJA DAERAH */}
-        <Card
-          loading={loading}
-          size="small"
-          title={
-            <Space>
-              <Avatar
-                size="small"
-                className="bg-danger"
-                icon={<PercentageOutlined />}
-              />
-              <span className="text-xs">BELANJA DAERAH</span>
-            </Space>
-          }
-          className="text-center w-full md:w-1/3 md:text-left"
-        >
-          <Statistic
-            prefix={
-              <span className="text-xs">
-                Anggaran<span className="pl-9">:</span>
-              </span>
-            }
-            value={countBy("belanja", "plan")}
-            formatter={(value) => (
-              <CountUp
-                end={value}
-                className="text-xs font-bold"
-                prefix="Rp. "
-              />
-            )}
-          />
-          <Statistic
-            prefix={
-              <span className="text-xs">
-                Realisasi<span className="pl-10">:</span>
-              </span>
-            }
-            value={countBy("belanja", "real")}
-            formatter={(value) => (
-              <CountUp
-                end={value}
-                className="text-xs font-bold"
-                prefix="Rp. "
-              />
-            )}
-          />
-          <div className="h-auto w-auto pt-2">
-            <Progress
-              className="font-bold"
-              format={() =>
-                `${sumPercentage(
-                  countBy("belanja", "real"),
-                  countBy("belanja", "plan")
-                )}%`
-              }
-              percent={sumPercentage(
-                countBy("belanja", "real"),
-                countBy("belanja", "plan")
-              )}
-              size={[_, 25]}
-              strokeColor={COLORS.danger}
-              status="normal"
-            />
-          </div>
-        </Card>
       </div>
       <div className="flex mx-0.5 py-2">
         <Card
