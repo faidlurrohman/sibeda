@@ -1,9 +1,11 @@
-import { Form, Input, Button, Checkbox } from "antd";
 import { useEffect } from "react";
+import { Form, Input, Button, Checkbox, Select, Row, Col } from "antd";
 import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
 import { loginAction } from "../../store/actions/session";
+import { lower } from "../../helpers/typo";
 import logoPortal from "../../assets/images/logo-portal-kepriprov.png";
 import backgroundVideo from "../../assets/video/auth.mp4";
+import { yearList } from "../../helpers/date";
 
 export default function Masuk() {
   const dispatch = useAppDispatch();
@@ -14,10 +16,12 @@ export default function Masuk() {
     dispatch(loginAction(params));
 
     if (params?.remember) {
+      localStorage.setItem("sk-y", params?.year || "");
       localStorage.setItem("sk-u", params?.username || "");
       localStorage.setItem("sk-p", params?.password || "");
       localStorage.setItem("sk-c", params?.remember || false);
     } else {
+      localStorage.setItem("sk-y", "");
       localStorage.setItem("sk-u", "");
       localStorage.setItem("sk-p", "");
       localStorage.setItem("sk-c", false);
@@ -29,11 +33,14 @@ export default function Masuk() {
 
     if (remember && remember === "true") {
       form.setFieldsValue({
+        year: localStorage.getItem("sk-y"),
         username: localStorage.getItem("sk-u"),
         password: localStorage.getItem("sk-p"),
         remember: true,
       });
     }
+
+    yearList();
   }, []);
 
   return (
@@ -62,6 +69,26 @@ export default function Masuk() {
               className="bg-main bg-opacity-90 rounded-lg shadow-lg px-4 pt-4 pb-2 m-0 w-11/12 md:m-auto lg:m-auto md:w-1/3 lg:w-1/4"
             >
               <Form.Item
+                label={<span className="text-white">Tahun</span>}
+                name="year"
+                rules={[
+                  {
+                    required: true,
+                    message: "Tahun tidak boleh kosong",
+                  },
+                ]}
+              >
+                <Select
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    (lower(option?.label) ?? "").includes(lower(input))
+                  }
+                  disabled={loading}
+                  options={yearList()}
+                />
+              </Form.Item>
+              <Form.Item
                 label={<span className="text-white">Nama Pengguna</span>}
                 name="username"
                 rules={[
@@ -82,19 +109,27 @@ export default function Masuk() {
               >
                 <Input.Password allowClear />
               </Form.Item>
-              <Form.Item name="remember" valuePropName="checked">
-                <Checkbox className="checkbox-login">Pengingat Saya</Checkbox>
-              </Form.Item>
-              <Form.Item>
-                <Button
-                  loading={loading}
-                  block
-                  type="primary"
-                  htmlType="submit"
-                >
-                  Masuk
-                </Button>
-              </Form.Item>
+              <Row>
+                <Col flex={1}>
+                  <Form.Item name="remember" valuePropName="checked">
+                    <Checkbox className="checkbox-login">
+                      Pengingat Saya
+                    </Checkbox>
+                  </Form.Item>
+                </Col>
+                <Col flex={"auto"}>
+                  <Form.Item>
+                    <Button
+                      loading={loading}
+                      block
+                      type="primary"
+                      htmlType="submit"
+                    >
+                      Masuk
+                    </Button>
+                  </Form.Item>
+                </Col>
+              </Row>
             </Form>
           </div>
         </div>
