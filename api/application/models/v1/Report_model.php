@@ -2,7 +2,7 @@
 
 class Report_model extends CI_Model {
 
-    function get_real_plan_cities($filter, $order, $limit, $offset)
+    function get_real_plan_cities($username, $filter, $order, $limit, $offset)
     {
         $inline = "";
         
@@ -43,6 +43,7 @@ class Report_model extends CI_Model {
                     MIN(id) plan_id
                 FROM transaction
                 WHERE plan_amount >= 0 AND real_amount = 0
+                AND YEAR(trans_date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
                 GROUP BY account_object_detail_sub_id, city_id, EXTRACT(YEAR FROM trans_date)
             ), anggaran AS (
                 SELECT 
@@ -64,6 +65,7 @@ class Report_model extends CI_Model {
                 FROM transaction st
                 JOIN city c ON c.id=st.city_id AND c.active
                 WHERE st.id NOT IN (SELECT plan_id FROM p)
+                AND YEAR(st.trans_date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
                 ORDER BY st.trans_date DESC
             ), mt AS (
                 SELECT 

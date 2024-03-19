@@ -29,7 +29,7 @@ class Report extends REST_Controller {
                 $filter["city_id"] = $validated->city_id;
             }
 
-            $data = $this->Report_model->get_real_plan_cities($filter, $order, $limit, $offset);
+            $data = $this->Report_model->get_real_plan_cities($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);

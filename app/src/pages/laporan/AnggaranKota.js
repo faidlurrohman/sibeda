@@ -14,6 +14,7 @@ import { isEmpty, lower, upper } from "../../helpers/typo";
 import ExportButton from "../../components/button/ExportButton";
 import { Pie } from "@ant-design/plots";
 import { getAccountList } from "../../services/account";
+import { useAppSelector } from "../../hooks/useRedux";
 
 const { RangePicker } = DatePicker;
 
@@ -26,14 +27,15 @@ export default function AnggaranKota() {
   const [accountBase, setAccountBase] = useState([]);
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
+  const session = useAppSelector((state) => state.session.user);
 
   const tableFilterInputRef = useRef(null);
   const [tablePage, setTablePage] = useState(PAGINATION);
   const [tableFiltered, setTableFiltered] = useState({});
   const [tableSorted, setTableSorted] = useState({});
   const [dateRangeFilter, setDateRangeFilter] = useState([
-    convertDate().startOf("year"),
-    convertDate(),
+    convertDate(`${session?.which_year}`).startOf("year"),
+    convertDate(`${session?.which_year}`).endOf("year"),
   ]);
   const [cityFilter, setCityFilter] = useState(null);
 
@@ -185,13 +187,19 @@ export default function AnggaranKota() {
   const reloadTable = () => {
     setTableFiltered({});
     setTableSorted({});
-    setDateRangeFilter([convertDate().startOf("year"), convertDate()]);
+    setDateRangeFilter([
+      convertDate(`${session?.which_year}`).startOf("year"),
+      convertDate(`${session?.which_year}`).endOf("year"),
+    ]);
     setCityFilter(null);
     getData({
       ...PAGINATION,
       filters: {
         trans_date: [
-          [dbDate(convertDate().startOf("year")), dbDate(convertDate())],
+          [
+            dbDate(convertDate(`${session?.which_year}`).startOf("year")),
+            dbDate(convertDate(`${session?.which_year}`).endOf("year")),
+          ],
         ],
         ...(is_super_admin && { city_id: null }),
       },
@@ -468,11 +476,16 @@ export default function AnggaranKota() {
             onChange={onDateRangeChange}
             value={dateRangeFilter}
             disabledDate={(curr) => {
-              const isNextYear =
-                curr &&
-                convertDate(curr, "YYYY") > convertDate(convertDate(), "YYYY");
+              // const isNextYear =
+              //   curr &&
+              //   convertDate(curr, "YYYY") > convertDate(convertDate(), "YYYY");
 
-              return isNextYear;
+              // return isNextYear;
+              const useYear =
+                curr &&
+                convertDate(curr, "YYYY") !== String(session?.which_year);
+
+              return useYear;
             }}
           />
         </div>
