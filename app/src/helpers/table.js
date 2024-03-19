@@ -20,7 +20,8 @@ export const searchColumn = (
   stateFilter,
   useSort = false,
   stateSort,
-  sortType = "string"
+  sortType = "string",
+  disableDate = null
 ) => ({
   title: labelHeader,
   dataIndex: key,
@@ -61,6 +62,14 @@ export const searchColumn = (
               onChange={(e) =>
                 setSelectedKeys(e ? [e.map((i) => dbDate(i))] : [])
               }
+              disabledDate={(curr) => {
+                if (disableDate) {
+                  const useYear =
+                    curr && convertDate(curr, "YYYY") !== String(disableDate);
+
+                  return useYear;
+                }
+              }}
             />
           </div>
         ) : (
