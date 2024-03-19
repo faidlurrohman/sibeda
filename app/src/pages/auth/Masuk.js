@@ -84,7 +84,6 @@ export default function Masuk() {
                   filterOption={(input, option) =>
                     (lower(option?.label) ?? "").includes(lower(input))
                   }
-                  disabled={loading}
                   options={yearList()}
                 />
               </Form.Item>
