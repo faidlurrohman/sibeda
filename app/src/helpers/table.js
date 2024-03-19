@@ -57,6 +57,14 @@ export const searchColumn = (
                 selectedKeys[0] && selectedKeys[0].map((i) => convertDate(i))
               }
               placeholder={["Tanggal Awal", "Tanggal Akhir"]}
+              defaultValue={
+                disableDate
+                  ? [
+                      convertDate(`${disableDate}`),
+                      convertDate(`${disableDate}`).endOf("year"),
+                    ]
+                  : []
+              }
               style={{ marginBottom: 8 }}
               format={DATE_FORMAT_VIEW}
               onChange={(e) =>
