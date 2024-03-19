@@ -2,7 +2,7 @@
 
 class Real_model extends CI_Model {
     
-    function get_all_in($filter, $order, $limit, $offset)
+    function get_all_in($username, $filter, $order, $limit, $offset)
     {
         $additional = ["city_label_TYPE_text", "account_object_detail_sub_label_TYPE_text", "trans_date_start_TYPE_daterange_start", "trans_date_end_TYPE_daterange_end"];
         $filter = set_filter($filter, "transaction", $additional);
@@ -31,6 +31,7 @@ class Real_model extends CI_Model {
                 JOIN account_group ag ON ag.id=at.account_group_id AND ag.active
                 JOIN account_base ab ON ab.id=ag.account_base_id AND ab.active AND LOWER(ab.remark) = LOWER('PENDAPATAN DAERAH')
                 WHERE st.id NOT IN (SELECT plan_id FROM p)
+                AND YEAR(st.trans_date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
             ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
             $filter 
             ORDER BY $order
@@ -41,7 +42,7 @@ class Real_model extends CI_Model {
         return model_response($query);
     }
 
-    function get_all_out($filter, $order, $limit, $offset)
+    function get_all_out($username, $filter, $order, $limit, $offset)
     {
         $additional = ["city_label_TYPE_text", "account_object_detail_sub_label_TYPE_text", "trans_date_start_TYPE_daterange_start", "trans_date_end_TYPE_daterange_end"];
         $filter = set_filter($filter, "transaction", $additional);
@@ -70,6 +71,7 @@ class Real_model extends CI_Model {
                 JOIN account_group ag ON ag.id=at.account_group_id AND ag.active
                 JOIN account_base ab ON ab.id=ag.account_base_id AND ab.active AND LOWER(ab.remark) = LOWER('BELANJA DAERAH')
                 WHERE st.id NOT IN (SELECT plan_id FROM p)
+                AND YEAR(st.trans_date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
             ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
             $filter 
             ORDER BY $order
@@ -80,7 +82,7 @@ class Real_model extends CI_Model {
         return model_response($query);
     }
 
-    function get_all_cost($filter, $order, $limit, $offset)
+    function get_all_cost($username, $filter, $order, $limit, $offset)
     {
         $additional = ["city_label_TYPE_text", "account_object_detail_sub_label_TYPE_text", "trans_date_start_TYPE_daterange_start", "trans_date_end_TYPE_daterange_end"];
         $filter = set_filter($filter, "transaction", $additional);
@@ -109,6 +111,7 @@ class Real_model extends CI_Model {
                 JOIN account_group ag ON ag.id=at.account_group_id AND ag.active
                 JOIN account_base ab ON ab.id=ag.account_base_id AND ab.active AND LOWER(ab.remark) = LOWER('PEMBIAYAAN DAERAH')
                 WHERE st.id NOT IN (SELECT plan_id FROM p)
+                AND YEAR(st.trans_date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
             ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
             $filter 
             ORDER BY $order
@@ -119,7 +122,7 @@ class Real_model extends CI_Model {
         return model_response($query);
     }
 
-    function get_detail_sub_real_in($filter, $order)
+    function get_detail_sub_real_in($username, $filter, $order)
     {
         $order = set_order($order);
         
@@ -131,7 +134,8 @@ class Real_model extends CI_Model {
                 JOIN city c ON c.id=st.city_id AND c.active 
                 WHERE st.active 
                     AND st.plan_amount >= 0 AND st.real_amount = 0
-                    AND YEAR(st.trans_date) = YEAR(CURRENT_DATE)
+                    -- AND YEAR(st.trans_date) = YEAR(CURRENT_DATE)
+                    AND YEAR(st.trans_date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
                     $filter
                 GROUP BY YEAR(st.trans_date), st.account_object_detail_sub_id, st.city_id
             ), r AS (
@@ -154,7 +158,7 @@ class Real_model extends CI_Model {
         return model_response($query);
     }
 
-    function get_detail_sub_real_out($filter, $order)
+    function get_detail_sub_real_out($username, $filter, $order)
     {
         $order = set_order($order);
         
@@ -166,7 +170,8 @@ class Real_model extends CI_Model {
                 JOIN city c ON c.id=st.city_id AND c.active 
                 WHERE st.active 
                     AND st.plan_amount >= 0 AND st.real_amount = 0
-                    AND YEAR(st.trans_date) = YEAR(CURRENT_DATE)
+                    -- AND YEAR(st.trans_date) = YEAR(CURRENT_DATE)
+                    AND YEAR(st.trans_date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
                     $filter
                 GROUP BY YEAR(st.trans_date), st.account_object_detail_sub_id, st.city_id
             ), r AS (
@@ -189,7 +194,7 @@ class Real_model extends CI_Model {
         return model_response($query);
     }
 
-    function get_detail_sub_real_cost($filter, $order)
+    function get_detail_sub_real_cost($username, $filter, $order)
     {
         $order = set_order($order);
         
@@ -201,7 +206,8 @@ class Real_model extends CI_Model {
                 JOIN city c ON c.id=st.city_id AND c.active 
                 WHERE st.active 
                     AND st.plan_amount >= 0 AND st.real_amount = 0
-                    AND YEAR(st.trans_date) = YEAR(CURRENT_DATE)
+                    -- AND YEAR(st.trans_date) = YEAR(CURRENT_DATE)
+                    AND YEAR(st.trans_date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
                     $filter
                 GROUP BY YEAR(st.trans_date), st.account_object_detail_sub_id, st.city_id
             ), r AS (

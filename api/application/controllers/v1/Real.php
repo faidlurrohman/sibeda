@@ -31,7 +31,7 @@ class Real extends REST_Controller {
                 $filter["active"] = 1;
             }
             
-            $data = $this->Real_model->get_all_in($filter, $order, $limit, $offset);
+            $data = $this->Real_model->get_all_in($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -72,7 +72,7 @@ class Real extends REST_Controller {
                 $filter["active"] = 1;
             }
             
-            $data = $this->Real_model->get_all_out($filter, $order, $limit, $offset);
+            $data = $this->Real_model->get_all_out($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -113,7 +113,7 @@ class Real extends REST_Controller {
                 $filter["active"] = 1;
             }
             
-            $data = $this->Real_model->get_all_cost($filter, $order, $limit, $offset);
+            $data = $this->Real_model->get_all_cost($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -150,7 +150,7 @@ class Real extends REST_Controller {
                 $filter = " AND st.city_id = " . $validated->city_id;
             }
             
-            $list = $this->Real_model->get_detail_sub_real_in($filter, $order);
+            $list = $this->Real_model->get_detail_sub_real_in($validated->username, $filter, $order);
 
             if ($list['code'] == 200) {
                 $this->response($list);
@@ -187,7 +187,7 @@ class Real extends REST_Controller {
                 $filter = " AND st.city_id = " . $validated->city_id;
             }
             
-            $list = $this->Real_model->get_detail_sub_real_out($filter, $order);
+            $list = $this->Real_model->get_detail_sub_real_out($validated->username, $filter, $order);
 
             if ($list['code'] == 200) {
                 $this->response($list);
@@ -224,7 +224,7 @@ class Real extends REST_Controller {
                 $filter = " AND st.city_id = " . $validated->city_id;
             }
             
-            $list = $this->Real_model->get_detail_sub_real_cost($filter, $order);
+            $list = $this->Real_model->get_detail_sub_real_cost($validated->username, $filter, $order);
 
             if ($list['code'] == 200) {
                 $this->response($list);

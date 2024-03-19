@@ -41,11 +41,13 @@ import {
   getReal,
   setActiveReal,
 } from "../../../services/real";
+import { useAppSelector } from "../../../hooks/useRedux";
 
 export default function RealisasiPendapatan() {
   const { modal } = App.useApp();
   const { is_super_admin } = useRole();
   const [form] = Form.useForm();
+  const session = useAppSelector((state) => state.session.user);
 
   const [transactions, setTransactions] = useState([]);
   const [cities, setCities] = useState([]);
@@ -201,7 +203,9 @@ export default function RealisasiPendapatan() {
       "Tanggal",
       tableFiltered,
       true,
-      tableSorted
+      tableSorted,
+      "string",
+      session?.which_year
     ),
     searchColumn(
       tableFilterInputRef,
@@ -331,7 +335,8 @@ export default function RealisasiPendapatan() {
             onFinish={handleAddUpdate}
             autoComplete="off"
             initialValues={{
-              trans_date: convertDate(),
+              // trans_date: convertDate(),
+              trans_date: convertDate(`${session?.which_year}`),
               city_label: !!cities.length ? cities[0]?.label : ``,
               real_amount: 0,
             }}
@@ -352,14 +357,21 @@ export default function RealisasiPendapatan() {
                 allowClear={false}
                 onChange={handleObjectChange}
                 disabledDate={(curr) => {
-                  const nextDay = curr && curr.valueOf() > convertDate();
-                  const diffYear =
+                  const useYear =
                     curr &&
-                    convertDate(curr, "YYYY") !==
-                      convertDate(convertDate(), "YYYY");
+                    convertDate(curr, "YYYY") !== String(session?.which_year);
 
-                  return nextDay || diffYear;
+                  return useYear;
                 }}
+                // disabledDate={(curr) => {
+                //   const nextDay = curr && curr.valueOf() > convertDate();
+                //   const diffYear =
+                //     curr &&
+                //     convertDate(curr, "YYYY") !==
+                //       convertDate(convertDate(), "YYYY");
+
+                //   return nextDay || diffYear;
+                // }}
               />
             </Form.Item>
             <Form.Item

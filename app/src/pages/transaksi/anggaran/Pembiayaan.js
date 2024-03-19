@@ -36,11 +36,13 @@ import {
   getPlan,
   setActivePlan,
 } from "../../../services/plan";
+import { useAppSelector } from "../../../hooks/useRedux";
 
 export default function AnggaranPembiayaan() {
   const { modal } = App.useApp();
   const { is_super_admin } = useRole();
   const [form] = Form.useForm();
+  const session = useAppSelector((state) => state.session.user);
 
   const [transactions, setTransactions] = useState([]);
   const [cities, setCities] = useState([]);
@@ -189,7 +191,9 @@ export default function AnggaranPembiayaan() {
       "Tanggal",
       tableFiltered,
       true,
-      tableSorted
+      tableSorted,
+      "string",
+      session?.which_year
     ),
     searchColumn(
       tableFilterInputRef,

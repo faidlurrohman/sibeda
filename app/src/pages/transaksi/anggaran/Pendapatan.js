@@ -36,11 +36,13 @@ import {
   getPlan,
   setActivePlan,
 } from "../../../services/plan";
+import { useAppSelector } from "../../../hooks/useRedux";
 
 export default function AnggaranPendapatan() {
   const { modal } = App.useApp();
   const { is_super_admin } = useRole();
   const [form] = Form.useForm();
+  const session = useAppSelector((state) => state.session.user);
 
   const [transactions, setTransactions] = useState([]);
   const [cities, setCities] = useState([]);
@@ -147,7 +149,6 @@ export default function AnggaranPendapatan() {
     let cur = {
       ...values,
       mode: isEdit ? "U" : "C",
-      trans_date: dbDate(convertDate().startOf("year")),
       city_id: !!cities.length ? cities[0]?.id : 0,
       real_amount: 0,
     };
@@ -189,7 +190,9 @@ export default function AnggaranPendapatan() {
       "Tanggal",
       tableFiltered,
       true,
-      tableSorted
+      tableSorted,
+      "string",
+      session?.which_year
     ),
     searchColumn(
       tableFilterInputRef,

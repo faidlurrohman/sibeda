@@ -31,7 +31,7 @@ class Plan extends REST_Controller {
                 $filter["active"] = 1;
             }
             
-            $data = $this->Plan_model->get_all_in($filter, $order, $limit, $offset);
+            $data = $this->Plan_model->get_all_in($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -72,7 +72,7 @@ class Plan extends REST_Controller {
                 $filter["active"] = 1;
             }
             
-            $data = $this->Plan_model->get_all_out($filter, $order, $limit, $offset);
+            $data = $this->Plan_model->get_all_out($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -113,7 +113,7 @@ class Plan extends REST_Controller {
                 $filter["active"] = 1;
             }
             
-            $data = $this->Plan_model->get_all_cost($filter, $order, $limit, $offset);
+            $data = $this->Plan_model->get_all_cost($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -150,7 +150,7 @@ class Plan extends REST_Controller {
                 $filter = " AND st.city_id = " . $validated->city_id;
             }
             
-            $list = $this->Plan_model->get_detail_sub_plan_in($filter, $order);
+            $list = $this->Plan_model->get_detail_sub_plan_in($validated->username, $filter, $order);
 
             if ($list['code'] == 200) {
                 $this->response($list);
@@ -187,7 +187,7 @@ class Plan extends REST_Controller {
                 $filter = " AND st.city_id = " . $validated->city_id;
             }
             
-            $list = $this->Plan_model->get_detail_sub_plan_out($filter, $order);
+            $list = $this->Plan_model->get_detail_sub_plan_out($validated->username, $filter, $order);
 
             if ($list['code'] == 200) {
                 $this->response($list);
@@ -224,7 +224,7 @@ class Plan extends REST_Controller {
                 $filter = " AND st.city_id = " . $validated->city_id;
             }
             
-            $list = $this->Plan_model->get_detail_sub_plan_cost($filter, $order);
+            $list = $this->Plan_model->get_detail_sub_plan_cost($validated->username, $filter, $order);
 
             if ($list['code'] == 200) {
                 $this->response($list);
@@ -369,7 +369,6 @@ class Plan extends REST_Controller {
             $id = $this->get_post("id");
             $account_object_detail_sub_id = $this->get_post("account_object_detail_sub_id");
             $city_id = $this->get_post("city_id");
-            $trans_date = $this->get_post("trans_date");
             $mode = $this->get_post("mode");
 
             $error = [];
@@ -380,9 +379,6 @@ class Plan extends REST_Controller {
             }
             if (!$city_id || intval($city_id) <= 0) {
                 $error[] = "Insert/Update Data Failed, `city_id` Expected INT";
-            }
-            if (!$trans_date || gettype($trans_date) != "string") {
-                $error[] = "Insert/Update Data Failed, `trans_date` Expected STRING";
             }
 
             // check mode
@@ -399,7 +395,7 @@ class Plan extends REST_Controller {
             }
 
             $params = $this->input_fields();
-            $save = $this->Plan_model->save($params);
+            $save = $this->Plan_model->save($params, $validated->username);
 
             if ($save['code'] == 200) {
                 $this->response($save);
@@ -463,7 +459,6 @@ class Plan extends REST_Controller {
             "city_id" => intval($this->get_post("city_id")),
             "plan_amount" => $this->get_post("plan_amount"),
             "real_amount" => $this->get_post("real_amount"),
-            "trans_date" => $this->get_post("trans_date"),
             "mode" => $this->get_post("mode"),
         );
     }
