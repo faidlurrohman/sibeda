@@ -184,12 +184,12 @@ function set_filter($filters, $table_name, $additional = [])
                                 $spl_type == 'daterange_start'
                             ) {
                                 $spl_kf = explode("_", $kf);
-                                $generate_filter .= " AND " . $spl_kf[0] . "_" . $spl_kf[1] . " >= '" . $filter . "'";
+                                $generate_filter .= " AND " . $spl_kf[0] . " >= '" . $filter . "'";
                             } else if (
                                 $spl_type == 'daterange_end'
                             ) {
                                 $spl_kf = explode("_", $kf);
-                                $generate_filter .= " AND " . $spl_kf[0] . "_" . $spl_kf[1] . " <= '" . $filter . "'";
+                                $generate_filter .= " AND " . $spl_kf[0] . " <= '" . $filter . "'";
                             }
                         }
                     }
