@@ -151,7 +151,7 @@ export default function Kelompok() {
     searchColumn(
       tableFilterInputRef,
       "account_base_label",
-      "Akun Rekening",
+      "Akun",
       tableFiltered,
       true,
       tableSorted
@@ -159,7 +159,7 @@ export default function Kelompok() {
     searchColumn(
       tableFilterInputRef,
       "label",
-      "Label",
+      "Kode Kelompok",
       tableFiltered,
       true,
       tableSorted
@@ -167,7 +167,7 @@ export default function Kelompok() {
     searchColumn(
       tableFilterInputRef,
       "remark",
-      "Keterangan",
+      "Nama Kelompok",
       tableFiltered,
       true,
       tableSorted
@@ -228,12 +228,12 @@ export default function Kelompok() {
             <Input />
           </Form.Item>
           <Form.Item
-            label="Akun Rekening"
+            label="Akun"
             name="account_base_id"
             rules={[
               {
                 required: true,
-                message: "Akun Rekening tidak boleh kosong!",
+                message: "Akun tidak boleh kosong!",
               },
             ]}
           >
@@ -249,24 +249,24 @@ export default function Kelompok() {
             />
           </Form.Item>
           <Form.Item
-            label="Label"
+            label="Kode Kelompok"
             name="label"
             rules={[
               {
                 required: true,
-                message: "Label tidak boleh kosong!",
+                message: "Kode Kelompok tidak boleh kosong!",
               },
             ]}
           >
             <Input disabled={confirmLoading} />
           </Form.Item>
           <Form.Item
-            label="Keterangan"
+            label="Nama Kelompok"
             name="remark"
             rules={[
               {
                 required: true,
-                message: "Keterangan tidak boleh kosong!",
+                message: "Nama Kelompok tidak boleh kosong!",
               },
             ]}
           >

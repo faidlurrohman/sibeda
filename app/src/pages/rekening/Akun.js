@@ -13,7 +13,7 @@ import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import ImportButton from "../../components/button/ImportButton";
+import ImportRekeningButton from "../../components/button/ImportRekeningButton";
 
 export default function Akun() {
   const { modal } = App.useApp();
@@ -133,7 +133,7 @@ export default function Akun() {
     searchColumn(
       tableFilterInputRef,
       "label",
-      "Label",
+      "Kode Akun",
       tableFiltered,
       true,
       tableSorted
@@ -141,7 +141,7 @@ export default function Akun() {
     searchColumn(
       tableFilterInputRef,
       "remark",
-      "Keterangan",
+      "Nama Akun",
       tableFiltered,
       true,
       tableSorted
@@ -160,7 +160,7 @@ export default function Akun() {
         {!!exports?.length && (
           <ExportButton data={exports} master={`account_base`} />
         )}
-        <ImportButton type="account" onFinish={() => reloadTable()} />
+        <ImportRekeningButton type="account" onFinish={() => reloadTable()} />
       </div>
       <Table
         scroll={{
@@ -199,24 +199,24 @@ export default function Akun() {
             <Input />
           </Form.Item>
           <Form.Item
-            label="Label"
+            label="Kode Akun"
             name="label"
             rules={[
               {
                 required: true,
-                message: "Label tidak boleh kosong!",
+                message: "Kode Akun tidak boleh kosong!",
               },
             ]}
           >
             <Input disabled={confirmLoading} />
           </Form.Item>
           <Form.Item
-            label="Keterangan"
+            label="Nama Akun"
             name="remark"
             rules={[
               {
                 required: true,
-                message: "Keterangan tidak boleh kosong!",
+                message: "Nama Akun tidak boleh kosong!",
               },
             ]}
           >

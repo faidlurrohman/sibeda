@@ -154,7 +154,7 @@ export default function Jenis() {
     searchColumn(
       tableFilterInputRef,
       "account_group_label",
-      "Kelompok Rekening",
+      "Kelompok",
       tableFiltered,
       true,
       tableSorted
@@ -162,7 +162,7 @@ export default function Jenis() {
     searchColumn(
       tableFilterInputRef,
       "label",
-      "Label",
+      "Kode Jenis",
       tableFiltered,
       true,
       tableSorted
@@ -170,7 +170,7 @@ export default function Jenis() {
     searchColumn(
       tableFilterInputRef,
       "remark",
-      "Keterangan",
+      "Nama Jenis",
       tableFiltered,
       true,
       tableSorted
@@ -231,12 +231,12 @@ export default function Jenis() {
             <Input />
           </Form.Item>
           <Form.Item
-            label="Kelompok Rekening"
+            label="Kelompok"
             name="account_group_id"
             rules={[
               {
                 required: true,
-                message: "Kelompok Rekening tidak boleh kosong!",
+                message: "Kelompok tidak boleh kosong!",
               },
             ]}
           >
@@ -252,24 +252,24 @@ export default function Jenis() {
             />
           </Form.Item>
           <Form.Item
-            label="Label"
+            label="Kode Jenis"
             name="label"
             rules={[
               {
                 required: true,
-                message: "Label tidak boleh kosong!",
+                message: "Kode Jenis tidak boleh kosong!",
               },
             ]}
           >
             <Input disabled={confirmLoading} />
           </Form.Item>
           <Form.Item
-            label="Keterangan"
+            label="Nama Jenis"
             name="remark"
             rules={[
               {
                 required: true,
-                message: "Keterangan tidak boleh kosong!",
+                message: "Nama Jenis tidak boleh kosong!",
               },
             ]}
           >

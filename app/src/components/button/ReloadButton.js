@@ -3,7 +3,7 @@ import { Button } from "antd";
 import React from "react";
 
 export default function ReloadButton({
-  title = "Perbarui",
+  title = "View/Tampilkan",
   onClick,
   stateLoading,
 }) {

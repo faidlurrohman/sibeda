@@ -154,7 +154,7 @@ export default function Objek() {
     searchColumn(
       tableFilterInputRef,
       "account_type_label",
-      "Jenis Rekening",
+      "Jenis",
       tableFiltered,
       true,
       tableSorted
@@ -162,7 +162,7 @@ export default function Objek() {
     searchColumn(
       tableFilterInputRef,
       "label",
-      "Label",
+      "Kode Objek",
       tableFiltered,
       true,
       tableSorted
@@ -170,7 +170,7 @@ export default function Objek() {
     searchColumn(
       tableFilterInputRef,
       "remark",
-      "Keterangan",
+      "Nama Objek",
       tableFiltered,
       true,
       tableSorted
@@ -231,12 +231,12 @@ export default function Objek() {
             <Input />
           </Form.Item>
           <Form.Item
-            label="Jenis Rekening"
+            label="Jenis"
             name="account_type_id"
             rules={[
               {
                 required: true,
-                message: "Jenis Rekening tidak boleh kosong!",
+                message: "Jenis tidak boleh kosong!",
               },
             ]}
           >
@@ -252,24 +252,24 @@ export default function Objek() {
             />
           </Form.Item>
           <Form.Item
-            label="Label"
+            label="Kode Objek"
             name="label"
             rules={[
               {
                 required: true,
-                message: "Label tidak boleh kosong!",
+                message: "Kode Objek tidak boleh kosong!",
               },
             ]}
           >
             <Input disabled={confirmLoading} />
           </Form.Item>
           <Form.Item
-            label="Keterangan"
+            label="Nama Objek"
             name="remark"
             rules={[
               {
                 required: true,
-                message: "Keterangan tidak boleh kosong!",
+                message: "Nama Objek tidak boleh kosong!",
               },
             ]}
           >

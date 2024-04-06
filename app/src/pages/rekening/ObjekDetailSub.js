@@ -155,7 +155,7 @@ export default function ObjekDetailSub() {
     searchColumn(
       tableFilterInputRef,
       "account_object_detail_label",
-      "Objek Detail Rekening",
+      "Objek Detail",
       tableFiltered,
       true,
       tableSorted
@@ -163,7 +163,7 @@ export default function ObjekDetailSub() {
     searchColumn(
       tableFilterInputRef,
       "label",
-      "Label",
+      "Kode Objek Detail Sub",
       tableFiltered,
       true,
       tableSorted
@@ -171,7 +171,7 @@ export default function ObjekDetailSub() {
     searchColumn(
       tableFilterInputRef,
       "remark",
-      "Keterangan",
+      "Nama Objek Detail Sub",
       tableFiltered,
       true,
       tableSorted
@@ -232,12 +232,12 @@ export default function ObjekDetailSub() {
             <Input />
           </Form.Item>
           <Form.Item
-            label="Objek Rekening"
+            label="Objek Detail"
             name="account_object_detail_id"
             rules={[
               {
                 required: true,
-                message: "Objek Detail Rekening tidak boleh kosong!",
+                message: "Objek Detail tidak boleh kosong!",
               },
             ]}
           >
@@ -253,24 +253,24 @@ export default function ObjekDetailSub() {
             />
           </Form.Item>
           <Form.Item
-            label="Label"
+            label="Kode Objek Detail Sub"
             name="label"
             rules={[
               {
                 required: true,
-                message: "Label tidak boleh kosong!",
+                message: "Kode Objek Detail Sub tidak boleh kosong!",
               },
             ]}
           >
             <Input disabled={confirmLoading} />
           </Form.Item>
           <Form.Item
-            label="Keterangan"
+            label="Nama Objek Detail Sub"
             name="remark"
             rules={[
               {
                 required: true,
-                message: "Keterangan tidak boleh kosong!",
+                message: "Nama Objek Detail Sub tidak boleh kosong!",
               },
             ]}
           >
