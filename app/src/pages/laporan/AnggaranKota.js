@@ -448,7 +448,7 @@ export default function AnggaranKota() {
             <Select
               allowClear
               showSearch
-              className="w-full sm:w-60 md:w-60"
+              className="w-full h-8 sm:w-60 md:w-60"
               placeholder="Pilih Kota"
               optionFilterProp="children"
               filterOption={(input, option) =>
@@ -471,92 +471,6 @@ export default function AnggaranKota() {
             fileName="LAPORAN-REALISASI-ANGGARAN-KOTA"
           />
         )}
-      </div>
-      <div className="flex flex-col mx-0.5 pb-2">
-        <Card
-          loading={loading}
-          size="small"
-          title={
-            <Space>
-              <Avatar
-                size="small"
-                className="bg-secondary"
-                icon={<PercentageOutlined />}
-              />
-              <span className="text-xs">
-                TOTAL PENDAPATAN, PEMBIAYAAN DAN BELANJA DAERAH
-              </span>
-            </Space>
-          }
-          className="text-center w-full md:text-left"
-        >
-          <Statistic
-            prefix={
-              <span className="text-xs">
-                Anggaran<span className="pl-9">:</span>
-              </span>
-            }
-            value={
-              Number(countBy("pendapatan", "plan")) +
-              Number(countBy("pembiayaan", "plan")) +
-              Number(countBy("belanja", "plan"))
-            }
-            formatter={(value) => (
-              <CountUp
-                end={value}
-                className="text-xs font-bold"
-                prefix="Rp. "
-              />
-            )}
-          />
-          <Statistic
-            prefix={
-              <span className="text-xs">
-                Realisasi<span className="pl-10">:</span>
-              </span>
-            }
-            value={
-              Number(countBy("pendapatan", "real")) +
-              Number(countBy("pembiayaan", "real")) +
-              Number(countBy("belanja", "real"))
-            }
-            formatter={(value) => (
-              <CountUp
-                end={value}
-                className="text-xs font-bold"
-                prefix="Rp. "
-              />
-            )}
-          />
-          <div className="h-auto w-auto pt-2">
-            <Progress
-              className="font-bold"
-              format={() =>
-                `${sumPercentage(
-                  (Number(countBy("pendapatan", "real")) +
-                    Number(countBy("pembiayaan", "real")) +
-                    Number(countBy("belanja", "real"))) /
-                    2,
-                  Number(countBy("pendapatan", "plan")) +
-                    Number(countBy("pembiayaan", "plan")) +
-                    Number(countBy("belanja", "plan"))
-                )}%`
-              }
-              percent={sumPercentage(
-                (Number(countBy("pendapatan", "real")) +
-                  Number(countBy("pembiayaan", "real")) +
-                  Number(countBy("belanja", "real"))) /
-                  2,
-                Number(countBy("pendapatan", "plan")) +
-                  Number(countBy("pembiayaan", "plan")) +
-                  Number(countBy("belanja", "plan"))
-              )}
-              size={[_, 25]}
-              strokeColor={COLORS.secondary}
-              status="normal"
-            />
-          </div>
-        </Card>
       </div>
       <div className="flex flex-col mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0 md:flex-row">
         {/* PENDAPATAN DAERAH */}
