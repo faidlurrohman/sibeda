@@ -9,7 +9,7 @@ export const addReal = (values) => {
   return axios.post("/real/add", values);
 };
 
-export const setActiveReal = (id) => {
+export const removeReal = (id) => {
   return axios.delete(`/real/remove/${id}`);
 };
 

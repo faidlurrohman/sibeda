@@ -9,7 +9,7 @@ export const addPlan = (values) => {
   return axios.post("/plan/add", values);
 };
 
-export const setActivePlan = (id) => {
+export const removePlan = (id) => {
   return axios.delete(`/plan/remove/${id}`);
 };
 
