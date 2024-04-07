@@ -336,6 +336,7 @@ export default function Beranda() {
             Tanggal :
           </h2>
           <RangePicker
+            popupClassName="dateRangePicker"
             className="w-full h-8 md:w-72"
             allowEmpty={false}
             allowClear={false}
