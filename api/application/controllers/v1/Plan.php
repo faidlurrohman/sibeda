@@ -28,7 +28,6 @@ class Plan extends REST_Controller {
 
             if ($exception == "0") {
                 $filter["city_id"] = $validated->city_id;
-                $filter["active"] = 1;
             }
             
             $data = $this->Plan_model->get_all_in($validated->username, $filter, $order, $limit, $offset);
@@ -69,7 +68,6 @@ class Plan extends REST_Controller {
 
             if ($exception == "0") {
                 $filter["city_id"] = $validated->city_id;
-                $filter["active"] = 1;
             }
             
             $data = $this->Plan_model->get_all_out($validated->username, $filter, $order, $limit, $offset);
@@ -110,7 +108,6 @@ class Plan extends REST_Controller {
 
             if ($exception == "0") {
                 $filter["city_id"] = $validated->city_id;
-                $filter["active"] = 1;
             }
             
             $data = $this->Plan_model->get_all_cost($validated->username, $filter, $order, $limit, $offset);
@@ -147,7 +144,7 @@ class Plan extends REST_Controller {
             $exception = $this->Auth_model->user_exception($validated->username);
 
             if ($exception == "0") {
-                $filter = " AND st.city_id = " . $validated->city_id;
+                $filter = " AND b.city_id = " . $validated->city_id;
             }
             
             $list = $this->Plan_model->get_detail_sub_plan_in($validated->username, $filter, $order);
@@ -184,7 +181,7 @@ class Plan extends REST_Controller {
             $exception = $this->Auth_model->user_exception($validated->username);
 
             if ($exception == "0") {
-                $filter = " AND st.city_id = " . $validated->city_id;
+                $filter = " AND b.city_id = " . $validated->city_id;
             }
             
             $list = $this->Plan_model->get_detail_sub_plan_out($validated->username, $filter, $order);
@@ -221,7 +218,7 @@ class Plan extends REST_Controller {
             $exception = $this->Auth_model->user_exception($validated->username);
 
             if ($exception == "0") {
-                $filter = " AND st.city_id = " . $validated->city_id;
+                $filter = " AND b.city_id = " . $validated->city_id;
             }
             
             $list = $this->Plan_model->get_detail_sub_plan_cost($validated->username, $filter, $order);
@@ -253,7 +250,7 @@ class Plan extends REST_Controller {
 
         if ($validated) {
             $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
-            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "trans_date desc"; 
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "date desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 1; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
 
@@ -263,7 +260,7 @@ class Plan extends REST_Controller {
                 $filter["city_id"] = $validated->city_id;
             }
             
-            $data = $this->Plan_model->get_last_in($filter, $order, $limit, $offset);
+            $data = $this->Plan_model->get_last_in($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -292,7 +289,7 @@ class Plan extends REST_Controller {
 
         if ($validated) {
             $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
-            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "trans_date desc"; 
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "date desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 1; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
 
@@ -302,7 +299,7 @@ class Plan extends REST_Controller {
                 $filter["city_id"] = $validated->city_id;
             }
             
-            $data = $this->Plan_model->get_last_out($filter, $order, $limit, $offset);
+            $data = $this->Plan_model->get_last_out($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -331,7 +328,7 @@ class Plan extends REST_Controller {
 
         if ($validated) {
             $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
-            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "trans_date desc"; 
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "date desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 1; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
 
@@ -341,7 +338,7 @@ class Plan extends REST_Controller {
                 $filter["city_id"] = $validated->city_id;
             }
             
-            $data = $this->Plan_model->get_last_cost($filter, $order, $limit, $offset);
+            $data = $this->Plan_model->get_last_cost($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -373,20 +370,20 @@ class Plan extends REST_Controller {
 
             $error = [];
 
-            // check parameter format
-            if (!$account_object_detail_sub_id || intval($account_object_detail_sub_id) <= 0) {
-                $error[] = "Insert/Update Data Failed, `account_object_detail_sub_id` Expected INT";
-            }
-            if (!$city_id || intval($city_id) <= 0) {
-                $error[] = "Insert/Update Data Failed, `city_id` Expected INT";
-            }
-
             // check mode
             if (!$mode || gettype($mode) != "string" && ($mode != "C" || $mode != "U")) {
                 $error[] = "Insert/Update Data Failed, `mode " . $mode . "` Not Found";
             } else {
                 if ($mode == "U" && (!$id || intval($id) <= 0)) {
                     $error[] = "Insert/Update Data Failed, `id` Expected INT";
+                } else {
+                    // check parameter format
+                    if (!$account_object_detail_sub_id || intval($account_object_detail_sub_id) <= 0) {
+                        $error[] = "Insert/Update Data Failed, `account_object_detail_sub_id` Expected INT";
+                    }
+                    if (!$city_id || intval($city_id) <= 0) {
+                        $error[] = "Insert/Update Data Failed, `city_id` Expected INT";
+                    }
                 }
             }
             
@@ -398,9 +395,9 @@ class Plan extends REST_Controller {
             $save = $this->Plan_model->save($params, $validated->username);
 
             if ($save['code'] == 200) {
-                $this->response($save);
                 // insert log
-                $this->Log_model->log("transaction", $mode, $params, $validated->username);
+                $this->Log_model->log("budget", $mode, $params, $validated->username);
+                $this->response($save);
             } else {
                 $this->response($save, $save["code"]);
             }
@@ -437,9 +434,9 @@ class Plan extends REST_Controller {
             $remove = $this->Plan_model->delete(intval($id));
 
             if ($remove['code'] == 200) {
-                $this->response($remove);
                 // insert log
-                $this->Log_model->log("transaction", "D", array("id" => intval($id)), $validated->username);
+                $this->Log_model->log("budget", "D", array("id" => intval($id)), $validated->username);
+                $this->response($remove);
             } else {
                 $this->response($remove, $remove["code"]);
             }
@@ -457,8 +454,7 @@ class Plan extends REST_Controller {
             "id" => intval($this->get_post("id")),
             "account_object_detail_sub_id" => intval($this->get_post("account_object_detail_sub_id")),
             "city_id" => intval($this->get_post("city_id")),
-            "plan_amount" => $this->get_post("plan_amount"),
-            "real_amount" => $this->get_post("real_amount"),
+            "amount" => $this->get_post("amount"),
             "mode" => $this->get_post("mode"),
         );
     }

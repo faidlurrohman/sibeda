@@ -19,7 +19,7 @@ class Dashboard extends REST_Controller {
 
         if ($validated) {
             $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
-            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "account_base_id desc"; 
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "account_base_id asc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 0; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
 
@@ -29,7 +29,7 @@ class Dashboard extends REST_Controller {
                 $filter["city_id"] = $validated->city_id;
             }
 
-            $data = $this->Dashboard_model->get_dashboard($filter, $order, $limit, $offset);
+            $data = $this->Dashboard_model->get_dashboard($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -58,7 +58,7 @@ class Dashboard extends REST_Controller {
 
         if ($validated) {
             $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
-            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "account_base_id desc"; 
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "account_base_id asc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 0; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
 
@@ -68,7 +68,7 @@ class Dashboard extends REST_Controller {
                 $filter["city_id"] = $validated->city_id;
             }
 
-            $data = $this->Dashboard_model->get_recap_years($filter, $order, $limit, $offset);
+            $data = $this->Dashboard_model->get_recap_years($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);

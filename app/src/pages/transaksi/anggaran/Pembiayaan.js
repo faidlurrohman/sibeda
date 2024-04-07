@@ -13,18 +13,14 @@ import {
   Table,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
-import { COLORS, PAGINATION } from "../../../helpers/constants";
-import {
-  actionColumn,
-  activeColumn,
-  searchColumn,
-} from "../../../helpers/table";
+import { PAGINATION } from "../../../helpers/constants";
+import { actionColumn, searchColumn } from "../../../helpers/table";
 import ReloadButton from "../../../components/button/ReloadButton";
 import AddButton from "../../../components/button/AddButton";
 import ExportButton from "../../../components/button/ExportButton";
 import { messageAction } from "../../../helpers/response";
 import { getCityList } from "../../../services/city";
-import { convertDate, dbDate, viewDate } from "../../../helpers/date";
+import { viewDate } from "../../../helpers/date";
 import axios from "axios";
 import useRole from "../../../hooks/useRole";
 import { formatterNumber, parserNumber } from "../../../helpers/number";
@@ -34,7 +30,7 @@ import {
   getAccountObjectDetailSub,
   getLastPlan,
   getPlan,
-  setActivePlan,
+  removePlan,
 } from "../../../services/plan";
 import { useAppSelector } from "../../../hooks/useRedux";
 
@@ -116,16 +112,20 @@ export default function AnggaranPembiayaan() {
 
     if (isEdit) {
       setEdit(true);
-      form.setFieldsValue({ id: value?.id, plan_amount: value?.plan_amount });
+      form.setFieldsValue({
+        id: value?.id,
+        amount: value?.amount,
+        account_object_detail_sub_id: value?.account_object_detail_sub_id,
+      });
     } else {
       form.resetFields();
       setEdit(false);
     }
   };
 
-  const onActiveChange = (value) => {
+  const onDelete = (value) => {
     modal.confirm({
-      title: `${value?.active ? `Nonaktifkan` : `Aktifkan`} data :`,
+      title: "Hapus data :",
       content: (
         <>
           {value?.city_label} - {value?.account_object_detail_sub_label}
@@ -135,9 +135,9 @@ export default function AnggaranPembiayaan() {
       cancelText: "Tidak",
       centered: true,
       onOk() {
-        setActivePlan(value?.id).then((response) => {
+        removePlan(value?.id).then((response) => {
           if (response?.code === 200) {
-            messageAction(true);
+            messageAction(false, true);
             reloadTable();
           }
         });
@@ -149,9 +149,7 @@ export default function AnggaranPembiayaan() {
     let cur = {
       ...values,
       mode: isEdit ? "U" : "C",
-      trans_date: dbDate(convertDate().startOf("year")),
       city_id: !!cities.length ? cities[0]?.id : 0,
-      real_amount: 0,
     };
 
     setConfirmLoading(true);
@@ -170,7 +168,6 @@ export default function AnggaranPembiayaan() {
     setLastTransactionLoading(true);
     getLastPlan("cost", {
       account_object_detail_sub_id: value,
-      trans_date: dbDate(convertDate().startOf("year")),
     }).then((response) => {
       setLastTransactionLoading(false);
 
@@ -184,21 +181,11 @@ export default function AnggaranPembiayaan() {
     });
   };
 
-  const columns = [
-    searchColumn(
-      tableFilterInputRef,
-      "trans_date",
-      "Tanggal",
-      tableFiltered,
-      true,
-      tableSorted,
-      "string",
-      session?.which_year
-    ),
+  const columnsSuperAdmin = [
     searchColumn(
       tableFilterInputRef,
       "city_label",
-      "Kota",
+      "Kab/Kota",
       tableFiltered,
       true,
       tableSorted
@@ -213,13 +200,34 @@ export default function AnggaranPembiayaan() {
     ),
     searchColumn(
       tableFilterInputRef,
-      "plan_amount",
+      "amount",
       "Anggaran",
       tableFiltered,
       true,
       tableSorted,
       "int"
     ),
+  ];
+
+  const columnsAdminCity = [
+    searchColumn(
+      tableFilterInputRef,
+      "account_object_detail_sub_label",
+      "Objek Detail Sub Rekening",
+      tableFiltered,
+      true,
+      tableSorted
+    ),
+    searchColumn(
+      tableFilterInputRef,
+      "amount",
+      "Anggaran",
+      tableFiltered,
+      true,
+      tableSorted,
+      "int"
+    ),
+    actionColumn(addUpdateRow, null, onDelete),
   ];
 
   useEffect(() => getData(PAGINATION), []);
@@ -234,7 +242,7 @@ export default function AnggaranPembiayaan() {
         {!!exports?.length && (
           <ExportButton
             data={exports}
-            master={`transaction`}
+            master={`budget`}
             pdfOrientation={`landscape`}
           />
         )}
@@ -248,14 +256,7 @@ export default function AnggaranPembiayaan() {
         size="small"
         loading={loading}
         dataSource={transactions}
-        columns={
-          is_super_admin
-            ? columns.concat(
-                activeColumn(tableFiltered),
-                actionColumn(addUpdateRow, onActiveChange)
-              )
-            : columns
-        }
+        columns={!is_super_admin ? columnsAdminCity : columnsSuperAdmin}
         rowKey={(record) => record?.id}
         onChange={onTableChange}
         pagination={tablePage.pagination}
@@ -265,9 +266,7 @@ export default function AnggaranPembiayaan() {
         style={{ margin: 10 }}
         centered
         open={isShow}
-        title={`${
-          isEdit ? `Ubah` : `Tambah`
-        } Data Transaksi Anggaran Pembiayaan`}
+        title={`${isEdit ? `Ubah` : `Tambah`} Data Anggaran Pembiayaan`}
         onCancel={() => (confirmLoading ? null : setShow(false))}
         closable={false}
         footer={null}
@@ -280,7 +279,7 @@ export default function AnggaranPembiayaan() {
               <div className="flex flex-1 flex-row space-x-7">
                 <div className="flex-0 flex-col space-y-2">
                   <div>
-                    <h4 className="md:inline">{`Tanggal Transaksi`}</h4>
+                    <h4 className="md:inline">{`Tanggal`}</h4>
                   </div>
                   <div>
                     <h4 className="md:inline">{`Anggaran (Rp)`}</h4>
@@ -290,16 +289,16 @@ export default function AnggaranPembiayaan() {
                   <div>
                     <h4 className="md:inline">
                       :{" "}
-                      {lastTransaction?.trans_date
-                        ? viewDate(lastTransaction?.trans_date)
+                      {lastTransaction?.date
+                        ? viewDate(lastTransaction?.date)
                         : `-`}
                     </h4>
                   </div>
                   <div>
                     <h4 className="md:inline">
                       :{" "}
-                      {lastTransaction?.plan_amount >= 0
-                        ? formatterNumber(lastTransaction?.plan_amount || 0)
+                      {lastTransaction?.amount >= 0
+                        ? formatterNumber(lastTransaction?.amount || 0)
                         : `-`}
                     </h4>
                   </div>
@@ -315,28 +314,11 @@ export default function AnggaranPembiayaan() {
             autoComplete="off"
             initialValues={{
               id: "",
-              city_label: !!cities.length ? cities[0]?.label : ``,
-              plan_amount: 0,
+              amount: 0,
             }}
           >
             <Form.Item name="id" hidden>
               <Input />
-            </Form.Item>
-            <Form.Item
-              label="Kota"
-              name="city_label"
-              rules={[
-                {
-                  required: isEdit ? false : true,
-                  message: "Kota tidak boleh kosong!",
-                },
-              ]}
-              hidden={isEdit}
-            >
-              <Input
-                disabled
-                style={{ background: COLORS.white, color: COLORS.black }}
-              />
             </Form.Item>
             <Form.Item
               label="Objek Detail Sub Rekening"
@@ -363,7 +345,7 @@ export default function AnggaranPembiayaan() {
             </Form.Item>
             <Form.Item
               label="Anggaran (Rp)"
-              name="plan_amount"
+              name="amount"
               rules={[
                 {
                   required: true,

@@ -139,7 +139,7 @@ function set_filter($filters, $table_name, $additional = [])
                             $fields[$kt]->DATA_TYPE == 'tinyint' ||
                             $fields[$kt]->DATA_TYPE == 'float'
                         ) {
-                        $generate_filter .= " AND " . $kf . " = " . intval($filter);
+                            $generate_filter .= " AND " . $kf . " = " . intval($filter);
                         } else if (
                             $fields[$kt]->DATA_TYPE == 'text' ||
                             $fields[$kt]->DATA_TYPE == 'varchar'
@@ -148,7 +148,7 @@ function set_filter($filters, $table_name, $additional = [])
                         } else if (
                             $fields[$kt]->DATA_TYPE == 'date'
                         ) {
-                        $generate_filter .= " AND " . $kf . " = '" . $filter . "'";
+                            $generate_filter .= " AND " . $kf . " = '" . $filter . "'";
                         }
                     }
                 }
@@ -179,7 +179,13 @@ function set_filter($filters, $table_name, $additional = [])
                             } else if (
                                 $spl_type == 'date'
                             ) {
-                                $generate_filter .= " AND " . $kf . " = '" . $filter . "'";
+                                $spl_kf = explode("_", $kf);
+
+                                if ($spl_kf[0] == 'realization') {
+                                    $generate_filter .= " AND " . $kf . " <= '" . $filter . "'";
+                                } else {
+                                    $generate_filter .= " AND " . $kf . " = '" . $filter . "'";
+                                }
                             } else if (
                                 $spl_type == 'daterange_start'
                             ) {

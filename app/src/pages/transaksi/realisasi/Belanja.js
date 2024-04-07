@@ -14,16 +14,8 @@ import {
   Table,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
-import {
-  COLORS,
-  DATE_FORMAT_VIEW,
-  PAGINATION,
-} from "../../../helpers/constants";
-import {
-  actionColumn,
-  activeColumn,
-  searchColumn,
-} from "../../../helpers/table";
+import { DATE_FORMAT_VIEW, PAGINATION } from "../../../helpers/constants";
+import { actionColumn, searchColumn } from "../../../helpers/table";
 import ReloadButton from "../../../components/button/ReloadButton";
 import AddButton from "../../../components/button/AddButton";
 import ExportButton from "../../../components/button/ExportButton";
@@ -39,7 +31,7 @@ import {
   getAccountObjectDetailSub,
   getLastReal,
   getReal,
-  setActiveReal,
+  removeReal,
 } from "../../../services/real";
 import { useAppSelector } from "../../../hooks/useRedux";
 
@@ -63,6 +55,7 @@ export default function RealisasiBelanja() {
   const [tableSorted, setTableSorted] = useState({});
   const [tablePage, setTablePage] = useState(PAGINATION);
 
+  const [isEdit, setEdit] = useState(false);
   const [isShow, setShow] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
@@ -113,16 +106,27 @@ export default function RealisasiBelanja() {
     getData(PAGINATION);
   };
 
-  const addData = () => {
+  const addUpdateRow = (isEdit = false, value = null) => {
     setShow(true);
     setShowCard(false);
     setLastTransaction({});
-    form.resetFields();
+
+    if (isEdit) {
+      setEdit(true);
+      form.setFieldsValue({
+        id: value?.id,
+        amount: value?.amount,
+        account_object_detail_sub_id: value?.account_object_detail_sub_id,
+      });
+    } else {
+      form.resetFields();
+      setEdit(false);
+    }
   };
 
-  const onActiveChange = (value) => {
+  const onDelete = (value) => {
     modal.confirm({
-      title: `${value?.active ? `Nonaktifkan` : `Aktifkan`} data :`,
+      title: "Hapus data :",
       content: (
         <>
           {value?.city_label} - {value?.account_object_detail_sub_label}
@@ -132,9 +136,9 @@ export default function RealisasiBelanja() {
       cancelText: "Tidak",
       centered: true,
       onOk() {
-        setActiveReal(value?.id).then((response) => {
+        removeReal(value?.id).then((response) => {
           if (response?.code === 200) {
-            messageAction(true);
+            messageAction(false, true);
             reloadTable();
           }
         });
@@ -145,19 +149,15 @@ export default function RealisasiBelanja() {
   const handleAddUpdate = (values) => {
     let cur = {
       ...values,
-      trans_date: dbDate(values?.trans_date),
+      date: dbDate(values?.date),
       city_id: !!cities.length ? cities[0]?.id : 0,
-      plan_amount: 0,
-      mode: "C",
+      mode: isEdit ? "U" : "C",
     };
 
-    if (
-      cur?.trans_date === lastTransaction?.trans_date &&
-      cur?.trans_date !== dbDate(convertDate().startOf("year"))
-    ) {
+    if (cur?.date === lastTransaction?.realization_date) {
       cur = {
         ...cur,
-        id: lastTransaction?.id,
+        id: lastTransaction?.realization_id,
         mode: "U",
       };
     }
@@ -167,7 +167,7 @@ export default function RealisasiBelanja() {
       setConfirmLoading(false);
 
       if (response?.code === 200) {
-        messageAction();
+        messageAction(isEdit);
         setShow(false);
         reloadTable();
       }
@@ -177,10 +177,10 @@ export default function RealisasiBelanja() {
   const handleObjectChange = () => {
     let currValues = form.getFieldsValue();
 
-    if (currValues?.trans_date && currValues?.account_object_detail_sub_id) {
+    if (currValues?.date && currValues?.account_object_detail_sub_id) {
       setLastTransactionLoading(true);
       getLastReal("out", {
-        trans_date: dbDate(currValues?.trans_date),
+        realization_date: dbDate(currValues?.date),
         account_object_detail_sub_id: currValues?.account_object_detail_sub_id,
       }).then((response) => {
         setLastTransactionLoading(false);
@@ -196,10 +196,10 @@ export default function RealisasiBelanja() {
     }
   };
 
-  const columns = [
+  const columnsSuperAdmin = [
     searchColumn(
       tableFilterInputRef,
-      "trans_date",
+      "date",
       "Tanggal",
       tableFiltered,
       true,
@@ -210,7 +210,7 @@ export default function RealisasiBelanja() {
     searchColumn(
       tableFilterInputRef,
       "city_label",
-      "Kota",
+      "Kab/Kota",
       tableFiltered,
       true,
       tableSorted
@@ -225,13 +225,44 @@ export default function RealisasiBelanja() {
     ),
     searchColumn(
       tableFilterInputRef,
-      "real_amount",
+      "amount",
       "Realisasi",
       tableFiltered,
       true,
       tableSorted,
       "int"
     ),
+  ];
+
+  const columnsAdminCity = [
+    searchColumn(
+      tableFilterInputRef,
+      "date",
+      "Tanggal",
+      tableFiltered,
+      true,
+      tableSorted,
+      "string",
+      session?.which_year
+    ),
+    searchColumn(
+      tableFilterInputRef,
+      "account_object_detail_sub_label",
+      "Objek Detail Sub Rekening",
+      tableFiltered,
+      true,
+      tableSorted
+    ),
+    searchColumn(
+      tableFilterInputRef,
+      "amount",
+      "Anggaran",
+      tableFiltered,
+      true,
+      tableSorted,
+      "int"
+    ),
+    actionColumn(addUpdateRow, null, onDelete),
   ];
 
   useEffect(() => getData(PAGINATION), []);
@@ -241,12 +272,12 @@ export default function RealisasiBelanja() {
       <div className="flex flex-col mb-2 space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
         <ReloadButton onClick={reloadTable} stateLoading={loading} />
         {!is_super_admin && (
-          <AddButton onClick={addData} stateLoading={loading} />
+          <AddButton onClick={addUpdateRow} stateLoading={loading} />
         )}
         {!!exports?.length && (
           <ExportButton
             data={exports}
-            master={`transaction`}
+            master={`realization`}
             pdfOrientation={`landscape`}
           />
         )}
@@ -260,14 +291,7 @@ export default function RealisasiBelanja() {
         size="small"
         loading={loading}
         dataSource={transactions}
-        columns={
-          is_super_admin
-            ? columns.concat(
-                activeColumn(tableFiltered),
-                actionColumn(null, onActiveChange)
-              )
-            : columns
-        }
+        columns={!is_super_admin ? columnsAdminCity : columnsSuperAdmin}
         rowKey={(record) => record?.id}
         onChange={onTableChange}
         pagination={tablePage.pagination}
@@ -277,7 +301,7 @@ export default function RealisasiBelanja() {
         style={{ margin: 10 }}
         centered
         open={isShow}
-        title={`Tambah Data Transaksi Realisasi Belanja`}
+        title={`${isEdit ? `Ubah` : `Tambah`} Data Realisasi Belanja`}
         onCancel={() => (confirmLoading ? null : setShow(false))}
         closable={false}
         footer={null}
@@ -290,7 +314,7 @@ export default function RealisasiBelanja() {
               <div className="flex flex-1 flex-row space-x-7">
                 <div className="flex-0 flex-col space-y-2">
                   <div>
-                    <h4 className="md:inline">{`Tanggal Transaksi`}</h4>
+                    <h4 className="md:inline">{`Tanggal`}</h4>
                   </div>
                   <div>
                     <h4 className="md:inline">{`Anggaran (Rp)`}</h4>
@@ -303,24 +327,26 @@ export default function RealisasiBelanja() {
                   <div>
                     <h4 className="md:inline">
                       :{" "}
-                      {lastTransaction?.trans_date
-                        ? viewDate(lastTransaction?.trans_date)
+                      {lastTransaction?.realization_date
+                        ? viewDate(lastTransaction?.realization_date)
                         : `-`}
                     </h4>
                   </div>
                   <div>
                     <h4 className="md:inline">
                       :{" "}
-                      {lastTransaction?.plan_amount >= 0
-                        ? formatterNumber(lastTransaction?.plan_amount || 0)
+                      {lastTransaction?.budget_amount >= 0
+                        ? formatterNumber(lastTransaction?.budget_amount || 0)
                         : `-`}
                     </h4>
                   </div>
                   <div>
                     <h4 className="md:inline">
                       :{" "}
-                      {lastTransaction?.real_amount >= 0
-                        ? formatterNumber(lastTransaction?.real_amount || 0)
+                      {lastTransaction?.realization_amount >= 0
+                        ? formatterNumber(
+                            lastTransaction?.realization_amount || 0
+                          )
                         : `-`}
                     </h4>
                   </div>
@@ -335,21 +361,24 @@ export default function RealisasiBelanja() {
             onFinish={handleAddUpdate}
             autoComplete="off"
             initialValues={{
-              // trans_date: convertDate(),
-              trans_date: convertDate(`${session?.which_year}`),
-              city_label: !!cities.length ? cities[0]?.label : ``,
-              real_amount: 0,
+              id: "",
+              date: convertDate(`${session?.which_year}`),
+              amount: 0,
             }}
           >
+            <Form.Item name="id" hidden>
+              <Input />
+            </Form.Item>
             <Form.Item
-              label="Tanggal Transaksi"
-              name="trans_date"
+              label="Tanggal"
+              name="date"
               rules={[
                 {
-                  required: true,
-                  message: "Tanggal Transaksi tidak boleh kosong!",
+                  required: isEdit ? false : true,
+                  message: "Tanggal tidak boleh kosong!",
                 },
               ]}
+              hidden={isEdit}
             >
               <DatePicker
                 className="w-full"
@@ -363,30 +392,6 @@ export default function RealisasiBelanja() {
 
                   return useYear;
                 }}
-                // disabledDate={(curr) => {
-                //   const nextDay = curr && curr.valueOf() > convertDate();
-                //   const diffYear =
-                //     curr &&
-                //     convertDate(curr, "YYYY") !==
-                //       convertDate(convertDate(), "YYYY");
-
-                //   return nextDay || diffYear;
-                // }}
-              />
-            </Form.Item>
-            <Form.Item
-              label="Kota"
-              name="city_label"
-              rules={[
-                {
-                  required: true,
-                  message: "Kota tidak boleh kosong!",
-                },
-              ]}
-            >
-              <Input
-                disabled
-                style={{ background: COLORS.white, color: COLORS.black }}
               />
             </Form.Item>
             <Form.Item
@@ -394,10 +399,11 @@ export default function RealisasiBelanja() {
               name="account_object_detail_sub_id"
               rules={[
                 {
-                  required: true,
+                  required: isEdit ? false : true,
                   message: "Objek Detail Sub Rekening tidak boleh kosong!",
                 },
               ]}
+              hidden={isEdit}
             >
               <Select
                 showSearch
@@ -413,7 +419,7 @@ export default function RealisasiBelanja() {
             </Form.Item>
             <Form.Item
               label="Realisasi (Rp)"
-              name="real_amount"
+              name="amount"
               rules={[
                 {
                   required: true,

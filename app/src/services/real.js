@@ -19,9 +19,9 @@ export const getAccountObjectDetailSub = (which) => {
 
 export const getLastReal = (
   which,
-  { trans_date, account_object_detail_sub_id }
+  { realization_date, account_object_detail_sub_id }
 ) => {
   return axios.get(
-    `/real/last_${which}?filter[trans_date]=${trans_date}&filter[account_object_detail_sub_id]=${account_object_detail_sub_id}`
+    `/real/last_${which}?filter[realization_date]=${realization_date}&filter[account_object_detail_sub_id]=${account_object_detail_sub_id}`
   );
 };

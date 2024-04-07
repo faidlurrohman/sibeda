@@ -17,11 +17,8 @@ export const getAccountObjectDetailSub = (which) => {
   return axios.get(`/plan/detail_sub_plan_${which}`);
 };
 
-export const getLastPlan = (
-  which,
-  { trans_date, account_object_detail_sub_id }
-) => {
+export const getLastPlan = (which, { account_object_detail_sub_id }) => {
   return axios.get(
-    `/plan/last_${which}?filter[trans_date]=${trans_date}&filter[account_object_detail_sub_id]=${account_object_detail_sub_id}`
+    `/plan/last_${which}?filter[account_object_detail_sub_id]=${account_object_detail_sub_id}`
   );
 };

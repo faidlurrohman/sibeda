@@ -28,7 +28,6 @@ class Real extends REST_Controller {
 
             if ($exception == "0") {
                 $filter["city_id"] = $validated->city_id;
-                $filter["active"] = 1;
             }
             
             $data = $this->Real_model->get_all_in($validated->username, $filter, $order, $limit, $offset);
@@ -69,7 +68,6 @@ class Real extends REST_Controller {
 
             if ($exception == "0") {
                 $filter["city_id"] = $validated->city_id;
-                $filter["active"] = 1;
             }
             
             $data = $this->Real_model->get_all_out($validated->username, $filter, $order, $limit, $offset);
@@ -110,7 +108,6 @@ class Real extends REST_Controller {
 
             if ($exception == "0") {
                 $filter["city_id"] = $validated->city_id;
-                $filter["active"] = 1;
             }
             
             $data = $this->Real_model->get_all_cost($validated->username, $filter, $order, $limit, $offset);
@@ -147,7 +144,7 @@ class Real extends REST_Controller {
             $exception = $this->Auth_model->user_exception($validated->username);
 
             if ($exception == "0") {
-                $filter = " AND st.city_id = " . $validated->city_id;
+                $filter = " AND b.city_id = " . $validated->city_id;
             }
             
             $list = $this->Real_model->get_detail_sub_real_in($validated->username, $filter, $order);
@@ -184,7 +181,7 @@ class Real extends REST_Controller {
             $exception = $this->Auth_model->user_exception($validated->username);
 
             if ($exception == "0") {
-                $filter = " AND st.city_id = " . $validated->city_id;
+                $filter = " AND b.city_id = " . $validated->city_id;
             }
             
             $list = $this->Real_model->get_detail_sub_real_out($validated->username, $filter, $order);
@@ -221,7 +218,7 @@ class Real extends REST_Controller {
             $exception = $this->Auth_model->user_exception($validated->username);
 
             if ($exception == "0") {
-                $filter = " AND st.city_id = " . $validated->city_id;
+                $filter = " AND b.city_id = " . $validated->city_id;
             }
             
             $list = $this->Real_model->get_detail_sub_real_cost($validated->username, $filter, $order);
@@ -253,7 +250,7 @@ class Real extends REST_Controller {
 
         if ($validated) {
             $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
-            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "trans_date desc"; 
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "realization_date desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 1; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
 
@@ -263,7 +260,7 @@ class Real extends REST_Controller {
                 $filter["city_id"] = $validated->city_id;
             }
             
-            $data = $this->Real_model->get_last_in($filter, $order, $limit, $offset);
+            $data = $this->Real_model->get_last_in($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -292,7 +289,7 @@ class Real extends REST_Controller {
 
         if ($validated) {
             $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
-            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "trans_date desc"; 
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "realization_date desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 1; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
 
@@ -302,7 +299,7 @@ class Real extends REST_Controller {
                 $filter["city_id"] = $validated->city_id;
             }
             
-            $data = $this->Real_model->get_last_out($filter, $order, $limit, $offset);
+            $data = $this->Real_model->get_last_out($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -331,7 +328,7 @@ class Real extends REST_Controller {
 
         if ($validated) {
             $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
-            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "trans_date desc"; 
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "realization_date desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 1; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
 
@@ -341,7 +338,7 @@ class Real extends REST_Controller {
                 $filter["city_id"] = $validated->city_id;
             }
             
-            $data = $this->Real_model->get_last_cost($filter, $order, $limit, $offset);
+            $data = $this->Real_model->get_last_cost($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -369,21 +366,10 @@ class Real extends REST_Controller {
             $id = $this->get_post("id");
             $account_object_detail_sub_id = $this->get_post("account_object_detail_sub_id");
             $city_id = $this->get_post("city_id");
-            $trans_date = $this->get_post("trans_date");
+            $date = $this->get_post("date");
             $mode = $this->get_post("mode");
 
             $error = [];
-
-            // check parameter format
-            if (!$account_object_detail_sub_id || intval($account_object_detail_sub_id) <= 0) {
-                $error[] = "Insert/Update Data Failed, `account_object_detail_sub_id` Expected INT";
-            }
-            if (!$city_id || intval($city_id) <= 0) {
-                $error[] = "Insert/Update Data Failed, `city_id` Expected INT";
-            }
-            if (!$trans_date || gettype($trans_date) != "string") {
-                $error[] = "Insert/Update Data Failed, `trans_date` Expected STRING";
-            }
 
             // check mode
             if (!$mode || gettype($mode) != "string" && ($mode != "C" || $mode != "U")) {
@@ -391,6 +377,17 @@ class Real extends REST_Controller {
             } else {
                 if ($mode == "U" && (!$id || intval($id) <= 0)) {
                     $error[] = "Insert/Update Data Failed, `id` Expected INT";
+                } else {
+                    // check parameter format
+                    if (!$account_object_detail_sub_id || intval($account_object_detail_sub_id) <= 0) {
+                        $error[] = "Insert/Update Data Failed, `account_object_detail_sub_id` Expected INT";
+                    }
+                    if (!$city_id || intval($city_id) <= 0) {
+                        $error[] = "Insert/Update Data Failed, `city_id` Expected INT";
+                    }
+                    if (!$date || gettype($date) != "string") {
+                        $error[] = "Insert/Update Data Failed, `date` Expected STRING";
+                    }
                 }
             }
             
@@ -402,9 +399,9 @@ class Real extends REST_Controller {
             $save = $this->Real_model->save($params);
 
             if ($save['code'] == 200) {
-                $this->response($save);
                 // insert log
-                $this->Log_model->log("transaction", $mode, $params, $validated->username);
+                $this->Log_model->log("realization", $mode, $params, $validated->username);
+                $this->response($save);
             } else {
                 $this->response($save, $save["code"]);
             }
@@ -441,9 +438,9 @@ class Real extends REST_Controller {
             $remove = $this->Real_model->delete(intval($id));
 
             if ($remove['code'] == 200) {
-                $this->response($remove);
                 // insert log
-                $this->Log_model->log("transaction", "D", array("id" => intval($id)), $validated->username);
+                $this->Log_model->log("realization", "D", array("id" => intval($id)), $validated->username);
+                $this->response($remove);
             } else {
                 $this->response($remove, $remove["code"]);
             }
@@ -461,9 +458,8 @@ class Real extends REST_Controller {
             "id" => intval($this->get_post("id")),
             "account_object_detail_sub_id" => intval($this->get_post("account_object_detail_sub_id")),
             "city_id" => intval($this->get_post("city_id")),
-            "plan_amount" => $this->get_post("plan_amount"),
-            "real_amount" => $this->get_post("real_amount"),
-            "trans_date" => $this->get_post("trans_date"),
+            "amount" => $this->get_post("amount"),
+            "date" => $this->get_post("date"),
             "mode" => $this->get_post("mode"),
         );
     }

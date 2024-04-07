@@ -1,6 +1,7 @@
 import { Button, DatePicker, Input, InputNumber, Space, Tooltip } from "antd";
 import {
   CheckCircleOutlined,
+  DeleteOutlined,
   EditOutlined,
   EllipsisOutlined,
   SearchOutlined,
@@ -51,6 +52,7 @@ export const searchColumn = (
         ) : key.includes("date") ? (
           <div className="block">
             <RangePicker
+              popupClassName="dateRangePicker"
               allowClear
               className="w-64 md:72"
               value={
@@ -162,7 +164,7 @@ export const activeColumn = (stateFilter) => ({
 export const actionColumn = (
   onAddUpdate = null,
   onActiveChange = null,
-  onAllocationChange = null,
+  onDelete = null,
   onNavigateDetail = null
 ) => ({
   title: "#",
@@ -197,13 +199,10 @@ export const actionColumn = (
         {onAddUpdate && (
           <Button
             size="small"
-            disabled={!parseInt(value?.active)}
             icon={<EditOutlined />}
             style={{
-              color: parseInt(value?.active) ? COLORS.info : COLORS.disable,
-              borderColor: parseInt(value?.active)
-                ? COLORS.info
-                : COLORS.disable,
+              color: COLORS.info,
+              borderColor: COLORS.info,
             }}
             onClick={() => onAddUpdate(true, value)}
           >
@@ -231,6 +230,22 @@ export const actionColumn = (
               onClick={() => onActiveChange(value)}
             >
               {parseInt(value?.active) ? `Nonaktifkan` : `Aktifkan`}
+            </Button>
+          </>
+        )}
+        {onDelete && value?.role_id !== 1 && (
+          <>
+            <Button
+              size="small"
+              icon={<DeleteOutlined />}
+              danger={true}
+              style={{
+                color: COLORS.danger,
+                borderColor: COLORS.danger,
+              }}
+              onClick={() => onDelete(value)}
+            >
+              Hapus
             </Button>
           </>
         )}

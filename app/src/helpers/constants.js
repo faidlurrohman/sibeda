@@ -39,6 +39,7 @@ const PAGINATION = { pagination: { current: 1, pageSize: 10 } };
 const MESSAGE = {
   add: "Data berhasil ditambah",
   edit: "Data berhasil diperbarui",
+  delete: "Data berhasil dihapus",
 };
 const MENU_ITEM = [
   {
@@ -55,12 +56,12 @@ const MENU_ITEM = [
   },
   {
     key: "/transaksi",
-    label: "Transaksi",
+    label: "Data Entry",
     roles: [1, 2, 3, 4],
     children: [
       {
         key: "/anggaran",
-        label: "Anggaran",
+        label: "Data Anggaran",
         roles: [1, 2, 3, 4],
         children: [
           {
@@ -85,7 +86,7 @@ const MENU_ITEM = [
       },
       {
         key: "/realisasi",
-        label: "Realisasi",
+        label: "Data Realisasi",
         roles: [1, 2, 3, 4],
         children: [
           {
@@ -117,13 +118,13 @@ const MENU_ITEM = [
     children: [
       {
         key: "/laporan/realisasi-anggaran-kota",
-        label: "Realisasi Anggaran Kota",
+        label: "Realisasi Anggaran Kab/Kota",
         nav: "laporan/realisasi-anggaran-kota",
         roles: [1, 2, 3, 4],
       },
       {
         key: "/laporan/realisasi-anggaran-gabungan-kota",
-        label: "Realisasi Anggaran Gabungan Kota",
+        label: "Realisasi Anggaran Seluruh Kab/Kota",
         nav: "laporan/realisasi-anggaran-gabungan-kota",
         roles: [1, 3],
       },
@@ -168,13 +169,13 @@ const MENU_NAVIGATION = {
   objek: "Rekening Objek",
   objek_detail: "Rekening Objek Detail",
   objek_detail_sub: "Rekening Objek Detail Sub",
-  "/transaksi/anggaran/pendapatan": "Transaksi Anggaran Pendapatan",
-  "/transaksi/anggaran/belanja": "Transaksi Anggaran Belanja",
-  "/transaksi/anggaran/pembiayaan": "Transaksi Anggaran Pembiayaan",
-  "/transaksi/realisasi/pendapatan": "Transaksi Realisasi Pendapatan",
-  "/transaksi/realisasi/belanja": "Transaksi Realisasi Belanja",
-  "/transaksi/realisasi/pembiayaan": "Transaksi Realisasi Pembiayaan",
-  "/laporan/realisasi-anggaran-kota": "Laporan Realisasi Anggaran Kota",
+  "/transaksi/anggaran/pendapatan": "Data Anggaran Pendapatan",
+  "/transaksi/anggaran/belanja": "Data Anggaran Belanja",
+  "/transaksi/anggaran/pembiayaan": "Data Anggaran Pembiayaan",
+  "/transaksi/realisasi/pendapatan": "Data Realisasi Pendapatan",
+  "/transaksi/realisasi/belanja": "Data Realisasi Belanja",
+  "/transaksi/realisasi/pembiayaan": "Data Realisasi Pembiayaan",
+  "/laporan/realisasi-anggaran-kota": "Laporan Realisasi Kab/Kota",
   "/laporan/realisasi-anggaran-gabungan-kota":
     "Laporan Realisasi Anggaran Gabungan Kota",
   "/laporan/rekapitulasi-pendapatan-dan-belanja":
@@ -275,19 +276,32 @@ const EXPORT_TARGET = {
       { header: "Aktif", key: "active", width: 10 },
     ],
   },
-  transaction: {
-    filename: `SIBEDA-MASTER-TRANSAKSI`,
+  budget: {
+    filename: `SIBEDA-MASTER-DATA-ENTRY-ANGGARAN`,
     headers: [
       { header: "No", key: "no", width: 5 },
-      { header: "Tanggal", key: "trans_date", width: 20 },
-      { header: "Kota", key: "city_label", width: 35 },
+      { header: "Tanggal", key: "date", width: 20 },
+      { header: "Kab/Kota", key: "city_label", width: 35 },
       {
-        header: "Objek Detail Sub Rekening",
+        header: "Rekening",
         key: "account_object_detail_sub_label",
         width: 35,
       },
-      { header: "Anggaran", key: "plan_amount", width: 20 },
-      { header: "Realisasi", key: "real_amount", width: 20 },
+      { header: "Anggaran", key: "amount", width: 20 },
+    ],
+  },
+  realization: {
+    filename: `SIBEDA-MASTER-DATA-ENTRY-REALISASI`,
+    headers: [
+      { header: "No", key: "no", width: 5 },
+      { header: "Tanggal", key: "date", width: 20 },
+      { header: "Kab/Kota", key: "city_label", width: 35 },
+      {
+        header: "Rekening",
+        key: "account_object_detail_sub_label",
+        width: 35,
+      },
+      { header: "Realisasi", key: "amount", width: 20 },
     ],
   },
 };
