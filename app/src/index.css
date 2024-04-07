@@ -3,73 +3,81 @@
 @tailwind utilities;
 
 @layer base {
-	body {
-		margin: 0;
-	}
+  body {
+    margin: 0;
+  }
 
-	@font-face {
-		font-family: "Noto Sans HK Regular";
-		src: local("NotoSansHK-Regular"),
-			url("./assets/fonts/NotoSansHK-Regular.otf") format("truetype");
-	}
+  @font-face {
+    font-family: "Noto Sans HK Regular";
+    src: local("NotoSansHK-Regular"),
+      url("./assets/fonts/NotoSansHK-Regular.otf") format("truetype");
+  }
 
-	@font-face {
-		font-family: "Noto Sans HK Medium";
-		src: local("NotoSansHK-Medium"),
-			url("./assets/fonts/NotoSansHK-Medium.otf") format("truetype");
-	}
+  @font-face {
+    font-family: "Noto Sans HK Medium";
+    src: local("NotoSansHK-Medium"),
+      url("./assets/fonts/NotoSansHK-Medium.otf") format("truetype");
+  }
 }
 
 @layer components {
-	.checkbox-login {
-		color: theme("colors.white");
+  .dateRangePicker .ant-picker-panel:nth-child(2) {
+    display: none;
+  }
 
-		.ant-checkbox .ant-checkbox-inner {
-			background-color: theme("colors.main");
-			border-color: theme("colors.secondary");
-		}
+  .dateRangePicker .ant-picker-panel:nth-child(1) button {
+    visibility: visible !important;
+  }
 
-		.ant-checkbox-checked .ant-checkbox-inner {
-			background-color: theme("colors.secondary");
-			border-color: theme("colors.secondary");
-		}
-	}
+  .checkbox-login {
+    color: theme("colors.white");
 
-	.menu-wide {
-		color: theme("colors.white");
-		background-color: theme("colors.main");
+    .ant-checkbox .ant-checkbox-inner {
+      background-color: theme("colors.main");
+      border-color: theme("colors.secondary");
+    }
 
-		.ant-menu-item-selected {
-			color: theme("colors.white");
-			background-color: theme("colors.secondary");
-		}
+    .ant-checkbox-checked .ant-checkbox-inner {
+      background-color: theme("colors.secondary");
+      border-color: theme("colors.secondary");
+    }
+  }
 
-		.ant-menu-item-active.ant-menu-item-selected:hover {
-			color: theme("colors.white");
-			background-color: theme("colors.secondary") !important;
-		}
+  .menu-wide {
+    color: theme("colors.white");
+    background-color: theme("colors.main");
 
-		.ant-menu-item-active:hover {
-			color: theme("colors.white") !important;
-			background-color: theme("colors.secondaryOpacity") !important;
-		}
+    .ant-menu-item-selected {
+      color: theme("colors.white");
+      background-color: theme("colors.secondary");
+    }
 
-		.ant-menu-submenu-active > div:hover {
-			color: theme("colors.white") !important;
-			background-color: theme("colors.secondaryOpacity") !important;
-		}
+    .ant-menu-item-active.ant-menu-item-selected:hover {
+      color: theme("colors.white");
+      background-color: theme("colors.secondary") !important;
+    }
 
-		> li {
-			> ul {
-				background-color: theme("colors.mainDark") !important;
-			}
-		}
-	}
+    .ant-menu-item-active:hover {
+      color: theme("colors.white") !important;
+      background-color: theme("colors.secondaryOpacity") !important;
+    }
+
+    .ant-menu-submenu-active > div:hover {
+      color: theme("colors.white") !important;
+      background-color: theme("colors.secondaryOpacity") !important;
+    }
+
+    > li {
+      > ul {
+        background-color: theme("colors.mainDark") !important;
+      }
+    }
+  }
 }
 
 /* date picker on mobile */
 @media (max-width: 576px) {
-	.ant-picker-panels {
-		flex-direction: column !important;
-	}
+  .ant-picker-panels {
+    flex-direction: column !important;
+  }
 }
