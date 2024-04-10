@@ -7,8 +7,8 @@ class Report_model extends CI_Model {
         $inline = "";
         
         if (array_key_exists("trans_date_start", $filter) && array_key_exists("trans_date_end", $filter)) {
-            $inline .= " AND r.trans_date >= '" . $filter["trans_date_start"] . "'";
-            $inline .= " AND r.trans_date <= '" . $filter["trans_date_end"] . "'";
+            $inline .= " AND r.date >= '" . $filter["trans_date_start"] . "'";
+            $inline .= " AND r.date <= '" . $filter["trans_date_end"] . "'";
         }
 
         $additional = ["city_id_TYPE_int_CLAUSE_IN", "account_base_label_TYPE_text", "city_label_TYPE_text", "account_object_detail_sub_label_TYPE_text", "account_object_detail_sub_plan_amount_TYPE_int", "account_object_detail_sub_real_amount_TYPE_int"];
@@ -38,50 +38,46 @@ class Report_model extends CI_Model {
                 JOIN account_object_detail saod ON saod.account_object_id=sao.id AND saod.active
                 JOIN account_object_detail_sub saods ON saods.account_object_detail_id=saod.id AND saods.active
                 WHERE sab.active
-            ), p AS (
-                SELECT 
-                    MIN(id) plan_id
-                FROM transaction
-                WHERE plan_amount >= 0 AND real_amount = 0
-                AND YEAR(trans_date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
-                GROUP BY account_object_detail_sub_id, city_id, EXTRACT(YEAR FROM trans_date)
+                AND (
+                    LOWER(sab.remark) IN(LOWER('PENDAPATAN DAERAH'), LOWER('BELANJA DAERAH'), LOWER('PEMBIAYAAN DAERAH')) 
+                    OR
+                    sab.id IN(4, 5, 6) 
+                )
             ), anggaran AS (
                 SELECT 
-                    st.account_object_detail_sub_id,
-                    st.city_id,
+                    b.account_object_detail_sub_id,
+                    b.city_id,
                     c.label AS city_label,
                     c.logo AS city_logo,
-                    st.plan_amount,
-                    st.trans_date
-                FROM transaction st
-                JOIN city c ON c.id=st.city_id AND c.active
-                JOIN p ON p.plan_id=st.id
+                    b.amount,
+                    b.date
+                FROM budget b
+                JOIN city c ON c.id=b.city_id AND c.active
+                WHERE YEAR(b.date)=(SELECT u.which_year FROM user u WHERE u.username = '$username')
             ), realisasi AS (
-                SELECT
-                    st.account_object_detail_sub_id,
-                    st.city_id,
-                    st.real_amount,
-                    st.trans_date
-                FROM transaction st
-                JOIN city c ON c.id=st.city_id AND c.active
-                WHERE st.id NOT IN (SELECT plan_id FROM p)
-                AND YEAR(st.trans_date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
-                ORDER BY st.trans_date DESC
+                SELECT 
+                    r.account_object_detail_sub_id,
+                    r.city_id,
+                    r.amount,
+                    r.date
+                FROM realization r
+                JOIN city c ON c.id=r.city_id AND c.active
+                WHERE YEAR(r.date)=(SELECT u.which_year FROM user u WHERE u.username = '$username')
             ), mt AS (
                 SELECT 
                     a.account_object_detail_sub_id,
                     a.city_id,
                     a.city_label,
                     a.city_logo,
-                    COALESCE(a.plan_amount,0) AS plan_amount,
-                    COALESCE((SELECT MAX(r.real_amount)),0) AS real_amount,
-                    COALESCE((SELECT MAX(r.trans_date)), a.trans_date) AS trans_date
+                    COALESCE(a.amount, 0) AS plan_amount,
+                    COALESCE((SELECT MAX(r.amount)), 0) AS real_amount,
+                    COALESCE((SELECT MAX(r.date)), a.date) AS trans_date
                 FROM anggaran a
-                LEFT JOIN realisasi r ON r.account_object_detail_sub_id=a.account_object_detail_sub_id 
+                LEFT JOIN realisasi r ON r.account_object_detail_sub_id=a.account_object_detail_sub_id
                     AND r.city_id=a.city_id
-                    AND EXTRACT(YEAR FROM r.trans_date)=EXTRACT(YEAR FROM a.trans_date)
+                    AND EXTRACT(YEAR FROM r.date)=EXTRACT(YEAR FROM a.date)
                     $inline
-                GROUP BY a.account_object_detail_sub_id, a.city_id, a.city_label, a.city_logo, a.plan_amount, a.trans_date
+                GROUP BY a.account_object_detail_sub_id, a.city_id
             ), sab AS (
                 SELECT 
                     aol.account_base_id,
@@ -168,8 +164,8 @@ class Report_model extends CI_Model {
         $inline = "";
         
         if (array_key_exists("trans_date_start", $filter) && array_key_exists("trans_date_end", $filter)) {
-            $inline .= " AND r.trans_date >= '" . $filter["trans_date_start"] . "'";
-            $inline .= " AND r.trans_date <= '" . $filter["trans_date_end"] . "'";
+            $inline .= " AND r.date >= '" . $filter["trans_date_start"] . "'";
+            $inline .= " AND r.date <= '" . $filter["trans_date_end"] . "'";
         } 
 
         $additional = ["city_id_TYPE_int_CLAUSE_IN", "account_base_label_TYPE_text", "city_label_TYPE_text", "account_base_plan_amount_TYPE_int", "account_base_real_amount_TYPE_int"];
@@ -193,57 +189,54 @@ class Report_model extends CI_Model {
                 JOIN account_object sao ON sao.account_type_id=sat.id AND sao.active
                 JOIN account_object_detail saod ON saod.account_object_id=sao.id AND saod.active
                 JOIN account_object_detail_sub saods ON saods.account_object_detail_id=saod.id AND saods.active
-                WHERE sab.active AND LOWER(sab.remark) IN(LOWER('PENDAPATAN DAERAH'), LOWER('BELANJA DAERAH'))
-            ), p AS (
-                SELECT 
-                    MIN(id) plan_id
-                FROM transaction
-                WHERE plan_amount >= 0 AND real_amount = 0
-                AND YEAR(trans_date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
-                GROUP BY account_object_detail_sub_id, city_id, EXTRACT(YEAR FROM trans_date)
+                WHERE sab.active 
+                AND (
+                    LOWER(sab.remark) IN(LOWER('PENDAPATAN DAERAH'), LOWER('BELANJA DAERAH'))
+                    OR
+                    sab.id IN(4, 5) 
+                )
             ), anggaran AS (
                 SELECT 
-                    st.account_object_detail_sub_id,
-                    st.city_id,
+                    b.account_object_detail_sub_id,
+                    b.city_id,
                     c.label AS city_label,
                     c.logo AS city_logo,
-                    st.plan_amount,
-                    st.trans_date
-                FROM transaction st
-                JOIN city c ON c.id=st.city_id AND c.active
-                JOIN p ON p.plan_id=st.id
+                    b.amount,
+                    b.date
+                FROM budget b
+                JOIN city c ON c.id=b.city_id AND c.active
+                WHERE YEAR(b.date)=(SELECT u.which_year FROM user u WHERE u.username = '$username')
             ), realisasi AS (
-                SELECT
-                    st.account_object_detail_sub_id,
-                    st.city_id,
-                    st.real_amount,
-                    st.trans_date
-                FROM transaction st
-                JOIN city c ON c.id=st.city_id AND c.active
-                WHERE st.id NOT IN (SELECT plan_id FROM p)
-                AND YEAR(st.trans_date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
-                ORDER BY st.trans_date DESC
+                SELECT 
+                    r.account_object_detail_sub_id,
+                    r.city_id,
+                    r.amount,
+                    r.date
+                FROM realization r
+                JOIN city c ON c.id=r.city_id AND c.active
+                WHERE YEAR(r.date)=(SELECT u.which_year FROM user u WHERE u.username = '$username')
             ), mt AS (
                 SELECT 
                     a.account_object_detail_sub_id,
                     a.city_id,
                     a.city_label,
                     a.city_logo,
-                    COALESCE(a.plan_amount,0) AS plan_amount,
-                    COALESCE((SELECT MAX(r.real_amount)),0) AS real_amount,
-                    COALESCE((SELECT MAX(r.trans_date)), a.trans_date) AS trans_date
+                    COALESCE(a.amount, 0) AS plan_amount,
+                    COALESCE((SELECT MAX(r.amount)), 0) AS real_amount,
+                    COALESCE((SELECT MAX(r.date)), a.date) AS trans_date
                 FROM anggaran a
-                JOIN realisasi r ON r.account_object_detail_sub_id=a.account_object_detail_sub_id 
+                LEFT JOIN realisasi r ON r.account_object_detail_sub_id=a.account_object_detail_sub_id
                     AND r.city_id=a.city_id
-                    AND EXTRACT(YEAR FROM r.trans_date)=EXTRACT(YEAR FROM a.trans_date)
+                    AND EXTRACT(YEAR FROM r.date)=EXTRACT(YEAR FROM a.date)
                     $inline
-                GROUP BY a.account_object_detail_sub_id, a.city_id, a.city_label, a.city_logo, a.plan_amount, a.trans_date
+                GROUP BY a.account_object_detail_sub_id, a.city_id
             ), r AS (
                 SELECT 
                     aol.account_base_id,
                     aol.account_base_label,
                     mt.city_id, 
                     mt.city_label,
+                    mt.city_logo,
                     SUM(mt.plan_amount) as account_base_plan_amount,
                     SUM(mt.real_amount) as account_base_real_amount,
                     MAX(mt.trans_date) trans_date
