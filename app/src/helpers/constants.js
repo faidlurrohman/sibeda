@@ -175,9 +175,9 @@ const MENU_NAVIGATION = {
   "/transaksi/realisasi/pendapatan": "Data Realisasi Pendapatan",
   "/transaksi/realisasi/belanja": "Data Realisasi Belanja",
   "/transaksi/realisasi/pembiayaan": "Data Realisasi Pembiayaan",
-  "/laporan/realisasi-anggaran-kota": "Laporan Realisasi Kab/Kota",
+  "/laporan/realisasi-anggaran-kota": "Laporan Realisasi Anggaran Kab/Kota",
   "/laporan/realisasi-anggaran-gabungan-kota":
-    "Laporan Realisasi Anggaran Gabungan Kota",
+    "Laporan Realisasi Anggaran Seluruh Kab/Kota",
   "/laporan/rekapitulasi-pendapatan-dan-belanja":
     "Laporan Rekapitulasi Pendapatan & Belanja",
   "/pengaturan/kota": "Pengaturan Kota",

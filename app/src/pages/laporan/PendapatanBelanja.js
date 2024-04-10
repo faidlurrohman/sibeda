@@ -273,7 +273,7 @@ export default function PendapatanBelanja() {
     searchColumn(
       tableFilterInputRef,
       "city_label",
-      "Kota",
+      "Ka/.Kota",
       null,
       true,
       tableSorted
@@ -394,11 +394,6 @@ export default function PendapatanBelanja() {
             onChange={onDateRangeFilterChange}
             value={dateRangeFilter}
             disabledDate={(curr) => {
-              // const isNextYear =
-              //   curr &&
-              //   convertDate(curr, "YYYY") > convertDate(convertDate(), "YYYY");
-
-              // return isNextYear;
               const useYear =
                 curr &&
                 convertDate(curr, "YYYY") !== String(session?.which_year);
@@ -408,8 +403,8 @@ export default function PendapatanBelanja() {
           />
         </div>
         <div className="flex flex-row md:space-x-2">
-          <h2 className="text-xs font-normal text-right w-10 hidden md:inline">
-            Kota :
+          <h2 className="text-xs font-normal text-right w-20 hidden md:inline">
+            Kab/Kota :
           </h2>
           <Select
             mode="multiple"
@@ -417,7 +412,7 @@ export default function PendapatanBelanja() {
             allowClear
             showSearch
             className="w-full sm:w-60 md:w-60"
-            placeholder="Pilih Kota"
+            placeholder="Pilih Kab/Kota"
             optionFilterProp="children"
             filterOption={(input, option) =>
               (lower(option?.label) ?? "").includes(lower(input))

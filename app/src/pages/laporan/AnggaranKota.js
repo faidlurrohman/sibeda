@@ -46,51 +46,6 @@ export default function AnggaranKota() {
   ]);
   const [cityFilter, setCityFilter] = useState(null);
 
-  const columns = [
-    searchColumn(
-      tableFilterInputRef,
-      "trans_date",
-      "Tanggal",
-      null,
-      true,
-      tableSorted
-    ),
-    searchColumn(
-      tableFilterInputRef,
-      "city_label",
-      "Nama Kota",
-      null,
-      true,
-      tableSorted
-    ),
-    searchColumn(
-      tableFilterInputRef,
-      "account_object_detail_sub_label",
-      "Objek Detail Sub Rekening",
-      tableFiltered,
-      true,
-      tableSorted
-    ),
-    searchColumn(
-      tableFilterInputRef,
-      "account_object_detail_sub_plan_amount",
-      "Anggaran",
-      tableFiltered,
-      true,
-      tableSorted,
-      "int"
-    ),
-    searchColumn(
-      tableFilterInputRef,
-      "account_object_detail_sub_real_amount",
-      "Realisasi",
-      tableFiltered,
-      true,
-      tableSorted,
-      "int"
-    ),
-  ];
-
   const getData = (params) => {
     setLoading(true);
     axios
@@ -408,6 +363,88 @@ export default function AnggaranKota() {
     return results;
   };
 
+  const columnsSuperAdmin = [
+    searchColumn(
+      tableFilterInputRef,
+      "trans_date",
+      "Tanggal",
+      null,
+      true,
+      tableSorted
+    ),
+    searchColumn(
+      tableFilterInputRef,
+      "city_label",
+      "Kab/Kota",
+      null,
+      true,
+      tableSorted
+    ),
+    searchColumn(
+      tableFilterInputRef,
+      "account_object_detail_sub_label",
+      "Objek Detail Sub Rekening",
+      tableFiltered,
+      true,
+      tableSorted
+    ),
+    searchColumn(
+      tableFilterInputRef,
+      "account_object_detail_sub_plan_amount",
+      "Anggaran",
+      tableFiltered,
+      true,
+      tableSorted,
+      "int"
+    ),
+    searchColumn(
+      tableFilterInputRef,
+      "account_object_detail_sub_real_amount",
+      "Realisasi",
+      tableFiltered,
+      true,
+      tableSorted,
+      "int"
+    ),
+  ];
+
+  const columnsAdminCity = [
+    searchColumn(
+      tableFilterInputRef,
+      "trans_date",
+      "Tanggal",
+      null,
+      true,
+      tableSorted
+    ),
+    searchColumn(
+      tableFilterInputRef,
+      "account_object_detail_sub_label",
+      "Objek Detail Sub Rekening",
+      tableFiltered,
+      true,
+      tableSorted
+    ),
+    searchColumn(
+      tableFilterInputRef,
+      "account_object_detail_sub_plan_amount",
+      "Anggaran",
+      tableFiltered,
+      true,
+      tableSorted,
+      "int"
+    ),
+    searchColumn(
+      tableFilterInputRef,
+      "account_object_detail_sub_real_amount",
+      "Realisasi",
+      tableFiltered,
+      true,
+      tableSorted,
+      "int"
+    ),
+  ];
+
   useEffect(() => reloadTable(), []);
 
   return (
@@ -428,11 +465,6 @@ export default function AnggaranKota() {
             onChange={onDateRangeChange}
             value={dateRangeFilter}
             disabledDate={(curr) => {
-              // const isNextYear =
-              //   curr &&
-              //   convertDate(curr, "YYYY") > convertDate(convertDate(), "YYYY");
-
-              // return isNextYear;
               const useYear =
                 curr &&
                 convertDate(curr, "YYYY") !== String(session?.which_year);
@@ -443,14 +475,14 @@ export default function AnggaranKota() {
         </div>
         {is_super_admin && (
           <div className="flex flex-row md:space-x-2">
-            <h2 className="text-xs font-normal text-right w-10 hidden md:inline">
-              Kota :
+            <h2 className="text-xs font-normal text-right w-20 hidden md:inline">
+              Kab/Kota :
             </h2>
             <Select
               allowClear
               showSearch
               className="w-full h-8 sm:w-60 md:w-60"
-              placeholder="Pilih Kota"
+              placeholder="Pilih Kab/Kota"
               optionFilterProp="children"
               filterOption={(input, option) =>
                 (lower(option?.label) ?? "").includes(lower(input))
@@ -469,7 +501,7 @@ export default function AnggaranKota() {
             date={dateRangeFilter}
             report={`kota`}
             pdfOrientation="landscape"
-            fileName="LAPORAN-REALISASI-ANGGARAN-KOTA"
+            fileName="LAPORAN-REALISASI-ANGGARAN-KAB/KOTA"
           />
         )}
       </div>
@@ -539,71 +571,6 @@ export default function AnggaranKota() {
             />
           </div>
         </Card>
-        {/* PEMBIAYAAN DAERAH */}
-        <Card
-          loading={loading}
-          size="small"
-          title={
-            <Space>
-              <Avatar
-                size="small"
-                className="bg-info"
-                icon={<PercentageOutlined />}
-              />
-              <span className="text-xs">PEMBIAYAAN DAERAH</span>
-            </Space>
-          }
-          className="text-center w-full md:w-1/3 md:text-left"
-        >
-          <Statistic
-            prefix={
-              <span className="text-xs">
-                Anggaran<span className="pl-9">:</span>
-              </span>
-            }
-            value={countBy("pembiayaan", "plan")}
-            formatter={(value) => (
-              <CountUp
-                end={value}
-                className="text-xs font-bold"
-                prefix="Rp. "
-              />
-            )}
-          />
-          <Statistic
-            prefix={
-              <span className="text-xs">
-                Realisasi<span className="pl-10">:</span>
-              </span>
-            }
-            value={countBy("pembiayaan", "real")}
-            formatter={(value) => (
-              <CountUp
-                end={value}
-                className="text-xs font-bold"
-                prefix="Rp. "
-              />
-            )}
-          />
-          <div className="h-auto w-auto pt-2">
-            <Progress
-              className="font-bold"
-              format={() =>
-                `${sumPercentage(
-                  countBy("pembiayaan", "real"),
-                  countBy("pembiayaan", "plan")
-                )}%`
-              }
-              percent={sumPercentage(
-                countBy("pembiayaan", "real"),
-                countBy("pembiayaan", "plan")
-              )}
-              size={[_, 25]}
-              strokeColor={COLORS.info}
-              status="normal"
-            />
-          </div>
-        </Card>
         {/* BELANJA DAERAH */}
         <Card
           loading={loading}
@@ -669,6 +636,71 @@ export default function AnggaranKota() {
             />
           </div>
         </Card>
+        {/* PEMBIAYAAN DAERAH */}
+        <Card
+          loading={loading}
+          size="small"
+          title={
+            <Space>
+              <Avatar
+                size="small"
+                className="bg-info"
+                icon={<PercentageOutlined />}
+              />
+              <span className="text-xs">PEMBIAYAAN DAERAH</span>
+            </Space>
+          }
+          className="text-center w-full md:w-1/3 md:text-left"
+        >
+          <Statistic
+            prefix={
+              <span className="text-xs">
+                Anggaran<span className="pl-9">:</span>
+              </span>
+            }
+            value={countBy("pembiayaan", "plan")}
+            formatter={(value) => (
+              <CountUp
+                end={value}
+                className="text-xs font-bold"
+                prefix="Rp. "
+              />
+            )}
+          />
+          <Statistic
+            prefix={
+              <span className="text-xs">
+                Realisasi<span className="pl-10">:</span>
+              </span>
+            }
+            value={countBy("pembiayaan", "real")}
+            formatter={(value) => (
+              <CountUp
+                end={value}
+                className="text-xs font-bold"
+                prefix="Rp. "
+              />
+            )}
+          />
+          <div className="h-auto w-auto pt-2">
+            <Progress
+              className="font-bold"
+              format={() =>
+                `${sumPercentage(
+                  countBy("pembiayaan", "real"),
+                  countBy("pembiayaan", "plan")
+                )}%`
+              }
+              percent={sumPercentage(
+                countBy("pembiayaan", "real"),
+                countBy("pembiayaan", "plan")
+              )}
+              size={[_, 25]}
+              strokeColor={COLORS.info}
+              status="normal"
+            />
+          </div>
+        </Card>
       </div>
       <Table
         scroll={{
@@ -679,7 +711,7 @@ export default function AnggaranKota() {
         size="small"
         loading={loading}
         dataSource={data}
-        columns={columns}
+        columns={!is_super_admin ? columnsAdminCity : columnsSuperAdmin}
         rowKey={(record) =>
           `${record?.account_object_detail_sub_id}_${record?.city_id}`
         }
