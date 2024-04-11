@@ -349,6 +349,117 @@ class Real extends REST_Controller {
             $this->response(error_handler(1, 401), 401);
         }
     }
+    
+    /**
+     * TEMPLATE IN
+     */
+    public function template_in()
+    {
+        $this->do_get_template_in();
+    }
+
+    /**
+     * GET TEMPLATE IN
+     */
+    private function do_get_template_in() 
+    {
+        $validated = $this->Auth_model->validating_token();
+
+        if ($validated) {
+            $filter = "";
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "id desc"; 
+
+            $exception = $this->Auth_model->user_exception($validated->username);
+
+            if ($exception == "0") {
+                $filter = " AND b.city_id = " . $validated->city_id;
+            }
+            
+            $data = $this->Real_model->get_template_in($validated->username, $filter, $order);
+
+            if ($data['code'] == 200) {
+                $this->response($data);
+            } else {
+                $this->response($data, $data["code"]);
+            }
+        } else {
+            $this->response(error_handler(1, 401), 401);
+        }
+    }
+    
+    /**
+     * TEMPLATE OUT
+     */
+    public function template_out()
+    {
+        $this->do_get_template_out();
+    }
+
+    /**
+     * GET TEMPLATE IN
+     */
+    private function do_get_template_out() 
+    {
+        $validated = $this->Auth_model->validating_token();
+
+        if ($validated) {
+            $filter = "";
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "id desc"; 
+
+            $exception = $this->Auth_model->user_exception($validated->username);
+
+            if ($exception == "0") {
+                $filter = " AND b.city_id = " . $validated->city_id;
+            }
+            
+            $data = $this->Real_model->get_template_out($validated->username, $filter, $order);
+
+            if ($data['code'] == 200) {
+                $this->response($data);
+            } else {
+                $this->response($data, $data["code"]);
+            }
+        } else {
+            $this->response(error_handler(1, 401), 401);
+        }
+    }
+    
+    /**
+     * TEMPLATE COST
+     */
+    public function template_cost()
+    {
+        $this->do_get_template_cost();
+    }
+
+    /**
+     * GET TEMPLATE IN
+     */
+    private function do_get_template_cost() 
+    {
+        $validated = $this->Auth_model->validating_token();
+
+        if ($validated) {
+            $filter = "";
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "id desc"; 
+
+            $exception = $this->Auth_model->user_exception($validated->username);
+
+            if ($exception == "0") {
+                $filter = " AND b.city_id = " . $validated->city_id;
+            }
+            
+            $data = $this->Real_model->get_template_cost($validated->username, $filter, $order);
+
+            if ($data['code'] == 200) {
+                $this->response($data);
+            } else {
+                $this->response($data, $data["code"]);
+            }
+        } else {
+            $this->response(error_handler(1, 401), 401);
+        }
+    }
 
     /**
      * ADD TRANSACTION

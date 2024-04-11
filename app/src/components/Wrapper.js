@@ -1,6 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { Breadcrumb, Drawer, Layout, Menu } from "antd";
 import HeaderComponent from "./Header";
+import {
+  Breadcrumb,
+  Button,
+  Divider,
+  Drawer,
+  Form,
+  Layout,
+  Modal,
+  Menu,
+  Select,
+  Space,
+} from "antd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Copyright from "./Copyright";
 import {
@@ -12,7 +23,10 @@ import {
 import useRole from "../hooks/useRole";
 import { CloseOutlined } from "@ant-design/icons";
 import _ from "lodash";
-import { isEmpty } from "../helpers/typo";
+import { isEmpty, lower } from "../helpers/typo";
+import { getTemplate } from "../services/real";
+
+const ExcelJS = require("exceljs");
 
 const { Content, Footer, Sider } = Layout;
 
@@ -36,6 +50,10 @@ export default function Wrapper({ children }) {
   const [navLink, setNavLink] = useState(initLink);
   const navigate = useNavigate();
 
+  const [dowloadTemplateModal, setDowloadTemplateModal] = useState(false);
+  const [form] = Form.useForm();
+  const [confirmLoading, setConfirmLoading] = useState(false);
+
   const onOpenChange = (keys) => {
     const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
 
@@ -47,34 +65,86 @@ export default function Wrapper({ children }) {
   };
 
   const onMenuClick = (current) => {
-    // trigger from location react router
-    if (current?.pathname) {
-      let spl = current?.pathname.split("/");
+    // menu modal
+    if (current?.key === "/realisasi/download-template") {
+      handleDownloadModal(true);
+    } else {
+      // trigger from location react router
+      if (current?.pathname) {
+        let spl = current?.pathname.split("/");
 
-      if (_.size(spl) === 3) {
-        // for level 1
-        onOpenChange([`/${spl[1]}`]);
-      } else if (_.size(spl) === 4) {
-        // for level 2
-        onOpenChange([`/${spl[1]}`, `/${spl[2]}`]);
-      } else {
-        onOpenChange([]);
+        if (_.size(spl) === 3) {
+          // for level 1
+          onOpenChange([`/${spl[1]}`]);
+        } else if (_.size(spl) === 4) {
+          // for level 2
+          onOpenChange([`/${spl[1]}`, `/${spl[2]}`]);
+        } else {
+          onOpenChange([]);
+        }
+
+        if (current?.pathname.includes("rekening")) {
+          setCurrentMenu(`/${spl[1]}`);
+        } else if (current?.pathname.includes("transaksi")) {
+          setCurrentMenu(`/${spl[1]}`);
+          setCurrentMenu(`/${spl[2]}`);
+          setCurrentMenu(`/${spl[2]}/${spl[3]}`);
+        } else {
+          setCurrentMenu(current?.pathname);
+        }
       }
-
-      if (current?.pathname.includes("rekening")) {
-        setCurrentMenu(`/${spl[1]}`);
-      } else if (current?.pathname.includes("transaksi")) {
-        setCurrentMenu(`/${spl[1]}`);
-        setCurrentMenu(`/${spl[2]}`);
-        setCurrentMenu(`/${spl[2]}/${spl[3]}`);
-      } else {
-        setCurrentMenu(current?.pathname);
+      // trigger from on click menu
+      else {
+        setCurrentMenu(current?.keyPath);
       }
     }
-    // trigger from on click menu
-    else {
-      setCurrentMenu(current?.keyPath);
+  };
+
+  const handleDownloadModal = (show) => {
+    setDowloadTemplateModal(show);
+
+    if (show) {
+      form.resetFields();
     }
+  };
+
+  const onOkDowload = (values) => {
+    setConfirmLoading(true);
+    getTemplate(values?.template_type).then((response) => {
+      if (response?.code === 200) {
+        // make excel
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet("REALISASI");
+
+        sheet.columns = [
+          { header: "Nomor Rekening", key: "code", width: 20 },
+          { header: "Name Rekening", key: "name", width: 120 },
+          { header: "Pagu", key: "budget_amount", width: 15 },
+          { header: "Realisasi", key: "realization_amount", width: 15 },
+          { header: "Tanggal Realisasi", key: "realization_date", width: 15 },
+        ];
+
+        sheet.addRows(response?.data);
+
+        workbook.xlsx.writeBuffer().then(function (data) {
+          const blob = new Blob([data], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          const url = window.URL.createObjectURL(blob);
+          const anchor = document.createElement("a");
+
+          anchor.href = url;
+          anchor.download = `REALISASI_TEMPLATE.xlsx`;
+          anchor.click();
+          window.URL.revokeObjectURL(url);
+
+          setConfirmLoading(false);
+          handleDownloadModal(false);
+        });
+      } else {
+        setConfirmLoading(false);
+      }
+    });
   };
 
   const showDrawer = () => {
@@ -285,6 +355,62 @@ export default function Wrapper({ children }) {
           <Copyright />
         </Footer>
       </Layout>
+
+      <Modal
+        style={{ margin: 10 }}
+        centered
+        open={dowloadTemplateModal}
+        title={`Download Template`}
+        onCancel={() => handleDownloadModal(false)}
+        closable={false}
+        footer={null}
+      >
+        <Form
+          form={form}
+          labelCol={{ span: 8 }}
+          labelAlign="left"
+          onFinish={onOkDowload}
+          autoComplete="off"
+          initialValues={{ template_type: "" }}
+        >
+          <Form.Item
+            label="Realisasi"
+            name="template_type"
+            rules={[
+              {
+                required: true,
+                message: "Realisasi tidak boleh kosong!",
+              },
+            ]}
+          >
+            <Select
+              disabled={confirmLoading}
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (lower(option?.children) ?? "").includes(lower(input))
+              }
+            >
+              <Select.Option value="in">Ralisasi Pendapatan</Select.Option>
+              <Select.Option value="out">Ralisasi Belanja</Select.Option>
+              <Select.Option value="cost">Ralisasi Pembiayaan</Select.Option>
+            </Select>
+          </Form.Item>
+          <Divider />
+          <Form.Item className="text-right mb-0">
+            <Space direction="horizontal">
+              <Button
+                disabled={confirmLoading}
+                onClick={() => handleDownloadModal(false)}
+              >
+                Kembali
+              </Button>
+              <Button loading={confirmLoading} htmlType="submit" type="primary">
+                Download
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
     </Layout>
   );
 }

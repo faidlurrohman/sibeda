@@ -107,6 +107,12 @@ const MENU_ITEM = [
             nav: "transaksi/realisasi/pembiayaan",
             roles: [1, 2, 3, 4],
           },
+          {
+            key: "/realisasi/download-template",
+            label: "Download Template",
+            nav: null,
+            roles: [2, 4],
+          },
         ],
       },
     ],

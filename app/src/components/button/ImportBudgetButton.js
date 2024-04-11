@@ -7,7 +7,6 @@ import { PAGINATION } from "../../helpers/constants";
 import { addPlan, findPlan } from "../../services/plan";
 
 const ExcelJS = require("exceljs");
-const DEFAULT_SHEET_TARGET = "Sheet1";
 
 export default function ImportBudgetButton({
   title = "Upload",
@@ -16,7 +15,7 @@ export default function ImportBudgetButton({
   city = 0,
   onFinish,
 }) {
-  // import account modal
+  // import budget modal
   const [importBudgetModal, setImportBudgetModal] = useState(false);
 
   const [form] = Form.useForm();

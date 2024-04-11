@@ -13,6 +13,10 @@ export const removeReal = (id) => {
   return axios.delete(`/real/remove/${id}`);
 };
 
+export const getTemplate = (which) => {
+  return axios.get(`/real/template_${which}`);
+};
+
 export const getAccountObjectDetailSub = (which) => {
   return axios.get(`/real/detail_sub_real_${which}`);
 };

@@ -368,6 +368,126 @@ class Real_model extends CI_Model {
         return model_response($query);
     }
 
+    function get_template_in($username, $filter, $order)
+    {
+        $order = set_order($order);
+        
+        $sql = "
+            WITH r AS (
+                SELECT 
+                    aods.id,
+                    CONCAT_WS('.', ab.label, ag.label, at.label, ao.label, aod.label, aods.label) AS code,
+                    aods.remark AS name,
+                    b.amount AS budget_amount,
+                    COALESCE(MAX(r.amount),0) AS realization_amount,
+                    MAX(r.date) AS realization_date
+                FROM account_object_detail_sub aods
+                JOIN account_object_detail aod ON aod.id=aods.account_object_detail_id AND aod.active
+                JOIN account_object ao ON ao.id=aod.account_object_id AND ao.active
+                JOIN account_type at ON at.id=ao.account_type_id AND at.active
+                JOIN account_group ag ON ag.id=at.account_group_id AND ag.active
+                JOIN account_base ab ON ab.id=ag.account_base_id AND ab.active 
+                    AND (
+                        LOWER(ab.remark) = LOWER('PENDAPATAN DAERAH')
+                        OR
+                        ab.id=4
+                    )
+                JOIN budget b ON b.account_object_detail_sub_id=aods.id
+                    AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
+                    $filter
+                JOIN city c ON c.id=b.city_id AND c.active
+                LEFT JOIN realization r ON r.account_object_detail_sub_id=b.account_object_detail_sub_id
+                    AND YEAR(r.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
+                    AND r.city_id=b.city_id
+                GROUP BY YEAR(b.date), b.account_object_detail_sub_id, b.city_id
+            ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
+            ORDER BY $order
+        ";
+        $query = $this->db->query($sql);
+            
+        return model_response($query);
+    }
+    
+    function get_template_out($username, $filter, $order)
+    {
+        $order = set_order($order);
+        
+        $sql = "
+            WITH r AS (
+                SELECT 
+                    aods.id,
+                    CONCAT_WS('.', ab.label, ag.label, at.label, ao.label, aod.label, aods.label) AS code,
+                    aods.remark AS name,
+                    b.amount AS budget_amount,
+                    COALESCE(MAX(r.amount),0) AS realization_amount,
+                    MAX(r.date) AS realization_date
+                FROM account_object_detail_sub aods
+                JOIN account_object_detail aod ON aod.id=aods.account_object_detail_id AND aod.active
+                JOIN account_object ao ON ao.id=aod.account_object_id AND ao.active
+                JOIN account_type at ON at.id=ao.account_type_id AND at.active
+                JOIN account_group ag ON ag.id=at.account_group_id AND ag.active
+                JOIN account_base ab ON ab.id=ag.account_base_id AND ab.active 
+                    AND (
+                        LOWER(ab.remark) = LOWER('BELANJA DAERAH')
+                        OR
+                        ab.id=5
+                    )
+                JOIN budget b ON b.account_object_detail_sub_id=aods.id
+                    AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
+                    $filter
+                JOIN city c ON c.id=b.city_id AND c.active
+                LEFT JOIN realization r ON r.account_object_detail_sub_id=b.account_object_detail_sub_id
+                    AND YEAR(r.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
+                    AND r.city_id=b.city_id
+                GROUP BY YEAR(b.date), b.account_object_detail_sub_id, b.city_id
+            ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
+            ORDER BY $order
+        ";
+        $query = $this->db->query($sql);
+            
+        return model_response($query);
+    }
+    
+    function get_template_cost($username, $filter, $order)
+    {
+        $order = set_order($order);
+        
+        $sql = "
+            WITH r AS (
+                SELECT 
+                    aods.id,
+                    CONCAT_WS('.', ab.label, ag.label, at.label, ao.label, aod.label, aods.label) AS code,
+                    aods.remark AS name,
+                    b.amount AS budget_amount,
+                    COALESCE(MAX(r.amount),0) AS realization_amount,
+                    MAX(r.date) AS realization_date
+                FROM account_object_detail_sub aods
+                JOIN account_object_detail aod ON aod.id=aods.account_object_detail_id AND aod.active
+                JOIN account_object ao ON ao.id=aod.account_object_id AND ao.active
+                JOIN account_type at ON at.id=ao.account_type_id AND at.active
+                JOIN account_group ag ON ag.id=at.account_group_id AND ag.active
+                JOIN account_base ab ON ab.id=ag.account_base_id AND ab.active 
+                    AND (
+                        LOWER(ab.remark) = LOWER('PEMBIAYAAN DAERAH')
+                        OR
+                        ab.id=6
+                    )
+                JOIN budget b ON b.account_object_detail_sub_id=aods.id
+                    AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
+                    $filter
+                JOIN city c ON c.id=b.city_id AND c.active
+                LEFT JOIN realization r ON r.account_object_detail_sub_id=b.account_object_detail_sub_id
+                    AND YEAR(r.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
+                    AND r.city_id=b.city_id
+                GROUP BY YEAR(b.date), b.account_object_detail_sub_id, b.city_id
+            ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
+            ORDER BY $order
+        ";
+        $query = $this->db->query($sql);
+            
+        return model_response($query);
+    }
+
     function save($params)
     {
         if ($params["mode"] == "C") {
