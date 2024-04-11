@@ -399,6 +399,7 @@ class Plan_model extends CI_Model {
             
         return model_response($query);
     }
+    
     function get_find_budget_cost($username, $filter, $order, $inline)
     {
         $additional = ["account_object_detail_sub_code_TYPE_text"];
