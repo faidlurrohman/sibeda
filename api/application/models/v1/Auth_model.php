@@ -58,7 +58,7 @@ class Auth_model extends CI_Model {
 
         if ($current_token && $current_token != "") {   
             $sql = "
-                SELECT u.id, u.username, u.role_id, u.city_id
+                SELECT u.id, u.username, u.role_id, u.city_id, u.which_year
                 FROM user u 
                 JOIN city c ON c.id=u.city_id AND c.active 
                 WHERE u.token = '$current_token' AND u.active

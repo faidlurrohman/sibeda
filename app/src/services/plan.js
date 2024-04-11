@@ -9,6 +9,10 @@ export const addPlan = (values) => {
   return axios.post("/plan/add", values);
 };
 
+export const findPlan = (which, params) => {
+  return axios.get(getUrl(`/plan/find_budget_${which}`, params));
+};
+
 export const removePlan = (id) => {
   return axios.delete(`/plan/remove/${id}`);
 };

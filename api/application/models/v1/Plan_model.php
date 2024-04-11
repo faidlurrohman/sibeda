@@ -313,6 +313,134 @@ class Plan_model extends CI_Model {
             
         return model_response($query);
     }
+    
+    function get_find_budget_in($username, $filter, $order, $inline)
+    {
+        $additional = ["account_object_detail_sub_code_TYPE_text"];
+        $filter = set_filter($filter, "", $additional);
+        $order = set_order($order);
+
+        $sql = "       
+            WITH aol AS (
+                SELECT  
+                    saods.id AS account_object_detail_sub_id, 
+                    CONCAT_WS('.', sab.label, sag.label, sat.label, sao.label, saod.label, saods.label) AS account_object_detail_sub_code,
+                    saods.remark AS account_object_detail_sub_label
+                FROM account_base sab
+                JOIN account_group sag ON sag.account_base_id=sab.id AND sag.active
+                JOIN account_type sat ON sat.account_group_id=sag.id AND sat.active
+                JOIN account_object sao ON sao.account_type_id=sat.id AND sao.active
+                JOIN account_object_detail saod ON saod.account_object_id=sao.id AND saod.active
+                JOIN account_object_detail_sub saods ON saods.account_object_detail_id=saod.id AND saods.active
+                WHERE sab.active
+                    AND (
+                        LOWER(sab.remark) IN(LOWER('PENDAPATAN DAERAH')) 
+                        OR
+                        sab.id IN(4) 
+                    )
+            ), r AS (
+                SELECT 
+                    aol.*,
+                    b.id,
+                    b.city_id,
+                    YEAR(b.date) AS budget_year
+                FROM aol
+                LEFT JOIN budget b ON b.account_object_detail_sub_id=aol.account_object_detail_sub_id
+                    AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
+                    $inline
+            ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
+            $filter 
+            ORDER BY $order
+        ";
+        $query = $this->db->query($sql);
+            
+        return model_response($query);
+    }
+
+    function get_find_budget_out($username, $filter, $order, $inline)
+    {
+        $additional = ["account_object_detail_sub_code_TYPE_text"];
+        $filter = set_filter($filter, "", $additional);
+        $order = set_order($order);
+
+        $sql = "       
+            WITH aol AS (
+                SELECT  
+                    saods.id AS account_object_detail_sub_id, 
+                    CONCAT_WS('.', sab.label, sag.label, sat.label, sao.label, saod.label, saods.label) AS account_object_detail_sub_code,
+                    saods.remark AS account_object_detail_sub_label
+                FROM account_base sab
+                JOIN account_group sag ON sag.account_base_id=sab.id AND sag.active
+                JOIN account_type sat ON sat.account_group_id=sag.id AND sat.active
+                JOIN account_object sao ON sao.account_type_id=sat.id AND sao.active
+                JOIN account_object_detail saod ON saod.account_object_id=sao.id AND saod.active
+                JOIN account_object_detail_sub saods ON saods.account_object_detail_id=saod.id AND saods.active
+                WHERE sab.active
+                    AND (
+                        LOWER(sab.remark) IN(LOWER('BELANJA DAERAH')) 
+                        OR
+                        sab.id IN(5) 
+                    )
+            ), r AS (
+                SELECT 
+                    aol.*,
+                    b.id,
+                    b.city_id,
+                    YEAR(b.date) AS budget_year
+                FROM aol
+                LEFT JOIN budget b ON b.account_object_detail_sub_id=aol.account_object_detail_sub_id
+                    AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
+                    $inline
+            ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
+            $filter 
+            ORDER BY $order
+        ";
+        $query = $this->db->query($sql);
+            
+        return model_response($query);
+    }
+    function get_find_budget_cost($username, $filter, $order, $inline)
+    {
+        $additional = ["account_object_detail_sub_code_TYPE_text"];
+        $filter = set_filter($filter, "", $additional);
+        $order = set_order($order);
+
+        $sql = "       
+            WITH aol AS (
+                SELECT  
+                    saods.id AS account_object_detail_sub_id, 
+                    CONCAT_WS('.', sab.label, sag.label, sat.label, sao.label, saod.label, saods.label) AS account_object_detail_sub_code,
+                    saods.remark AS account_object_detail_sub_label
+                FROM account_base sab
+                JOIN account_group sag ON sag.account_base_id=sab.id AND sag.active
+                JOIN account_type sat ON sat.account_group_id=sag.id AND sat.active
+                JOIN account_object sao ON sao.account_type_id=sat.id AND sao.active
+                JOIN account_object_detail saod ON saod.account_object_id=sao.id AND saod.active
+                JOIN account_object_detail_sub saods ON saods.account_object_detail_id=saod.id AND saods.active
+                WHERE sab.active
+                    AND (
+                        LOWER(sab.remark) IN(LOWER('PEMBIAYAAN DAERAH')) 
+                        OR
+                        sab.id IN(6) 
+                    )
+            ), r AS (
+                SELECT 
+                    aol.*,
+                    b.id,
+                    b.city_id,
+                    YEAR(b.date) AS budget_year
+                FROM aol
+                LEFT JOIN budget b ON b.account_object_detail_sub_id=aol.account_object_detail_sub_id
+                    AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
+                    $inline
+            ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
+            $filter 
+            ORDER BY $order
+        ";
+        $query = $this->db->query($sql);
+            
+        return model_response($query);
+    }
 
     function save($params, $username)
     {

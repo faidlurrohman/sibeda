@@ -350,6 +350,120 @@ class Plan extends REST_Controller {
         }
     }
 
+     /**
+     * FIND BUDGET
+     */
+    public function find_budget_in()
+    {
+        $this->do_find_budget_in();
+    }
+
+    /**
+     * GET FIND BUDGET
+     */
+    private function do_find_budget_in()
+    {   
+        $validated = $this->Auth_model->validating_token();
+
+        if ($validated) {
+            $inline = "";
+            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "id desc"; 
+
+            $exception = $this->Auth_model->user_exception($validated->username);
+
+            if ($exception == "0") {
+                $inline .= " AND city_id = " . $validated->city_id;
+            }
+
+            $data = $this->Plan_model->get_find_budget_in($validated->username, $filter, $order, $inline);
+
+            if ($data['code'] == 200) {
+                $this->response($data);
+            } else {
+                $this->response($data, $data["code"]);
+            }
+        } else {
+            $this->response(error_handler(1, 401), 401);
+        }
+    }
+
+     /**
+     * FIND BUDGET
+     */
+    public function find_budget_out()
+    {
+        $this->do_find_budget_out();
+    }
+
+    /**
+     * GET FIND BUDGET
+     */
+    private function do_find_budget_out()
+    {   
+        $validated = $this->Auth_model->validating_token();
+
+        if ($validated) {
+            $inline = "";
+            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "id desc"; 
+
+            $exception = $this->Auth_model->user_exception($validated->username);
+
+            if ($exception == "0") {
+                $inline .= " AND city_id = " . $validated->city_id;
+            }
+
+            $data = $this->Plan_model->get_find_budget_out($validated->username, $filter, $order, $inline);
+
+            if ($data['code'] == 200) {
+                $this->response($data);
+            } else {
+                $this->response($data, $data["code"]);
+            }
+        } else {
+            $this->response(error_handler(1, 401), 401);
+        }
+    }
+
+     /**
+     * FIND BUDGET
+     */
+    public function find_budget_cost()
+    {
+        $this->do_find_budget_cost();
+    }
+
+    /**
+     * GET FIND BUDGET
+     */
+    private function do_find_budget_cost()
+    {   
+        $validated = $this->Auth_model->validating_token();
+
+        if ($validated) {
+            $inline = "";
+            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "id desc"; 
+
+            $exception = $this->Auth_model->user_exception($validated->username);
+
+            if ($exception == "0") {
+                $inline .= " AND city_id = " . $validated->city_id;
+            }
+
+            $data = $this->Plan_model->get_find_budget_cost($validated->username, $filter, $order, $inline);
+
+            if ($data['code'] == 200) {
+                $this->response($data);
+            } else {
+                $this->response($data, $data["code"]);
+            }
+        } else {
+            $this->response(error_handler(1, 401), 401);
+        }
+    }
+
     /**
      * ADD TRANSACTION
      */

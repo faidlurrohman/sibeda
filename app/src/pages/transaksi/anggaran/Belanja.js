@@ -33,6 +33,7 @@ import {
   removePlan,
 } from "../../../services/plan";
 import { useAppSelector } from "../../../hooks/useRedux";
+import ImportBudgetButton from "../../../components/button/ImportBudgetButton";
 
 export default function AnggaranBelanja() {
   const { modal } = App.useApp();
@@ -244,6 +245,14 @@ export default function AnggaranBelanja() {
             data={exports}
             master={`budget`}
             pdfOrientation={`landscape`}
+          />
+        )}
+        {!is_super_admin && (
+          <ImportBudgetButton
+            type="out"
+            year={session?.which_year}
+            city={!!cities.length ? cities[0]?.id : 0}
+            onFinish={() => reloadTable()}
           />
         )}
       </div>
