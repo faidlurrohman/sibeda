@@ -318,6 +318,28 @@ export default function AnggaranKota() {
             percentage: "",
           }
         );
+
+        if (item?.code === "5" || item?.code === 5) {
+          results.push(
+            {
+              account_level: 0,
+              code: "",
+              label: `SURPLUS/DEFISIT`,
+              plan_amount:
+                parseInt(data[0]?.plan_amount) - parseInt(data[1]?.plan_amount),
+              real_amount: 0,
+              percentage: 0,
+            },
+            {
+              account_level: 0,
+              code: "",
+              label: "",
+              plan_amount: "",
+              real_amount: "",
+              percentage: "",
+            }
+          );
+        }
       }
 
       return item;
