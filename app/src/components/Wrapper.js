@@ -121,7 +121,6 @@ export default function Wrapper({ children }) {
           { header: "Name Rekening", key: "name", width: 120 },
           { header: "Pagu", key: "budget_amount", width: 15 },
           { header: "Realisasi", key: "realization_amount", width: 15 },
-          { header: "Tanggal Realisasi", key: "realization_date", width: 15 },
         ];
 
         sheet.addRows(response?.data);
@@ -365,6 +364,7 @@ export default function Wrapper({ children }) {
         closable={false}
         footer={null}
       >
+        <Divider />
         <Form
           form={form}
           labelCol={{ span: 8 }}
