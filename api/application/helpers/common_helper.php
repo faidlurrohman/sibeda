@@ -247,7 +247,7 @@ function set_limit_offset($limit, $offset)
     }
 
     if ($offset != 0) {
-        $generate_limit_offset .= " OFFSET " . $limit;
+        $generate_limit_offset .= " OFFSET " . $offset;
     }
 
     return $generate_limit_offset;
