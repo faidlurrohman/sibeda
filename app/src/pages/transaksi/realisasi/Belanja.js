@@ -34,6 +34,7 @@ import {
   removeReal,
 } from "../../../services/real";
 import { useAppSelector } from "../../../hooks/useRedux";
+import ImportRealizationButton from "../../../components/button/ImportRealizationButton";
 
 export default function RealisasiBelanja() {
   const { modal } = App.useApp();
@@ -256,7 +257,7 @@ export default function RealisasiBelanja() {
     searchColumn(
       tableFilterInputRef,
       "amount",
-      "Anggaran",
+      "Realisasi",
       tableFiltered,
       true,
       tableSorted,
@@ -279,6 +280,14 @@ export default function RealisasiBelanja() {
             data={exports}
             master={`realization`}
             pdfOrientation={`landscape`}
+          />
+        )}
+        {!is_super_admin && (
+          <ImportRealizationButton
+            type="out"
+            year={session?.which_year}
+            city={!!cities.length ? cities[0]?.id : 0}
+            onFinish={() => reloadTable()}
           />
         )}
       </div>

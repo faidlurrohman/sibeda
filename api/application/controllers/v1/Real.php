@@ -20,7 +20,7 @@ class Real extends REST_Controller {
 
         if ($validated) {
             $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
-            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "id desc"; 
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "date desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 0; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
 
@@ -60,7 +60,7 @@ class Real extends REST_Controller {
 
         if ($validated) {
             $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
-            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "id desc"; 
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "date desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 0; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
 
@@ -100,7 +100,7 @@ class Real extends REST_Controller {
 
         if ($validated) {
             $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
-            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "id desc"; 
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "date desc"; 
             $limit = !empty($this->get_param("limit")) ? $this->get_param("limit") : 0; 
             $offset = !empty($this->get_param("offset")) ? $this->get_param("offset") : 0; 
 
@@ -450,6 +450,123 @@ class Real extends REST_Controller {
             }
             
             $data = $this->Real_model->get_template_cost($validated->username, $filter, $order);
+
+            if ($data['code'] == 200) {
+                $this->response($data);
+            } else {
+                $this->response($data, $data["code"]);
+            }
+        } else {
+            $this->response(error_handler(1, 401), 401);
+        }
+    }
+
+     /**
+     * FIND REALIZATION
+     */
+    public function find_realization_in()
+    {
+        $this->do_find_realization_in();
+    }
+
+    /**
+     * GET FIND REALIZATION
+     */
+    private function do_find_realization_in()
+    {   
+        $validated = $this->Auth_model->validating_token();
+
+        if ($validated) {
+            $inline = "";
+            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "id desc"; 
+
+            $exception = $this->Auth_model->user_exception($validated->username);
+
+            if ($exception == "0") {
+                $inline .= " AND r.city_id = " . $validated->city_id;
+                $inline .= " AND r.date = '" . $filter['dt'] . "'";
+            }
+
+            $data = $this->Real_model->get_find_realization_in($validated->username, $filter, $order, $inline);
+
+            if ($data['code'] == 200) {
+                $this->response($data);
+            } else {
+                $this->response($data, $data["code"]);
+            }
+        } else {
+            $this->response(error_handler(1, 401), 401);
+        }
+    }
+
+     /**
+     * FIND REALIZATION
+     */
+    public function find_realization_out()
+    {
+        $this->do_find_realization_out();
+    }
+
+    /**
+     * GET FIND REALIZATION
+     */
+    private function do_find_realization_out()
+    {   
+        $validated = $this->Auth_model->validating_token();
+
+        if ($validated) {
+            $inline = "";
+            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "id desc"; 
+
+            $exception = $this->Auth_model->user_exception($validated->username);
+
+            if ($exception == "0") {
+                $inline .= " AND r.city_id = " . $validated->city_id;
+                $inline .= " AND r.date = '" . $filter['dt'] . "'";
+            }
+
+            $data = $this->Real_model->get_find_realization_out($validated->username, $filter, $order, $inline);
+
+            if ($data['code'] == 200) {
+                $this->response($data);
+            } else {
+                $this->response($data, $data["code"]);
+            }
+        } else {
+            $this->response(error_handler(1, 401), 401);
+        }
+    }
+
+     /**
+     * FIND REALIZATION
+     */
+    public function find_realization_cost()
+    {
+        $this->do_find_realization_cost();
+    }
+
+    /**
+     * GET FIND REALIZATION
+     */
+    private function do_find_realization_cost()
+    {   
+        $validated = $this->Auth_model->validating_token();
+
+        if ($validated) {
+            $inline = "";
+            $filter = !empty($this->get_param("filter")) ? $this->get_param("filter") : [];
+            $order = !empty($this->get_param("order")) ? $this->get_param("order") : "id desc"; 
+
+            $exception = $this->Auth_model->user_exception($validated->username);
+
+            if ($exception == "0") {
+                $inline .= " AND r.city_id = " . $validated->city_id;
+                $inline .= " AND r.date = '" . $filter['dt'] . "'";
+            }
+
+            $data = $this->Real_model->get_find_realization_cost($validated->username, $filter, $order, $inline);
 
             if ($data['code'] == 200) {
                 $this->response($data);
