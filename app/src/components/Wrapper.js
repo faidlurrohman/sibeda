@@ -118,7 +118,7 @@ export default function Wrapper({ children }) {
 
         sheet.columns = [
           { header: "Nomor Rekening", key: "code", width: 20 },
-          { header: "Name Rekening", key: "name", width: 120 },
+          { header: "Nama Rekening", key: "name", width: 120 },
           { header: "Pagu", key: "budget_amount", width: 15 },
           { header: "Realisasi", key: "realization_amount", width: 15 },
         ];
