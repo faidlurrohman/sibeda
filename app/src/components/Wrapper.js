@@ -390,9 +390,9 @@ export default function Wrapper({ children }) {
                 (lower(option?.children) ?? "").includes(lower(input))
               }
             >
-              <Select.Option value="in">Ralisasi Pendapatan</Select.Option>
-              <Select.Option value="out">Ralisasi Belanja</Select.Option>
-              <Select.Option value="cost">Ralisasi Pembiayaan</Select.Option>
+              <Select.Option value="in">Realisasi Pendapatan</Select.Option>
+              <Select.Option value="out">Realisasi Belanja</Select.Option>
+              <Select.Option value="cost">Realisasi Pembiayaan</Select.Option>
             </Select>
           </Form.Item>
           <Divider />
