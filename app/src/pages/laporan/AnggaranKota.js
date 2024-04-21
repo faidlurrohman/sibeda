@@ -31,6 +31,7 @@ const { RangePicker } = DatePicker;
 export default function AnggaranKota() {
   const { is_super_admin } = useRole();
   const [data, setData] = useState([]);
+  const [dataChart, setDataChart] = useState([]);
   const [exports, setExports] = useState([]);
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -63,6 +64,7 @@ export default function AnggaranKota() {
           setLoading(false);
           setCities(_cities?.data);
           setData(_data?.data);
+          setDataChart(_export?.data);
           setExports(setDataExport(_export?.data));
           setTablePage({
             pagination: { ...params.pagination, total: _data?.total },
@@ -359,8 +361,8 @@ export default function AnggaranKota() {
   };
 
   const countBy = (target, useFor) => {
-    if (data && !!data.length) {
-      let _ft = _.filter(data, (o) =>
+    if (dataChart && !!dataChart.length) {
+      let _ft = _.filter(dataChart, (o) =>
         lower(o?.account_base_label).includes(lower(target))
       );
 
