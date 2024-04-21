@@ -3,8 +3,11 @@ import { ImportOutlined, UploadOutlined } from "@ant-design/icons";
 import { Button, Divider, Form, Modal, Space, Upload } from "antd";
 import { swal } from "../../helpers/swal";
 import { isEmpty, lower } from "../../helpers/typo";
-import { PAGINATION } from "../../helpers/constants";
+import { ACCOUNT_CODE, PAGINATION } from "../../helpers/constants";
 import { addPlan, findPlan } from "../../services/plan";
+import _ from "lodash";
+import ProgressIndicator from "./ProgressIndicator";
+import ImageButton from "./ImageButton";
 
 const ExcelJS = require("exceljs");
 
@@ -17,6 +20,7 @@ export default function ImportBudgetButton({
 }) {
   // import budget modal
   const [importBudgetModal, setImportBudgetModal] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const [form] = Form.useForm();
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -53,96 +57,130 @@ export default function ImportBudgetButton({
     workbook.xlsx
       .load(values?.originFileObj)
       .then(() => {
-        const ws = workbook.getWorksheet();
+        // check sheets
+        if (workbook.worksheets.length > 1) {
+          setConfirmLoading(false);
+          swal(
+            "Pastikan Sheets dari file XLS/XLSX yang diunggah tidak lebih dari satu",
+            "warning"
+          );
+        } else {
+          const ws = workbook.getWorksheet();
 
-        // check read file, make sure file on default sheet target
-        if (!isEmpty(ws)) {
-          if (type === "in" || type === "cost") {
-            // PENDAPATAN
-            // must be have TAHUN, KODE AKUN, PAGU
-            const _rows = ws._rows;
-            const _header = _rows[0].values;
-            const _iYear = _header.findIndex((i) => lower(i) === "tahun");
-            const _iCode = _header.findIndex((i) => lower(i) === "kode akun");
-            const _iAmount = _header.findIndex((i) => lower(i) === "pagu");
+          // check read file, make sure file on default sheet target
+          if (!isEmpty(ws)) {
+            if (type === "in" || type === "cost") {
+              // must be have TAHUN, KODE AKUN, PAGU
+              const _rows = ws._rows;
+              const _header = _rows[0].values;
+              const _iYear = _header.findIndex((i) => lower(i) === "tahun");
+              const _iCode = _header.findIndex((i) => lower(i) === "kode akun");
+              const _iAmount = _header.findIndex((i) => lower(i) === "pagu");
 
-            if ([_iYear, _iCode, _iAmount].includes(-1)) {
+              if ([_iYear, _iCode, _iAmount].includes(-1)) {
+                setConfirmLoading(false);
+                swal(
+                  "Tidak ada data yang ditemukan, cek format isi file XLS/XLSX yang diunggah",
+                  "warning"
+                );
+              } else {
+                _rows.map((data, index) => {
+                  const _res = data?.values;
+
+                  if (index > 0 && String(_res[_iYear]) === String(year)) {
+                    // make filter
+                    const _filters = {
+                      filters: {
+                        account_object_detail_sub_code: [_res[_iCode]],
+                      },
+                      pagination: { ...PAGINATION?.pagination, pageSize: 0 },
+                    };
+
+                    if (
+                      _res[_iCode] &&
+                      _res[_iCode].slice(0, 1) === ACCOUNT_CODE[type]
+                    ) {
+                      _prep.push({
+                        budget_year: _res[_iYear],
+                        account_object_detail_sub_code: _res[_iCode],
+                        amount: _res[_iAmount],
+                        filters: _filters,
+                      });
+                    }
+                  }
+                });
+              }
+            } else if (type === "out") {
+              // must be have TAHUN, KODE REKENING, PAGU
+              const _rows = ws._rows;
+              const _header = _rows[0].values;
+              const _iYear = _header.findIndex((i) => lower(i) === "tahun");
+              const _iCode = _header.findIndex(
+                (i) => lower(i) === "kode rekening"
+              );
+              const _iAmount = _header.findIndex((i) => lower(i) === "pagu");
+
+              if ([_iYear, _iCode, _iAmount].includes(-1)) {
+                setConfirmLoading(false);
+                swal(
+                  "Tidak ada data yang ditemukan, cek format isi file XLS/XLSX yang diunggah",
+                  "warning"
+                );
+              } else {
+                _rows.map((data, index) => {
+                  const _res = data?.values;
+
+                  if (index > 0 && String(_res[_iYear]) === String(year)) {
+                    // make filter
+                    const _filters = {
+                      filters: {
+                        account_object_detail_sub_code: [_res[_iCode]],
+                      },
+                      pagination: { ...PAGINATION?.pagination, pageSize: 0 },
+                    };
+
+                    if (
+                      _res[_iCode] &&
+                      _res[_iCode].slice(0, 1) === ACCOUNT_CODE[type]
+                    ) {
+                      _prep.push({
+                        budget_year: _res[_iYear],
+                        account_object_detail_sub_code: _res[_iCode],
+                        amount: _res[_iAmount],
+                        filters: _filters,
+                      });
+                    }
+                  }
+                });
+              }
+            }
+
+            // preparation for inserting data
+            if (!!_prep.length) {
+              // recursive function for a while
+              let _grouping = _.groupBy(
+                _prep,
+                "account_object_detail_sub_code"
+              );
+              let _data = _.chain(_grouping)
+                .map((_budget) => ({
+                  budget_year: _budget[0].budget_year,
+                  account_object_detail_sub_code:
+                    _budget[0].account_object_detail_sub_code,
+                  amount: _.sumBy(_budget, (b) => b?.amount),
+                  filters: _budget[0].filters,
+                  duplicate: _budget.length,
+                }))
+                .value();
+
+              doInsertBudget(_data, 0, 0, 100 / _data.length);
+            } else {
               setConfirmLoading(false);
               swal(
                 "Tidak ada data yang ditemukan, cek format isi file XLS/XLSX yang diunggah",
                 "warning"
               );
-            } else {
-              _rows.map((data, index) => {
-                const _res = data?.values;
-
-                if (index > 0 && String(_res[_iYear]) === String(year)) {
-                  // make filter
-                  const _filters = {
-                    filters: {
-                      account_object_detail_sub_code: [_res[_iCode]],
-                    },
-                    pagination: { ...PAGINATION?.pagination, pageSize: 0 },
-                  };
-
-                  if (_res[_iCode]) {
-                    _prep.push({
-                      budget_year: _res[_iYear],
-                      account_object_detail_sub_code: _res[_iCode],
-                      amount: _res[_iAmount],
-                      filters: _filters,
-                    });
-                  }
-                }
-              });
             }
-          } else if (type === "out") {
-            // BELANJA
-            // must be have TAHUN, KODE REKENING, PAGU
-            const _rows = ws._rows;
-            const _header = _rows[0].values;
-            const _iYear = _header.findIndex((i) => lower(i) === "tahun");
-            const _iCode = _header.findIndex(
-              (i) => lower(i) === "kode rekening"
-            );
-            const _iAmount = _header.findIndex((i) => lower(i) === "pagu");
-
-            if ([_iYear, _iCode, _iAmount].includes(-1)) {
-              setConfirmLoading(false);
-              swal(
-                "Tidak ada data yang ditemukan, cek format isi file XLS/XLSX yang diunggah",
-                "warning"
-              );
-            } else {
-              _rows.map((data, index) => {
-                const _res = data?.values;
-
-                if (index > 0 && String(_res[_iYear]) === String(year)) {
-                  // make filter
-                  const _filters = {
-                    filters: {
-                      account_object_detail_sub_code: [_res[_iCode]],
-                    },
-                    pagination: { ...PAGINATION?.pagination, pageSize: 0 },
-                  };
-
-                  if (_res[_iCode]) {
-                    _prep.push({
-                      budget_year: _res[_iYear],
-                      account_object_detail_sub_code: _res[_iCode],
-                      amount: _res[_iAmount],
-                      filters: _filters,
-                    });
-                  }
-                }
-              });
-            }
-          }
-
-          // preparation for inserting data
-          if (!!_prep.length) {
-            // recursive function for a while
-            doInsertBudget(_prep);
           } else {
             setConfirmLoading(false);
             swal(
@@ -150,12 +188,6 @@ export default function ImportBudgetButton({
               "warning"
             );
           }
-        } else {
-          setConfirmLoading(false);
-          swal(
-            "Tidak ada data yang ditemukan, cek format isi file XLS/XLSX yang diunggah",
-            "warning"
-          );
         }
       })
       .catch(() => {
@@ -167,7 +199,7 @@ export default function ImportBudgetButton({
       });
   };
 
-  const doInsertBudget = (data, mainIndex = 0, count = 0) => {
+  const doInsertBudget = (data, mainIndex = 0, count = 0, treshold = 0) => {
     const _target = data[mainIndex];
 
     if (!isEmpty(_target)) {
@@ -193,16 +225,22 @@ export default function ImportBudgetButton({
 
             addPlan(_payload).then((response) => {
               if (response?.code === 200) {
+                // progress
+                setUploadProgress((p) => (p += treshold));
+
                 // do next query
-                doInsertBudget(data, mainIndex + 1, count + 1);
+                doInsertBudget(data, mainIndex + 1, count + 1, treshold);
               } else {
                 // show error and stop loading
                 setConfirmLoading(false);
               }
             });
           } else {
+            // progress
+            setUploadProgress((p) => (p += treshold));
+
             // do next query
-            doInsertBudget(data, mainIndex + 1, count);
+            doInsertBudget(data, mainIndex + 1, count, treshold);
           }
         } else {
           // show error and stop loading
@@ -210,10 +248,15 @@ export default function ImportBudgetButton({
         }
       });
     } else {
-      handleImportModal(false);
-      swal(`Data berhasil ditambahkan, total : ${count}`, "success");
+      setUploadProgress(100);
 
-      if (!isEmpty(onFinish)) onFinish();
+      setTimeout(() => {
+        handleImportModal(false);
+        swal(`Data berhasil ditambahkan, total : ${count}`, "success");
+        setUploadProgress(0);
+
+        if (!isEmpty(onFinish)) onFinish();
+      }, 500);
     }
   };
 
@@ -293,9 +336,13 @@ export default function ImportBudgetButton({
               <Button icon={<UploadOutlined />}>{title}</Button>
             </Upload>
           </Form.Item>
+          {confirmLoading && (
+            <ProgressIndicator percent={Math.round(uploadProgress)} />
+          )}
           <Divider />
           <Form.Item className="text-right mb-0">
             <Space direction="horizontal">
+              <ImageButton label="Contoh File Upload" src={type} />
               <Button
                 disabled={confirmLoading}
                 onClick={() => handleImportModal(false)}

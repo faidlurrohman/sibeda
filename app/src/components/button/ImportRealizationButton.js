@@ -3,9 +3,15 @@ import { ImportOutlined, UploadOutlined } from "@ant-design/icons";
 import { Button, DatePicker, Divider, Form, Modal, Space, Upload } from "antd";
 import { swal } from "../../helpers/swal";
 import { isEmpty, lower } from "../../helpers/typo";
-import { DATE_FORMAT_VIEW, PAGINATION } from "../../helpers/constants";
+import {
+  ACCOUNT_CODE,
+  DATE_FORMAT_VIEW,
+  PAGINATION,
+} from "../../helpers/constants";
 import { addReal, findReal } from "../../services/real";
 import { convertDate, dbDate } from "../../helpers/date";
+import _ from "lodash";
+import ProgressIndicator from "./ProgressIndicator";
 
 const ExcelJS = require("exceljs");
 
@@ -18,6 +24,7 @@ export default function ImportRealizationButton({
 }) {
   // import budget modal
   const [importRealizationModal, setImportRealizationModal] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const [form] = Form.useForm();
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -57,72 +64,86 @@ export default function ImportRealizationButton({
     workbook.xlsx
       .load(_excel?.originFileObj)
       .then(() => {
-        const ws = workbook.getWorksheet();
-
-        // check read file, make sure file on default sheet target
-        if (!isEmpty(ws)) {
-          const _rows = ws._rows;
-          const _header = _rows[0].values;
-
-          const _iCode = _header.findIndex(
-            (i) => lower(i) === "nomor rekening"
+        // check sheets
+        if (workbook.worksheets.length > 1) {
+          setConfirmLoading(false);
+          swal(
+            "Pastikan Sheets dari file XLS/XLSX yang diunggah tidak lebih dari satu",
+            "warning"
           );
-          const _iName = _header.findIndex((i) => lower(i) === "nama rekening");
-          const _iPagu = _header.findIndex((i) => lower(i) === "pagu");
-          const _iRealization = _header.findIndex(
-            (i) => lower(i) === "realisasi"
-          );
+        } else {
+          const ws = workbook.getWorksheet();
 
-          if ([_iCode, _iName, _iPagu, _iRealization].includes(-1)) {
-            setConfirmLoading(false);
-            swal(
-              "Tidak ada data yang ditemukan, cek format isi file XLS/XLSX yang diunggah",
-              "warning"
+          // check read file, make sure file on default sheet target
+          if (!isEmpty(ws)) {
+            const _rows = ws._rows;
+            const _header = _rows[0].values;
+
+            const _iCode = _header.findIndex(
+              (i) => lower(i) === "nomor rekening"
             );
-          } else {
-            _rows.map((data, index) => {
-              const _res = data?.values;
-              if (index > 0) {
-                // make filter
-                const _filters = {
-                  filters: {
-                    dt: [_date],
-                    account_object_detail_sub_code: [_res[_iCode]],
-                  },
-                  pagination: { ...PAGINATION?.pagination, pageSize: 0 },
-                };
+            const _iName = _header.findIndex(
+              (i) => lower(i) === "nama rekening"
+            );
+            const _iPagu = _header.findIndex((i) => lower(i) === "pagu");
+            const _iRealization = _header.findIndex(
+              (i) => lower(i) === "realisasi"
+            );
 
-                if (_res[_iCode]) {
-                  _prep.push({
-                    code: _res[_iCode],
-                    name: _res[_iName],
-                    budget_amount: _res[_iPagu],
-                    realization_amount: _res[_iRealization],
-                    date: _date,
-                    filters: _filters,
-                  });
-                }
-              }
-            });
-
-            // preparation for inserting data
-            if (!!_prep.length) {
-              // recursive function for a while
-              doInsertRealization(_prep);
-            } else {
+            if ([_iCode, _iName, _iPagu, _iRealization].includes(-1)) {
               setConfirmLoading(false);
               swal(
                 "Tidak ada data yang ditemukan, cek format isi file XLS/XLSX yang diunggah",
                 "warning"
               );
+            } else {
+              _rows.map((data, index) => {
+                const _res = data?.values;
+                if (index > 0) {
+                  // make filter
+                  const _filters = {
+                    filters: {
+                      dt: [_date],
+                      account_object_detail_sub_code: [_res[_iCode]],
+                    },
+                    pagination: { ...PAGINATION?.pagination, pageSize: 0 },
+                  };
+
+                  if (
+                    _res[_iCode] &&
+                    _res[_iCode].slice(0, 1) === ACCOUNT_CODE[type]
+                  ) {
+                    _prep.push({
+                      code: _res[_iCode],
+                      name: _res[_iName],
+                      budget_amount: _res[_iPagu],
+                      realization_amount: _res[_iRealization],
+                      date: _date,
+                      filters: _filters,
+                    });
+                  }
+                }
+              });
+
+              // preparation for inserting data
+              if (!!_prep.length) {
+                // recursive function for a while
+                doInsertRealization(_prep, 0, 0, 100 / _prep.length);
+              } else {
+                setConfirmLoading(false);
+                swal(
+                  "Tidak ada data yang ditemukan, cek format isi file XLS/XLSX yang diunggah",
+                  "warning"
+                );
+              }
             }
+          } else {
+            setConfirmLoading(false);
+            swal(
+              "Tidak ada data yang ditemukan, cek format isi file XLS/XLSX yang diunggah",
+              "warning"
+            );
           }
-        } else {
-          setConfirmLoading(false);
-          swal(
-            "Tidak ada data yang ditemukan, cek format isi file XLS/XLSX yang diunggah",
-            "warning"
-          );
         }
       })
       .catch(() => {
@@ -134,7 +155,12 @@ export default function ImportRealizationButton({
       });
   };
 
-  const doInsertRealization = (data, mainIndex = 0, count = 0) => {
+  const doInsertRealization = (
+    data,
+    mainIndex = 0,
+    count = 0,
+    treshold = 0
+  ) => {
     const _target = data[mainIndex];
 
     if (!isEmpty(_target)) {
@@ -161,16 +187,22 @@ export default function ImportRealizationButton({
 
             addReal(_payload).then((response) => {
               if (response?.code === 200) {
+                // progress
+                setUploadProgress((p) => (p += treshold));
+
                 // do next query
-                doInsertRealization(data, mainIndex + 1, count + 1);
+                doInsertRealization(data, mainIndex + 1, count + 1, treshold);
               } else {
                 // show error and stop loading
                 setConfirmLoading(false);
               }
             });
           } else {
+            // progress
+            setUploadProgress((p) => (p += treshold));
+
             // do next query
-            doInsertRealization(data, mainIndex + 1, count);
+            doInsertRealization(data, mainIndex + 1, count, treshold);
           }
         } else {
           // show error and stop loading
@@ -178,10 +210,15 @@ export default function ImportRealizationButton({
         }
       });
     } else {
-      handleImportModal(false);
-      swal(`Data berhasil ditambahkan, total : ${count}`, "success");
+      setUploadProgress(100);
 
-      if (!isEmpty(onFinish)) onFinish();
+      setTimeout(() => {
+        handleImportModal(false);
+        swal(`Data berhasil ditambahkan, total : ${count}`, "success");
+        setUploadProgress(0);
+
+        if (!isEmpty(onFinish)) onFinish();
+      }, 500);
     }
   };
 
@@ -285,6 +322,9 @@ export default function ImportRealizationButton({
               <Button icon={<UploadOutlined />}>{title}</Button>
             </Upload>
           </Form.Item>
+          {confirmLoading && (
+            <ProgressIndicator percent={Math.round(uploadProgress)} />
+          )}
           <Divider />
           <Form.Item className="text-right mb-0">
             <Space direction="horizontal">

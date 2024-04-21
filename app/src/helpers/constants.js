@@ -1,3 +1,9 @@
+const ACCOUNT_CODE = {
+  in: "4", // pendapatan
+  out: "5", // belanja
+  cost: "6", // pembiayaan
+};
+
 const COLORS = {
   main: "#1C4F49",
   mainDark: "#18423d",
@@ -336,6 +342,7 @@ const CUSTOM_ROUTE_ACCOUNT = {
 };
 
 export {
+  ACCOUNT_CODE,
   COLORS,
   MENU_ITEM,
   MENU_NAVIGATION,
