@@ -23,7 +23,7 @@ import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
 import { messageAction } from "../../helpers/response";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { checkParams } from "../../helpers/url";
 import { lower } from "../../helpers/typo";
 
@@ -58,7 +58,7 @@ export default function ObjekDetailSub() {
           "object_detail_sub",
           checkParams(params, id, "account_object_detail_id", true)
         ),
-        getAccountList("object"),
+        getAccountList("object_detail"),
       ])
       .then(
         axios.spread((_object_detail_sub, _export, _bases) => {
