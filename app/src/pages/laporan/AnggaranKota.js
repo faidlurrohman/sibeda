@@ -18,7 +18,7 @@ import { convertDate, dbDate } from "../../helpers/date";
 import useRole from "../../hooks/useRole";
 import { getCityList } from "../../services/city";
 import _ from "lodash";
-import { formatterNumber } from "../../helpers/number";
+import { formatterNumber, parserNumber } from "../../helpers/number";
 import { isEmpty, lower, upper } from "../../helpers/typo";
 import ExportButton from "../../components/button/ExportButton";
 import { getAccountList } from "../../services/account";
@@ -302,24 +302,70 @@ export default function AnggaranKota() {
       if (item?.code !== base && item?.code.length === 1) {
         base = item?.code;
 
-        results.push(
-          {
-            account_level: 0,
-            code: "",
-            label: `JUMLAH ${item?.label}`,
-            plan_amount: item?.plan_amount,
-            real_amount: item?.real_amount,
-            percentage: item?.percentage,
-          },
-          {
-            account_level: 0,
-            code: "",
-            label: "",
-            plan_amount: "",
-            real_amount: "",
-            percentage: "",
+        if (base === "6") {
+          let f_in = _.find(item?.children, (c) => c?.code === "6.1");
+          let f_out = _.find(item?.children, (c) => c?.code === "6.2");
+
+          let cost_in_plan = 0;
+          let cost_out_plan = 0;
+
+          let cost_in_real = 0;
+          let cost_out_real = 0;
+
+          let sum_plan = 0;
+          let sum_real = 0;
+
+          if (f_in) {
+            cost_in_plan = parseInt(parserNumber(f_in?.plan_amount));
+            cost_in_real = parseInt(parserNumber(f_in?.real_amount));
           }
-        );
+
+          if (f_out) {
+            cost_out_plan = parseInt(parserNumber(f_out?.plan_amount));
+            cost_out_real = parseInt(parserNumber(f_out?.real_amount));
+          }
+
+          sum_plan = cost_in_plan - cost_out_plan;
+          sum_real = cost_in_real - cost_out_real;
+
+          results.push(
+            {
+              account_level: 0,
+              code: "",
+              label: `JUMLAH ${item?.label}`,
+              plan_amount: formatterNumber(sum_plan),
+              real_amount: formatterNumber(sum_real),
+              percentage: sumPercentage(sum_real, sum_plan),
+            },
+            {
+              account_level: 0,
+              code: "",
+              label: "",
+              plan_amount: "",
+              real_amount: "",
+              percentage: "",
+            }
+          );
+        } else {
+          results.push(
+            {
+              account_level: 0,
+              code: "",
+              label: `JUMLAH ${item?.label}`,
+              plan_amount: item?.plan_amount,
+              real_amount: item?.real_amount,
+              percentage: item?.percentage,
+            },
+            {
+              account_level: 0,
+              code: "",
+              label: "",
+              plan_amount: "",
+              real_amount: "",
+              percentage: "",
+            }
+          );
+        }
 
         if (item?.code === "5" || item?.code === 5) {
           results.push(
@@ -327,9 +373,14 @@ export default function AnggaranKota() {
               account_level: 0,
               code: "",
               label: `SURPLUS/DEFISIT`,
-              plan_amount:
-                parseInt(data[0]?.plan_amount) - parseInt(data[1]?.plan_amount),
-              real_amount: 0,
+              plan_amount: formatterNumber(
+                parseInt(parserNumber(data[0]?.plan_amount)) -
+                  parseInt(parserNumber(data[1]?.plan_amount))
+              ),
+              real_amount: formatterNumber(
+                parseInt(parserNumber(data[0]?.real_amount)) -
+                  parseInt(parserNumber(data[1]?.real_amount))
+              ),
               percentage: 0,
             },
             {
@@ -367,7 +418,14 @@ export default function AnggaranKota() {
       );
 
       if (!!_ft.length) {
-        return _ft[0][`account_base_${useFor}_amount`];
+        if (target === "pembiayaan") {
+          return (
+            parseInt(_ft[0][`account_group_${useFor}_amount`]) -
+            parseInt(_ft[1][`account_group_${useFor}_amount`])
+          );
+        } else {
+          return _ft[0][`account_base_${useFor}_amount`];
+        }
       }
 
       return 0;

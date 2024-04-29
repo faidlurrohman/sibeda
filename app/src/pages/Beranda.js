@@ -27,6 +27,7 @@ import { Line } from "@ant-design/plots";
 import { PercentageOutlined } from "@ant-design/icons";
 import CountUp from "react-countup";
 import { useAppSelector } from "../hooks/useRedux";
+import { getRealPlanCities } from "../services/report";
 
 const { RangePicker } = DatePicker;
 
@@ -77,7 +78,7 @@ export default function Beranda() {
     setLoading(true);
     axios
       .all([
-        getDashboard({
+        getRealPlanCities({
           ...params,
           pagination: { ...params.pagination, pageSize: 0 },
         }),
@@ -290,13 +291,33 @@ export default function Beranda() {
   };
 
   const countBy = (target, useFor) => {
+    // if (data && !!data.length) {
+    //   let _ft = _.filter(data, (o) =>
+    //     lower(o?.account_base_label).includes(lower(target))
+    //   );
+    //   return _.sumBy(_ft, (item) =>
+    //     Number(item[`account_base_${useFor}_amount`])
+    //   );
+    // } else {
+    //   return 0;
+    // }
     if (data && !!data.length) {
       let _ft = _.filter(data, (o) =>
         lower(o?.account_base_label).includes(lower(target))
       );
-      return _.sumBy(_ft, (item) =>
-        Number(item[`account_base_${useFor}_amount`])
-      );
+
+      if (!!_ft.length) {
+        if (target === "pembiayaan") {
+          return (
+            parseInt(_ft[0][`account_group_${useFor}_amount`]) -
+            parseInt(_ft[1][`account_group_${useFor}_amount`])
+          );
+        } else {
+          return _ft[0][`account_base_${useFor}_amount`];
+        }
+      }
+
+      return 0;
     } else {
       return 0;
     }
