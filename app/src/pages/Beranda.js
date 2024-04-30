@@ -18,7 +18,7 @@ import { convertDate, dbDate, viewDate } from "../helpers/date";
 import { formatterNumber } from "../helpers/number";
 import { isEmpty, lower, upper } from "../helpers/typo";
 import ReloadButton from "../components/button/ReloadButton";
-import { getDashboard, getRecapYears } from "../services/dashboard";
+import { getCost, getInOut } from "../services/dashboard";
 import axios from "axios";
 import { getCityList } from "../services/city";
 import useRole from "../hooks/useRole";
@@ -27,17 +27,11 @@ import { Line } from "@ant-design/plots";
 import { PercentageOutlined } from "@ant-design/icons";
 import CountUp from "react-countup";
 import { useAppSelector } from "../hooks/useRedux";
-import { getRealPlanCities } from "../services/report";
 
 const { RangePicker } = DatePicker;
 
 export default function Beranda() {
   const session = useAppSelector((state) => state.session.user);
-
-  // ambil tahun sekarang
-  // let _cy = convertDate().endOf("year");
-  // ambil 3 tahun sebelumnya dari tahun sekarang
-  // let _by = convertDate().startOf("year").subtract(2, "year");
 
   let _by = convertDate(`${session?.which_year}`).startOf("year");
   let _cy = convertDate(`${session?.which_year}`).endOf("year");
@@ -78,27 +72,25 @@ export default function Beranda() {
     setLoading(true);
     axios
       .all([
-        getRealPlanCities({
+        getInOut({
           ...params,
           pagination: { ...params.pagination, pageSize: 0 },
         }),
-        getRecapYears({
+        getCost({
           ...params,
-          filters: {
-            ...params?.filters,
-            trans_date: isDefaultFilter
-              ? [[dbDate(_by), dbDate(_cy)]]
-              : params?.filters?.trans_date,
-          },
           pagination: { ...params.pagination, pageSize: 0 },
         }),
         getCityList(),
       ])
       .then(
-        axios.spread((_data, _recap, _cities) => {
+        axios.spread((_inOut, _cost, _cities) => {
           setLoading(false);
-          setData(_data?.data);
-          makeGraph(_recap?.data, params, isDefaultFilter);
+          setData(_.concat(_inOut?.data, _cost?.data));
+          makeGraph(
+            _.concat(_inOut?.data, _cost?.data),
+            params,
+            isDefaultFilter
+          );
           setCities(_cities?.data);
         })
       );
@@ -291,33 +283,13 @@ export default function Beranda() {
   };
 
   const countBy = (target, useFor) => {
-    // if (data && !!data.length) {
-    //   let _ft = _.filter(data, (o) =>
-    //     lower(o?.account_base_label).includes(lower(target))
-    //   );
-    //   return _.sumBy(_ft, (item) =>
-    //     Number(item[`account_base_${useFor}_amount`])
-    //   );
-    // } else {
-    //   return 0;
-    // }
     if (data && !!data.length) {
       let _ft = _.filter(data, (o) =>
         lower(o?.account_base_label).includes(lower(target))
       );
-
-      if (!!_ft.length) {
-        if (target === "pembiayaan") {
-          return (
-            parseInt(_ft[0][`account_group_${useFor}_amount`]) -
-            parseInt(_ft[1][`account_group_${useFor}_amount`])
-          );
-        } else {
-          return _ft[0][`account_base_${useFor}_amount`];
-        }
-      }
-
-      return 0;
+      return _.sumBy(_ft, (item) =>
+        Number(item[`account_base_${useFor}_amount`])
+      );
     } else {
       return 0;
     }
@@ -366,6 +338,7 @@ export default function Beranda() {
             placeholder={["Tanggal Awal", "Tanggal Akhir"]}
             onChange={onDateRangeFilterChange}
             value={dateRangeFilter}
+            disabled={loading}
             disabledDate={(curr) => {
               const useYear =
                 curr &&
@@ -391,6 +364,7 @@ export default function Beranda() {
               filterOption={(input, option) =>
                 (lower(option?.label) ?? "").includes(lower(input))
               }
+              disabled={loading}
               loading={loading}
               options={cities}
               onChange={onCityFilterChange}

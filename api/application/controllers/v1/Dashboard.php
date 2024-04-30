@@ -3,17 +3,17 @@
 class Dashboard extends REST_Controller {
 
     /**
-     * DASHBOARD
+     * IN OUT (PENDAPATAN & BELANJA)
      */
-    public function index()
+    public function in_out()
     {
-        $this->do_get_dashboard();
+        $this->do_get_in_out();
     }
 
     /**
-     * GET ALL DASHBOARD
+     * GET ALL IN OUT
      */
-    private function do_get_dashboard() 
+    private function do_get_in_out() 
     {
         $validated = $this->Auth_model->validating_token();
 
@@ -29,7 +29,7 @@ class Dashboard extends REST_Controller {
                 $filter["city_id"] = $validated->city_id;
             }
 
-            $data = $this->Dashboard_model->get_dashboard($validated->username, $filter, $order, $limit, $offset);
+            $data = $this->Dashboard_model->get_in_out($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
@@ -42,17 +42,17 @@ class Dashboard extends REST_Controller {
     }
 
     /**
-     * RECAPITULATION 3 YEARS DASHBOARD
+     * COST (PEMABIAYAAN)
      */
-    public function recap_years()
+    public function cost()
     {
-        $this->do_get_recap_years();
+        $this->do_get_cost();
     }
 
     /**
-     * GET ALL RECAPITULATION 3 YEARS DASHBOARD
+     * GET ALL COST
      */
-    private function do_get_recap_years() 
+    private function do_get_cost() 
     {
         $validated = $this->Auth_model->validating_token();
 
@@ -68,7 +68,7 @@ class Dashboard extends REST_Controller {
                 $filter["city_id"] = $validated->city_id;
             }
 
-            $data = $this->Dashboard_model->get_recap_years($validated->username, $filter, $order, $limit, $offset);
+            $data = $this->Dashboard_model->get_cost($validated->username, $filter, $order, $limit, $offset);
 
             if ($data['code'] == 200) {
                 $this->response($data);
