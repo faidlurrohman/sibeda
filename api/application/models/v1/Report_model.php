@@ -53,7 +53,7 @@ class Report_model extends CI_Model {
                     AND (
                         LOWER(sab.remark) IN(LOWER('PENDAPATAN DAERAH'), LOWER('BELANJA DAERAH'), LOWER('PEMBIAYAAN DAERAH')) 
                         OR
-                        sab.id IN(4, 5, 6) 
+                        sab.label IN('4', '5', '6') 
                     )  
                 JOIN city c ON c.id=b.city_id 
                     AND c.active
@@ -184,7 +184,7 @@ class Report_model extends CI_Model {
                 AND (
                     LOWER(sab.remark) IN(LOWER('PENDAPATAN DAERAH'), LOWER('BELANJA DAERAH'))
                     OR
-                    sab.id IN(4, 5) 
+                    sab.id IN('4', '5') 
                 )
             ), anggaran AS (
                 SELECT 

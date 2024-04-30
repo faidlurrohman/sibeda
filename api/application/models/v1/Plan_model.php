@@ -26,7 +26,7 @@ class Plan_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('PENDAPATAN DAERAH')
                         OR
-                        ab.id=4
+                        ab.label='4'
                     )
                 WHERE YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
             ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
@@ -63,7 +63,7 @@ class Plan_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('BELANJA DAERAH')
                         OR
-                        ab.id=5
+                        ab.label='5'
                     )
                 WHERE YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
             ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
@@ -100,7 +100,7 @@ class Plan_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('PEMBIAYAAN DAERAH')
                         OR
-                        ab.id=6
+                        ab.label='6'
                     )
                 WHERE YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
             ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
@@ -131,7 +131,7 @@ class Plan_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('PENDAPATAN DAERAH')
                         OR
-                        ab.id=4
+                        ab.label='4'
                     )
                 LEFT JOIN budget b ON b.account_object_detail_sub_id=aods.id 
                     AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
@@ -164,7 +164,7 @@ class Plan_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('BELANJA DAERAH')
                         OR
-                        ab.id=5
+                        ab.label='5'
                     )
                 LEFT JOIN budget b ON b.account_object_detail_sub_id=aods.id 
                     AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
@@ -197,7 +197,7 @@ class Plan_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('PEMBIAYAAN DAERAH')
                         OR
-                        ab.id=6
+                        ab.label='6'
                     )
                 LEFT JOIN budget b ON b.account_object_detail_sub_id=aods.id 
                     AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
@@ -233,7 +233,7 @@ class Plan_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('PENDAPATAN DAERAH')
                         OR
-                        ab.id=4
+                        ab.label='4'
                     )
                 WHERE NOT YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
             ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
@@ -267,7 +267,7 @@ class Plan_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('BELANJA DAERAH')
                         OR
-                        ab.id=5
+                        ab.label='5'
                     )
                 WHERE NOT YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
             ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
@@ -301,7 +301,7 @@ class Plan_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('PEMBIAYAAN DAERAH')
                         OR
-                        ab.id=6
+                        ab.label='6'
                     )
                 WHERE NOT YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
             ) SELECT *, COUNT(*) OVER() AS total FROM r WHERE TRUE  
@@ -334,9 +334,9 @@ class Plan_model extends CI_Model {
                 JOIN account_object_detail_sub saods ON saods.account_object_detail_id=saod.id AND saods.active
                 WHERE sab.active
                     AND (
-                        LOWER(sab.remark) IN(LOWER('PENDAPATAN DAERAH')) 
+                        LOWER(sab.remark) = LOWER('PENDAPATAN DAERAH') 
                         OR
-                        sab.id IN(4) 
+                        sab.label='4' 
                     )
             ), r AS (
                 SELECT 
@@ -377,9 +377,9 @@ class Plan_model extends CI_Model {
                 JOIN account_object_detail_sub saods ON saods.account_object_detail_id=saod.id AND saods.active
                 WHERE sab.active
                     AND (
-                        LOWER(sab.remark) IN(LOWER('BELANJA DAERAH')) 
+                        LOWER(sab.remark) = LOWER('BELANJA DAERAH')
                         OR
-                        sab.id IN(5) 
+                        sab.label='5'
                     )
             ), r AS (
                 SELECT 
@@ -420,9 +420,9 @@ class Plan_model extends CI_Model {
                 JOIN account_object_detail_sub saods ON saods.account_object_detail_id=saod.id AND saods.active
                 WHERE sab.active
                     AND (
-                        LOWER(sab.remark) IN(LOWER('PEMBIAYAAN DAERAH')) 
+                        LOWER(sab.remark) = LOWER('PEMBIAYAAN DAERAH')
                         OR
-                        sab.id IN(6) 
+                        sab.label='6'
                     )
             ), r AS (
                 SELECT 

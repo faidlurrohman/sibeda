@@ -30,7 +30,7 @@ class Real_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('PENDAPATAN DAERAH')
                         OR
-                        ab.id=4
+                        ab.label='4'
                     )
                 WHERE YEAR(r.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
                 GROUP BY YEAR(r.date), r.account_object_detail_sub_id, r.city_id
@@ -72,7 +72,7 @@ class Real_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('BELANJA DAERAH')
                         OR
-                        ab.id=5
+                        ab.label='5'
                     )
                 WHERE YEAR(r.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
                 GROUP BY YEAR(r.date), r.account_object_detail_sub_id, r.city_id
@@ -114,7 +114,7 @@ class Real_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('PEMBIAYAAN DAERAH')
                         OR
-                        ab.id=6
+                        ab.label='6'
                     )
                 WHERE YEAR(r.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
                 GROUP BY YEAR(r.date), r.account_object_detail_sub_id, r.city_id
@@ -146,7 +146,7 @@ class Real_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('PENDAPATAN DAERAH')
                         OR
-                        ab.id=4
+                        ab.label='4'
                     )
                 JOIN budget b ON b.account_object_detail_sub_id=aods.id
                     AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
@@ -181,7 +181,7 @@ class Real_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('BELANJA DAERAH')
                         OR
-                        ab.id=5
+                        ab.label='5'
                     )
                 JOIN budget b ON b.account_object_detail_sub_id=aods.id
                     AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
@@ -216,7 +216,7 @@ class Real_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('PEMBIAYAAN DAERAH')
                         OR
-                        ab.id=6
+                        ab.label='6'
                     )
                 JOIN budget b ON b.account_object_detail_sub_id=aods.id
                     AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
@@ -262,7 +262,7 @@ class Real_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('PENDAPATAN DAERAH')
                         OR
-                        ab.id=4
+                        ab.label='4'
                     )
                 LEFT JOIN realization r ON r.account_object_detail_sub_id=b.account_object_detail_sub_id
                     AND r.city_id=b.city_id
@@ -307,7 +307,7 @@ class Real_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('BELANJA DAERAH')
                         OR
-                        ab.id=5
+                        ab.label='5'
                     )
                 LEFT JOIN realization r ON r.account_object_detail_sub_id=b.account_object_detail_sub_id
                     AND r.city_id=b.city_id
@@ -352,7 +352,7 @@ class Real_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('PEMBIAYAAN DAERAH')
                         OR
-                        ab.id=6
+                        ab.label='6'
                     )
                 LEFT JOIN realization r ON r.account_object_detail_sub_id=b.account_object_detail_sub_id
                     AND r.city_id=b.city_id
@@ -390,7 +390,7 @@ class Real_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('PENDAPATAN DAERAH')
                         OR
-                        ab.id=4
+                        ab.label='4'
                     )
                 JOIN budget b ON b.account_object_detail_sub_id=aods.id
                     AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
@@ -430,7 +430,7 @@ class Real_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('BELANJA DAERAH')
                         OR
-                        ab.id=5
+                        ab.label='5'
                     )
                 JOIN budget b ON b.account_object_detail_sub_id=aods.id
                     AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
@@ -470,7 +470,7 @@ class Real_model extends CI_Model {
                     AND (
                         LOWER(ab.remark) = LOWER('PEMBIAYAAN DAERAH')
                         OR
-                        ab.id=6
+                        ab.label='6'
                     )
                 JOIN budget b ON b.account_object_detail_sub_id=aods.id
                     AND YEAR(b.date) = (SELECT u.which_year FROM user u WHERE u.username = '$username')
@@ -508,9 +508,9 @@ class Real_model extends CI_Model {
                 JOIN account_object_detail_sub saods ON saods.account_object_detail_id=saod.id AND saods.active
                 WHERE sab.active
                     AND (
-                        LOWER(sab.remark) IN(LOWER('PENDAPATAN DAERAH')) 
+                        LOWER(sab.remark) = LOWER('PENDAPATAN DAERAH')
                         OR
-                        sab.id IN(4) 
+                        sab.label='4' 
                     )
             ), r AS (
                 SELECT 
@@ -551,9 +551,9 @@ class Real_model extends CI_Model {
                 JOIN account_object_detail_sub saods ON saods.account_object_detail_id=saod.id AND saods.active
                 WHERE sab.active
                     AND (
-                        LOWER(sab.remark) IN(LOWER('BELANJA DAERAH')) 
+                        LOWER(sab.remark) = LOWER('BELANJA DAERAH')
                         OR
-                        sab.id IN(5) 
+                        sab.label='5'
                     )
             ), r AS (
                 SELECT 
@@ -594,9 +594,9 @@ class Real_model extends CI_Model {
                 JOIN account_object_detail_sub saods ON saods.account_object_detail_id=saod.id AND saods.active
                 WHERE sab.active
                     AND (
-                        LOWER(sab.remark) IN(LOWER('PEMBIAYAAN DAERAH')) 
+                        LOWER(sab.remark) = LOWER('PEMBIAYAAN DAERAH')
                         OR
-                        sab.id IN(6) 
+                        sab.label='6' 
                     )
             ), r AS (
                 SELECT 
