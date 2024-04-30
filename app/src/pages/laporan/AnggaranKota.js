@@ -419,10 +419,18 @@ export default function AnggaranKota() {
 
       if (!!_ft.length) {
         if (target === "pembiayaan") {
-          return (
-            parseInt(_ft[0][`account_group_${useFor}_amount`]) -
-            parseInt(_ft[1][`account_group_${useFor}_amount`])
-          );
+          let _in = 0;
+          let _out = 0;
+
+          if (_ft[0]) {
+            _in = _ft[0][`account_group_${useFor}_amount`];
+          }
+
+          if (_ft[1]) {
+            _out = _ft[1][`account_group_${useFor}_amount`];
+          }
+
+          return parseInt(_in) - parseInt(_out);
         } else {
           return _ft[0][`account_base_${useFor}_amount`];
         }
