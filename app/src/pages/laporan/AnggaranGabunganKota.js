@@ -8,18 +8,18 @@ import { convertDate, dbDate } from "../../helpers/date";
 import { getRealPlanCities } from "../../services/report";
 import { searchColumn } from "../../helpers/table";
 import { formatterNumber } from "../../helpers/number";
-import { isEmpty, lower, upper } from "../../helpers/typo";
+import { lower } from "../../helpers/typo";
 import _ from "lodash";
 import ExportButton from "../../components/button/ExportButton";
 import { Column } from "@ant-design/plots";
 import { useAppSelector } from "../../hooks/useRedux";
+import { getCost, getInOut } from "../../services/dashboard";
 
 const { RangePicker } = DatePicker;
 
 export default function AnggaranGabunganKota() {
   const [data, setData] = useState([]);
   const [cities, setCities] = useState([]);
-  const [exports, setExports] = useState([]);
   const [charts, setCharts] = useState([]);
   const [loading, setLoading] = useState(false);
   const session = useAppSelector((state) => state.session.user);
@@ -62,17 +62,20 @@ export default function AnggaranGabunganKota() {
     axios
       .all([
         getRealPlanCities(params),
-        getRealPlanCities({
+        getInOut({
+          ...params,
+          pagination: { ...params.pagination, pageSize: 0 },
+        }),
+        getCost({
           ...params,
           pagination: { ...params.pagination, pageSize: 0 },
         }),
         getCityList(),
       ])
       .then(
-        axios.spread((_data, _export, _cities) => {
+        axios.spread((_data, _inOut, _cost, _cities) => {
           setLoading(false);
           setData(_data?.data);
-          setExports(setDataExport(_export?.data));
           setCities(_cities?.data);
           setTablePage({
             pagination: {
@@ -82,48 +85,70 @@ export default function AnggaranGabunganKota() {
           });
 
           if (!!(_cities?.data).length) {
-            makeChartData(_cities?.data, params?.filters, _export?.data);
+            makeChartData(
+              _.concat(_inOut?.data, _cost?.data),
+              _cities?.data,
+              params?.filters
+            );
           }
         })
       );
   };
 
-  const makeChartData = (cities, filter, values) => {
-    // tampung semua kota
-    let _sl = cities;
+  const makeChartData = (values, cities, filter) => {
+    // init chart
+    // [
+    //   {name: 'Anggaran', value: 0, city: 'Provinsi Kepulauan Riau'},
+    //   {name: 'Relisasi', value: 0, city: 'Provinsi Kepulauan Riau'},
+    //   {name: 'Anggaran', value: 0, city: 'Kabupaten Anambas'},
+    //   {name: 'Relisasi', value: 0, city: 'Kabupaten Anambas'}
+    // ]
+    let _chart = [];
+
+    // tampung kota
+    let _ct = cities;
 
     // cek filter kotanya
     if (filter && filter?.city_id && !!filter?.city_id[0].length) {
-      // ambil kota yang hanya difilter sebagai default tampilan
-      _sl = _.filter(cities, (v) => filter?.city_id[0].includes(v?.id));
+      _ct = _.filter(cities, (v) => filter?.city_id[0].includes(v?.id));
     }
 
-    // init array untung menampung data chart
-    let _chart = [];
-
-    // loop kota
-    _.map(_sl, (city) => {
-      // cari kota[index] yang ada didata list
-      const cb = _.filter(values, (v) => v?.city_id === city?.id);
-
-      // init default chart plan atau real
-      let _ip = { name: "Anggaran", value: 0, city: city?.label };
-      let _ir = { name: "Relisasi", value: 0, city: city?.label };
-
-      // kalau ada data dari city yang ada dilist
-      if (cb && !!cb.length) {
-        // loop hitung masing-masing plan atau real
-        _.map(cb, (cur) => {
-          // pakai float karena nilai ada pakai koma
-          _ip.value += parseFloat(cur?.account_object_plan_amount || 0);
-          _ir.value += parseFloat(cur?.account_object_real_amount || 0);
+    // data kota harus ada baru nampilkan chart
+    if (!!_ct.length) {
+      _.map(_ct, (ct) => {
+        _chart.push({
+          id: ct?.id,
+          city: ct?.label,
+          name: "Anggaran",
+          value: 0,
         });
-      }
+        _chart.push({
+          id: ct?.id,
+          city: ct?.label,
+          name: "Realisasi",
+          value: 0,
+        });
+      });
 
-      // push init masing-masing plan atau real
-      _chart.push(_ip);
-      _chart.push(_ir);
-    });
+      _chart = _.map(_chart, (ch) => {
+        // cari kota yang ada didata
+        let _dct = _.filter(values, (v) => v?.city_id === ch?.id);
+
+        if (ch?.name === "Anggaran") {
+          ch = {
+            ...ch,
+            value: _.sumBy(_dct, (i) => Number(i[`account_base_plan_amount`])),
+          };
+        } else if (ch?.name === "Realisasi") {
+          ch = {
+            ...ch,
+            value: _.sumBy(_dct, (i) => Number(i[`account_base_real_amount`])),
+          };
+        }
+
+        return ch;
+      });
+    }
 
     // set ke state
     setCharts(_chart);
@@ -252,280 +277,6 @@ export default function AnggaranGabunganKota() {
     ),
   ];
 
-  const setDataExport = (data) => {
-    let results = { cities: {}, codes: [], data: [] };
-
-    // sorting
-    let srt = _.sortBy(data, [
-      "city_label",
-      "account_base_label",
-      "account_group_label",
-      "account_type_label",
-      "account_object_label",
-      "account_object_detail_label",
-      "account_object_detail_sub_label",
-    ]);
-
-    // take all city
-    results.cities = _.chain(srt)
-      .groupBy("city_label")
-      .map((values, label) => ({
-        city: label,
-        city_id: values[0].city_id,
-        children: values,
-      }))
-      .value();
-
-    // take all codes
-    results.codes = recursiveRecord(
-      _.chain(_.uniqBy(srt, "account_object_label"))
-        .groupBy("account_base_label")
-        .map((base, baseKey) => ({
-          level: 1,
-          code: normalizeLabel(baseKey).code,
-          label: upper(normalizeLabel(baseKey).label),
-          origin: baseKey,
-          children: _.chain(base)
-            .groupBy("account_group_label")
-            .map((group, groupKey) => ({
-              level: 2,
-              code: normalizeLabel(groupKey).code,
-              label: upper(normalizeLabel(groupKey).label),
-              origin: groupKey,
-              children: _.chain(group)
-                .groupBy("account_type_label")
-                .map((type, typeKey) => ({
-                  level: 3,
-                  code: normalizeLabel(typeKey).code,
-                  label: normalizeLabel(typeKey).label,
-                  origin: typeKey,
-                  children: _.chain(type)
-                    .groupBy("account_object_label")
-                    .map((object, objectKey) => ({
-                      level: 4,
-                      code: normalizeLabel(objectKey).code,
-                      label: normalizeLabel(objectKey).label,
-                      origin: objectKey,
-                      children: _.chain(object)
-                        .groupBy("account_object_detail_label")
-                        .map((objectDetail, objectDetailKey) => ({
-                          level: 5,
-                          code: normalizeLabel(objectDetailKey).code,
-                          label: normalizeLabel(objectDetailKey).label,
-                          origin: objectDetailKey,
-                          children: _.map(objectDetail, (objectDetailSub) => ({
-                            level: 6,
-                            code: normalizeLabel(
-                              objectDetailSub?.account_object_detail_sub_label
-                            ).code,
-                            label: normalizeLabel(
-                              objectDetailSub?.account_object_detail_sub_label
-                            ).label,
-                            origin:
-                              objectDetailSub?.account_object_detail_sub_label,
-                          })),
-                        }))
-                        .value(),
-                    }))
-                    .value(),
-                }))
-                .value(),
-            }))
-            .value(),
-        }))
-        .value()
-    );
-
-    // set data per-city
-    _.map(results.codes, (codes) => {
-      let d = { code: codes?.code, label: codes?.label };
-      _.map(results?.cities, (cities) => {
-        let fb = cities?.children.find(
-          (i) => i?.account_base_label === codes?.origin
-        );
-        let fg = cities?.children.find(
-          (i) => i?.account_group_label === codes?.origin
-        );
-        let ft = cities?.children.find(
-          (i) => i?.account_type_label === codes?.origin
-        );
-        let fo = cities?.children.find(
-          (i) => i?.account_object_label === codes?.origin
-        );
-        let fod = cities?.children.find(
-          (i) => i?.account_object_detail_label === codes?.origin
-        );
-        let fods = cities?.children.find(
-          (i) => i?.account_object_detail_sub_label === codes?.origin
-        );
-
-        if (fods) {
-          d["account_level"] = 6;
-          d[`${cities?.city_id}_plan_amount`] = formatterNumber(
-            fods?.account_object_detail_sub_plan_amount
-          );
-          d[`${cities?.city_id}_real_amount`] = formatterNumber(
-            fods?.account_object_detail_sub_real_amount
-          );
-          d[`${cities?.city_id}_percentage`] = sumPercentage(
-            fods?.account_object_detail_sub_real_amount,
-            fods?.account_object_detail_sub_plan_amount
-          );
-        } else if (fod) {
-          d["account_level"] = 5;
-          d[`${cities?.city_id}_plan_amount`] = formatterNumber(
-            fod?.account_object_detail_plan_amount
-          );
-          d[`${cities?.city_id}_real_amount`] = formatterNumber(
-            fod?.account_object_detail_real_amount
-          );
-          d[`${cities?.city_id}_percentage`] = sumPercentage(
-            fod?.account_object_detail_real_amount,
-            fod?.account_object_detail_plan_amount
-          );
-        } else if (fo) {
-          d["account_level"] = 4;
-          d[`${cities?.city_id}_plan_amount`] = formatterNumber(
-            fo?.account_object_plan_amount
-          );
-          d[`${cities?.city_id}_real_amount`] = formatterNumber(
-            fo?.account_object_real_amount
-          );
-          d[`${cities?.city_id}_percentage`] = sumPercentage(
-            fo?.account_object_real_amount,
-            fo?.account_object_plan_amount
-          );
-        } else if (ft) {
-          d["account_level"] = 3;
-          d[`${cities?.city_id}_plan_amount`] = formatterNumber(
-            ft?.account_type_plan_amount
-          );
-          d[`${cities?.city_id}_real_amount`] = formatterNumber(
-            ft?.account_type_real_amount
-          );
-          d[`${cities?.city_id}_percentage`] = sumPercentage(
-            ft?.account_type_real_amount,
-            ft?.account_type_plan_amount
-          );
-        } else if (fg) {
-          d["account_level"] = 2;
-          d[`${cities?.city_id}_plan_amount`] = formatterNumber(
-            fg?.account_group_plan_amount
-          );
-          d[`${cities?.city_id}_real_amount`] = formatterNumber(
-            fg?.account_group_real_amount
-          );
-          d[`${cities?.city_id}_percentage`] = sumPercentage(
-            fg?.account_group_real_amount,
-            fg?.account_group_plan_amount
-          );
-        } else if (fb) {
-          d["account_level"] = 1;
-          d[`${cities?.city_id}_plan_amount`] = formatterNumber(
-            fb?.account_base_plan_amount
-          );
-          d[`${cities?.city_id}_real_amount`] = formatterNumber(
-            fb?.account_base_real_amount
-          );
-          d[`${cities?.city_id}_percentage`] = sumPercentage(
-            fb?.account_base_real_amount,
-            fb?.account_base_plan_amount
-          );
-        } else {
-          d["account_level"] = 0;
-          d[`${cities?.city_id}_plan_amount`] = codes?.code ? 0 : ``;
-          d[`${cities?.city_id}_real_amount`] = codes?.code ? 0 : ``;
-          d[`${cities?.city_id}_percentage`] = codes?.code ? 0 : ``;
-        }
-      });
-      results?.data.push(d);
-    });
-
-    return results;
-  };
-
-  const recursiveRecord = (data, results = [], base = null, group = null) => {
-    _.map(data, (item) => {
-      results.push(item);
-
-      if (item?.children && !!item.children.length) {
-        recursiveRecord(item?.children, results, item?.code, item?.code);
-      }
-
-      if (item?.code !== group && item?.code.split(".").length === 2) {
-        group = item?.code;
-        results.push(
-          {
-            level: 0,
-            code: "",
-            origin: item?.origin,
-            label: `JUMLAH ${item?.label}`,
-            plan_amount: item?.plan_amount,
-            real_amount: item?.real_amount,
-            percentage: item?.percentage,
-          },
-          {
-            level: 0,
-            code: "",
-            label: "",
-            plan_amount: "",
-            real_amount: "",
-            percentage: "",
-          }
-        );
-      }
-
-      if (item?.code !== base && item?.code.length === 1) {
-        base = item?.code;
-
-        results.push(
-          {
-            level: 0,
-            code: "",
-            label: `JUMLAH ${item?.label}`,
-            origin: item?.origin,
-            plan_amount: item?.plan_amount,
-            real_amount: item?.real_amount,
-            percentage: item?.percentage,
-          },
-          {
-            level: 0,
-            code: "",
-            label: "",
-            plan_amount: "",
-            real_amount: "",
-            percentage: "",
-          }
-        );
-      }
-
-      return item;
-    });
-
-    return results;
-  };
-
-  const normalizeLabel = (val) => {
-    let _tf, _tl;
-
-    _tf = val.split(" ")[0].replace(/[()]/g, "");
-    _tl = val.split(" ");
-    _tl.shift();
-
-    return { code: _tf || "", label: _tl ? _tl.join(" ") : "" };
-  };
-
-  const sumPercentage = (value1 = 0, value2 = 0, results = 0) => {
-    if (isEmpty(value1)) value1 = 0;
-    if (isEmpty(value2)) value2 = 0;
-
-    results = ((value1 / value2) * 100).toFixed(2);
-
-    if (isNaN(results) || !isFinite(Number(results))) return 0;
-
-    return results;
-  };
-
   useEffect(() => reloadTable(), []);
 
   return (
@@ -576,9 +327,9 @@ export default function AnggaranGabunganKota() {
           />
         </div>
         <ReloadButton onClick={reloadTable} stateLoading={loading} />
-        {!!exports?.data?.length && (
+        {!!data?.length && (
           <ExportButton
-            data={exports}
+            city_id={cityFilter}
             date={dateRangeFilter}
             report={`gabungankota`}
             pdfOrientation="landscape"

@@ -11,7 +11,11 @@ import {
 import { DownOutlined, ExportOutlined } from "@ant-design/icons";
 import { convertDate, dbDate, viewDate } from "../../helpers/date";
 import { isEmpty, lower, upper } from "../../helpers/typo";
-import { DATE_FORMAT_VIEW, EXPORT_TARGET } from "../../helpers/constants";
+import {
+  DATE_FORMAT_VIEW,
+  EXPORT_TARGET,
+  PAGINATION,
+} from "../../helpers/constants";
 import { pdf } from "@react-pdf/renderer";
 import PDFFile from "../PDFFile";
 import { saveAs } from "file-saver";
@@ -22,8 +26,12 @@ import _ from "lodash";
 import logoKemendagri from "../../assets/images/logo-kemendagri.png";
 import axios from "axios";
 import axiosInstance from "../../services/axios";
-import { formatterNumber } from "../../helpers/number";
+import { formatterNumber, parserNumber } from "../../helpers/number";
 import { addExportLog } from "../../services/export";
+import {
+  getRealPlanCities,
+  getRecapitulationCities,
+} from "../../services/report";
 
 const ExcelJS = require("exceljs");
 
@@ -45,6 +53,7 @@ export default function ExportButton({
   pdfOrientation = "portrait",
   date = null,
   types = ["xlsx", "pdf"],
+  city_id = null,
 }) {
   const { is_super_admin } = useRole();
   const [form] = Form.useForm();
@@ -55,14 +64,742 @@ export default function ExportButton({
   const [signerModal, setSignerModal] = useState(false);
   const [doNext, setDoNext] = useState(null);
 
+  // getting data for exports
+  const collect = (formValues = {}) => {
+    // anngaran kota
+    if (report === "kota" || report === "gabungankota") {
+      setLoadingPdf(true);
+      setLoading(true);
+      getRealPlanCities({
+        pagination: { ...PAGINATION.pagination, pageSize: 0 },
+        filters: {
+          trans_date: [[dbDate(date[0]), dbDate(date[1])]],
+          ...(is_super_admin && { city_id: city_id ? [city_id] : null }),
+        },
+      }).then((response) => {
+        if (doNext === "xlsx") {
+          xlsx(formValues, set(response?.data));
+        } else if (doNext === "pdfx") {
+          pdfx(formValues, set(response?.data));
+        }
+      });
+    } else if (report === "rekapitulasi") {
+      setLoadingPdf(true);
+      setLoading(true);
+      getRecapitulationCities({
+        pagination: { ...PAGINATION.pagination, pageSize: 0 },
+        filters: {
+          trans_date: [[dbDate(date[0]), dbDate(date[1])]],
+          ...(is_super_admin && { city_id: city_id ? [city_id] : null }),
+        },
+      }).then((response) => {
+        if (doNext === "xlsx") {
+          xlsx(formValues, set(response?.data));
+        } else if (doNext === "pdfx") {
+          pdfx(formValues, set(response?.data));
+        }
+      });
+    } else {
+      if (doNext === "xlsx") {
+        xlsx(formValues, data);
+      } else if (doNext === "pdfx") {
+        pdfx(formValues, data);
+      }
+    }
+  };
+
+  // set data before make export file
+  const set = (data) => {
+    let results = [];
+
+    if (report === "kota") {
+      // sorting
+      let srt = _.sortBy(data, [
+        "account_base_label",
+        "account_group_label",
+        "account_type_label",
+        "account_object_label",
+        "account_object_detail_label",
+        "account_object_detail_sub_label",
+      ]);
+      // grouping
+      let grp = _.chain(srt)
+        .groupBy("account_base_label")
+        .map((base, baseKey) => ({
+          account_level: 1,
+          city_label: base[0]?.city_label,
+          city_logo: base[0]?.city_logo,
+          code: normalizeLabel(baseKey).code,
+          label: upper(normalizeLabel(baseKey).label),
+          plan_amount: formatterNumber(base[0]?.account_base_plan_amount),
+          real_amount: formatterNumber(base[0]?.account_base_real_amount),
+          percentage: sumPercentage(
+            base[0]?.account_base_real_amount,
+            base[0]?.account_base_plan_amount
+          ),
+          children: _.chain(base)
+            .groupBy("account_group_label")
+            .map((group, groupKey) => ({
+              account_level: 2,
+              code: normalizeLabel(groupKey).code,
+              label: upper(normalizeLabel(groupKey).label),
+              plan_amount: formatterNumber(group[0]?.account_group_plan_amount),
+              real_amount: formatterNumber(group[0]?.account_group_real_amount),
+              percentage: sumPercentage(
+                group[0]?.account_group_real_amount,
+                group[0]?.account_group_plan_amount
+              ),
+              children: _.chain(group)
+                .groupBy("account_type_label")
+                .map((type, typeKey) => ({
+                  account_level: 3,
+                  code: normalizeLabel(typeKey).code,
+                  label: normalizeLabel(typeKey).label,
+                  plan_amount: formatterNumber(
+                    type[0]?.account_type_plan_amount
+                  ),
+                  real_amount: formatterNumber(
+                    type[0]?.account_type_real_amount
+                  ),
+                  percentage: sumPercentage(
+                    type[0]?.account_type_real_amount,
+                    type[0]?.account_type_plan_amount
+                  ),
+                  children: _.chain(type)
+                    .groupBy("account_object_label")
+                    .map((object, objectKey) => ({
+                      account_level: 4,
+                      code: normalizeLabel(objectKey).code,
+                      label: normalizeLabel(objectKey).label,
+                      plan_amount: formatterNumber(
+                        object[0]?.account_object_plan_amount
+                      ),
+                      real_amount: formatterNumber(
+                        object[0]?.account_object_real_amount
+                      ),
+                      percentage: sumPercentage(
+                        object[0]?.account_object_real_amount,
+                        object[0]?.account_object_plan_amount
+                      ),
+                      children: _.chain(object)
+                        .groupBy("account_object_detail_label")
+                        .map((objectDetail, objectDetailKey) => ({
+                          account_level: 5,
+                          code: normalizeLabel(objectDetailKey).code,
+                          label: normalizeLabel(objectDetailKey).label,
+                          plan_amount: formatterNumber(
+                            objectDetail[0]?.account_object_detail_plan_amount
+                          ),
+                          real_amount: formatterNumber(
+                            objectDetail[0]?.account_object_detail_real_amount
+                          ),
+                          percentage: sumPercentage(
+                            objectDetail[0]?.account_object_detail_real_amount,
+                            objectDetail[0]?.account_object_detail_plan_amount
+                          ),
+                          children: _.map(objectDetail, (objectDetailSub) => ({
+                            account_level: 6,
+                            code: normalizeLabel(
+                              objectDetailSub?.account_object_detail_sub_label
+                            ).code,
+                            label: normalizeLabel(
+                              objectDetailSub?.account_object_detail_sub_label
+                            ).label,
+                            plan_amount: formatterNumber(
+                              objectDetailSub?.account_object_detail_sub_plan_amount
+                            ),
+                            real_amount: formatterNumber(
+                              objectDetailSub?.account_object_detail_sub_real_amount
+                            ),
+                            percentage: sumPercentage(
+                              objectDetailSub?.account_object_detail_sub_real_amount,
+                              objectDetailSub?.account_object_detail_sub_plan_amount
+                            ),
+                          })),
+                        }))
+                        .value(),
+                    }))
+                    .value(),
+                }))
+                .value(),
+            }))
+            .value(),
+        }))
+        .value();
+
+      return results.concat(recursiveRecord(grp));
+    } else if (report === "gabungankota") {
+      results = { cities: {}, codes: [], data: [] };
+
+      // sorting
+      let srt = _.sortBy(data, [
+        "city_label",
+        "account_base_label",
+        "account_group_label",
+        "account_type_label",
+        "account_object_label",
+        "account_object_detail_label",
+        "account_object_detail_sub_label",
+      ]);
+
+      // take all city
+      results.cities = _.chain(srt)
+        .groupBy("city_label")
+        .map((values, label) => ({
+          city: label,
+          city_id: values[0].city_id,
+          children: values,
+        }))
+        .value();
+
+      // take all codes
+      results.codes = recursiveRecord(
+        _.chain(_.uniqBy(srt, "account_object_label"))
+          .groupBy("account_base_label")
+          .map((base, baseKey) => ({
+            level: 1,
+            code: normalizeLabel(baseKey).code,
+            label: upper(normalizeLabel(baseKey).label),
+            origin: baseKey,
+            children: _.chain(base)
+              .groupBy("account_group_label")
+              .map((group, groupKey) => ({
+                level: 2,
+                code: normalizeLabel(groupKey).code,
+                label: upper(normalizeLabel(groupKey).label),
+                origin: groupKey,
+                children: _.chain(group)
+                  .groupBy("account_type_label")
+                  .map((type, typeKey) => ({
+                    level: 3,
+                    code: normalizeLabel(typeKey).code,
+                    label: normalizeLabel(typeKey).label,
+                    origin: typeKey,
+                    children: _.chain(type)
+                      .groupBy("account_object_label")
+                      .map((object, objectKey) => ({
+                        level: 4,
+                        code: normalizeLabel(objectKey).code,
+                        label: normalizeLabel(objectKey).label,
+                        origin: objectKey,
+                        children: _.chain(object)
+                          .groupBy("account_object_detail_label")
+                          .map((objectDetail, objectDetailKey) => ({
+                            level: 5,
+                            code: normalizeLabel(objectDetailKey).code,
+                            label: normalizeLabel(objectDetailKey).label,
+                            origin: objectDetailKey,
+                            children: _.map(
+                              objectDetail,
+                              (objectDetailSub) => ({
+                                level: 6,
+                                code: normalizeLabel(
+                                  objectDetailSub?.account_object_detail_sub_label
+                                ).code,
+                                label: normalizeLabel(
+                                  objectDetailSub?.account_object_detail_sub_label
+                                ).label,
+                                origin:
+                                  objectDetailSub?.account_object_detail_sub_label,
+                              })
+                            ),
+                          }))
+                          .value(),
+                      }))
+                      .value(),
+                  }))
+                  .value(),
+              }))
+              .value(),
+          }))
+          .value()
+      );
+
+      // set data per-city
+      _.map(results.codes, (codes) => {
+        let d = { code: codes?.code, label: codes?.label };
+        _.map(results?.cities, (cities) => {
+          let fb = cities?.children.find(
+            (i) => i?.account_base_label === codes?.origin
+          );
+          let fg = cities?.children.find(
+            (i) => i?.account_group_label === codes?.origin
+          );
+          let ft = cities?.children.find(
+            (i) => i?.account_type_label === codes?.origin
+          );
+          let fo = cities?.children.find(
+            (i) => i?.account_object_label === codes?.origin
+          );
+          let fod = cities?.children.find(
+            (i) => i?.account_object_detail_label === codes?.origin
+          );
+          let fods = cities?.children.find(
+            (i) => i?.account_object_detail_sub_label === codes?.origin
+          );
+
+          if (fods) {
+            d["account_level"] = 6;
+            d[`${cities?.city_id}_plan_amount`] = formatterNumber(
+              fods?.account_object_detail_sub_plan_amount
+            );
+            d[`${cities?.city_id}_real_amount`] = formatterNumber(
+              fods?.account_object_detail_sub_real_amount
+            );
+            d[`${cities?.city_id}_percentage`] = sumPercentage(
+              fods?.account_object_detail_sub_real_amount,
+              fods?.account_object_detail_sub_plan_amount
+            );
+          } else if (fod) {
+            d["account_level"] = 5;
+            d[`${cities?.city_id}_plan_amount`] = formatterNumber(
+              fod?.account_object_detail_plan_amount
+            );
+            d[`${cities?.city_id}_real_amount`] = formatterNumber(
+              fod?.account_object_detail_real_amount
+            );
+            d[`${cities?.city_id}_percentage`] = sumPercentage(
+              fod?.account_object_detail_real_amount,
+              fod?.account_object_detail_plan_amount
+            );
+          } else if (fo) {
+            d["account_level"] = 4;
+            d[`${cities?.city_id}_plan_amount`] = formatterNumber(
+              fo?.account_object_plan_amount
+            );
+            d[`${cities?.city_id}_real_amount`] = formatterNumber(
+              fo?.account_object_real_amount
+            );
+            d[`${cities?.city_id}_percentage`] = sumPercentage(
+              fo?.account_object_real_amount,
+              fo?.account_object_plan_amount
+            );
+          } else if (ft) {
+            d["account_level"] = 3;
+            d[`${cities?.city_id}_plan_amount`] = formatterNumber(
+              ft?.account_type_plan_amount
+            );
+            d[`${cities?.city_id}_real_amount`] = formatterNumber(
+              ft?.account_type_real_amount
+            );
+            d[`${cities?.city_id}_percentage`] = sumPercentage(
+              ft?.account_type_real_amount,
+              ft?.account_type_plan_amount
+            );
+          } else if (fg) {
+            d["account_level"] = 2;
+            d[`${cities?.city_id}_plan_amount`] = formatterNumber(
+              fg?.account_group_plan_amount
+            );
+            d[`${cities?.city_id}_real_amount`] = formatterNumber(
+              fg?.account_group_real_amount
+            );
+            d[`${cities?.city_id}_percentage`] = sumPercentage(
+              fg?.account_group_real_amount,
+              fg?.account_group_plan_amount
+            );
+          } else if (fb) {
+            d["account_level"] = 1;
+
+            if (d.label === "SURPLUS/DEFISIT") {
+              let def_in = cities?.children.find((i) =>
+                i?.account_base_label.includes("(4)")
+              );
+              let def_out = cities?.children.find((i) =>
+                i?.account_base_label.includes("(5)")
+              );
+
+              let def_in_plan = 0;
+              let def_out_plan = 0;
+
+              let def_in_real = 0;
+              let def_out_real = 0;
+
+              if (def_in) {
+                def_in_plan = parseInt(def_in?.account_base_plan_amount);
+
+                def_in_real = parseInt(def_in?.account_base_real_amount);
+              }
+
+              if (def_out) {
+                def_out_plan = parseInt(def_out?.account_base_plan_amount);
+
+                def_out_real = parseInt(def_out?.account_base_real_amount);
+              }
+
+              d[`${cities?.city_id}_plan_amount`] = formatterNumber(
+                def_in_plan - def_out_plan
+              );
+              d[`${cities?.city_id}_real_amount`] = formatterNumber(
+                def_in_real - def_out_real
+              );
+              d[`${cities?.city_id}_percentage`] = 0;
+            } else if (d.label === "JUMLAH PEMBIAYAAN DAERAH") {
+              let cost_in = cities?.children.find((i) =>
+                i?.account_group_label.includes("(6.1)")
+              );
+              let cost_out = cities?.children.find((i) =>
+                i?.account_group_label.includes("(6.2)")
+              );
+
+              let cost_in_plan = 0;
+              let cost_out_plan = 0;
+
+              let cost_in_real = 0;
+              let cost_out_real = 0;
+
+              let sum_cost_plan = 0;
+              let sum_cost_real = 0;
+
+              if (cost_in) {
+                cost_in_plan = parseInt(cost_in?.account_group_plan_amount);
+                cost_in_real = parseInt(cost_in?.account_group_real_amount);
+              }
+
+              if (cost_out) {
+                cost_out_plan = parseInt(cost_out?.account_group_plan_amount);
+                cost_out_real = parseInt(cost_out?.account_group_real_amount);
+              }
+
+              sum_cost_plan = cost_in_plan - cost_out_plan;
+              sum_cost_real = cost_in_real - cost_out_real;
+
+              d[`${cities?.city_id}_plan_amount`] =
+                formatterNumber(sum_cost_plan);
+              d[`${cities?.city_id}_real_amount`] =
+                formatterNumber(sum_cost_real);
+              d[`${cities?.city_id}_percentage`] = sumPercentage(
+                sum_cost_real,
+                sum_cost_plan
+              );
+            } else {
+              d[`${cities?.city_id}_plan_amount`] = formatterNumber(
+                fb?.account_base_plan_amount
+              );
+              d[`${cities?.city_id}_real_amount`] = formatterNumber(
+                fb?.account_base_real_amount
+              );
+              d[`${cities?.city_id}_percentage`] = sumPercentage(
+                fb?.account_base_real_amount,
+                fb?.account_base_plan_amount
+              );
+            }
+          } else {
+            d["account_level"] = 0;
+            d[`${cities?.city_id}_plan_amount`] = codes?.code ? 0 : ``;
+            d[`${cities?.city_id}_real_amount`] = codes?.code ? 0 : ``;
+            d[`${cities?.city_id}_percentage`] = codes?.code ? 0 : ``;
+          }
+        });
+        results?.data.push(d);
+      });
+
+      return results;
+    } else if (report === "rekapitulasi") {
+      results = { bases: [], cities: [], data: [] };
+
+      // sorting
+      let srt = _.sortBy(data, ["account_base_label", "city_label"]);
+
+      // take all base
+      results.bases = _.chain(srt)
+        .groupBy("account_base_label")
+        .map((values, label) => ({
+          base: label,
+          base_id: values[0].account_base_id,
+          children: values,
+        }))
+        .value();
+
+      // take all city
+      results.cities = _.chain(srt)
+        .groupBy("city_label")
+        .map((values, label) => ({
+          city: label,
+          city_id: values[0].city_id,
+          children: values,
+        }))
+        .value();
+
+      // set data per-city
+      _.map(results?.cities, (city, index) => {
+        let d = { no: index + 1, label: city?.city };
+        _.map(results.bases, (base) => {
+          let fb = city?.children.find(
+            (i) => i?.account_base_label === base?.base
+          );
+
+          if (fb) {
+            d[`${base?.base_id}_plan_amount`] = formatterNumber(
+              fb?.account_base_plan_amount
+            );
+            d[`${base?.base_id}_real_amount`] = formatterNumber(
+              fb?.account_base_real_amount
+            );
+            d[`${base?.base_id}_percentage`] = sumPercentage(
+              fb?.account_base_real_amount,
+              fb?.account_base_plan_amount
+            );
+          } else {
+            d[`${base?.base_id}_plan_amount`] = 0;
+            d[`${base?.base_id}_real_amount`] = 0;
+            d[`${base?.base_id}_percentage`] = 0;
+          }
+        });
+        results?.data.push(d);
+      });
+
+      return results;
+    }
+
+    return results;
+  };
+
+  // recursive data for a while
+  const recursiveRecord = (data, results = [], base = null, group = null) => {
+    if (report === "kota") {
+      _.map(data, (item) => {
+        results.push(item);
+
+        if (item?.children && !!item.children.length) {
+          recursiveRecord(item?.children, results, item?.code, item?.code);
+        }
+
+        if (item?.code !== group && item?.code.split(".").length === 2) {
+          group = item?.code;
+          results.push(
+            {
+              account_level: 0,
+              code: "",
+              label: `JUMLAH ${item?.label}`,
+              plan_amount: item?.plan_amount,
+              real_amount: item?.real_amount,
+              percentage: item?.percentage,
+            },
+            {
+              account_level: 0,
+              code: "",
+              label: "",
+              plan_amount: "",
+              real_amount: "",
+              percentage: "",
+            }
+          );
+        }
+
+        if (item?.code !== base && item?.code.length === 1) {
+          base = item?.code;
+
+          if (base === "6") {
+            let f_in = _.find(item?.children, (c) => c?.code === "6.1");
+            let f_out = _.find(item?.children, (c) => c?.code === "6.2");
+
+            let cost_in_plan = 0;
+            let cost_out_plan = 0;
+
+            let cost_in_real = 0;
+            let cost_out_real = 0;
+
+            let sum_plan = 0;
+            let sum_real = 0;
+
+            if (f_in) {
+              cost_in_plan = parseInt(parserNumber(f_in?.plan_amount));
+              cost_in_real = parseInt(parserNumber(f_in?.real_amount));
+            }
+
+            if (f_out) {
+              cost_out_plan = parseInt(parserNumber(f_out?.plan_amount));
+              cost_out_real = parseInt(parserNumber(f_out?.real_amount));
+            }
+
+            sum_plan = cost_in_plan - cost_out_plan;
+            sum_real = cost_in_real - cost_out_real;
+
+            results.push(
+              {
+                account_level: 0,
+                code: "",
+                label: `JUMLAH ${item?.label}`,
+                plan_amount: formatterNumber(sum_plan),
+                real_amount: formatterNumber(sum_real),
+                percentage: sumPercentage(sum_real, sum_plan),
+              },
+              {
+                account_level: 0,
+                code: "",
+                label: "",
+                plan_amount: "",
+                real_amount: "",
+                percentage: "",
+              }
+            );
+          } else {
+            results.push(
+              {
+                account_level: 0,
+                code: "",
+                label: `JUMLAH ${item?.label}`,
+                plan_amount: item?.plan_amount,
+                real_amount: item?.real_amount,
+                percentage: item?.percentage,
+              },
+              {
+                account_level: 0,
+                code: "",
+                label: "",
+                plan_amount: "",
+                real_amount: "",
+                percentage: "",
+              }
+            );
+          }
+
+          if (item?.code === "5" || item?.code === 5) {
+            results.push(
+              {
+                account_level: 0,
+                code: "",
+                label: `SURPLUS/DEFISIT`,
+                plan_amount: formatterNumber(
+                  parseInt(parserNumber(data[0]?.plan_amount)) -
+                    parseInt(parserNumber(data[1]?.plan_amount))
+                ),
+                real_amount: formatterNumber(
+                  parseInt(parserNumber(data[0]?.real_amount)) -
+                    parseInt(parserNumber(data[1]?.real_amount))
+                ),
+                percentage: 0,
+              },
+              {
+                account_level: 0,
+                code: "",
+                label: "",
+                plan_amount: "",
+                real_amount: "",
+                percentage: "",
+              }
+            );
+          }
+        }
+
+        return item;
+      });
+    } else if (report === "gabungankota") {
+      _.map(data, (item) => {
+        results.push(item);
+
+        if (item?.children && !!item.children.length) {
+          recursiveRecord(item?.children, results, item?.code, item?.code);
+        }
+
+        if (item?.code !== group && item?.code.split(".").length === 2) {
+          group = item?.code;
+          results.push(
+            {
+              level: 0,
+              code: "",
+              origin: item?.origin,
+              label: `JUMLAH ${item?.label}`,
+              plan_amount: item?.plan_amount,
+              real_amount: item?.real_amount,
+              percentage: item?.percentage,
+            },
+            {
+              level: 0,
+              code: "",
+              label: "",
+              plan_amount: "",
+              real_amount: "",
+              percentage: "",
+            }
+          );
+        }
+
+        if (item?.code !== base && item?.code.length === 1) {
+          base = item?.code;
+
+          results.push(
+            {
+              level: 0,
+              code: "",
+              label: `JUMLAH ${item?.label}`,
+              origin: item?.origin,
+              plan_amount: item?.plan_amount,
+              real_amount: item?.real_amount,
+              percentage: item?.percentage,
+            },
+            {
+              level: 0,
+              code: "",
+              label: "",
+              plan_amount: "",
+              real_amount: "",
+              percentage: "",
+            }
+          );
+
+          if (item?.code === "5" || item?.code === 5) {
+            results.push(
+              {
+                level: 0,
+                code: "",
+                label: `SURPLUS/DEFISIT`,
+                origin: item?.origin,
+                plan_amount: "",
+                real_amount: "",
+                percentage: 0,
+              },
+              {
+                level: 0,
+                code: "",
+                label: "",
+                plan_amount: "",
+                real_amount: "",
+                percentage: "",
+              }
+            );
+          }
+        }
+
+        return item;
+      });
+    }
+
+    return results;
+  };
+
+  // normaling label account
+  const normalizeLabel = (val) => {
+    let _tf, _tl;
+
+    _tf = val.split(" ")[0].replace(/[()]/g, "");
+    _tl = val.split(" ");
+    _tl.shift();
+
+    return { code: _tf || "", label: _tl ? _tl.join(" ") : "" };
+  };
+
+  // percent
+  const sumPercentage = (value1 = 0, value2 = 0, results = 0) => {
+    if (isEmpty(value1)) value1 = 0;
+    if (isEmpty(value2)) value2 = 0;
+
+    results = parseFloat((value1 / value2) * 100).toFixed(0);
+
+    if (isNaN(results) || !isFinite(Number(results))) return 0;
+
+    return results;
+  };
+
   // xlsx
-  const xlsx = async (formValues = {}) => {
+  const xlsx = async (formValues = {}, _data = data) => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet(master ? `MASTER` : sheetTitle);
     const exportLog = {
       table: "",
       export: {
-        detail: data,
+        detail: _data,
         fileName: fileName,
         type: "xlsx",
         sign: formValues,
@@ -83,7 +820,7 @@ export default function ExportButton({
 
       // data
       sheet.addRows(
-        data.map((item, index) => ({
+        _data.map((item, index) => ({
           ...item,
           no: (index += 1),
           active: item?.active ? `Ya` : `Tidak`,
@@ -125,7 +862,7 @@ export default function ExportButton({
         // set level from which prefer account
         if (!isEmpty(formValues?.account_level)) {
           exportLog.export.detail = _.filter(
-            data,
+            _data,
             (i) => i?.account_level <= formValues?.account_level
           );
         }
@@ -287,11 +1024,11 @@ export default function ExportButton({
         // set level from which prefer account
         if (!isEmpty(formValues?.account_level)) {
           exportLog.export.detail["modified"] = _.filter(
-            data?.data,
+            _data?.data,
             (c) => c?.account_level <= formValues?.account_level
           );
         } else {
-          exportLog.export.detail["modified"] = data?.data;
+          exportLog.export.detail["modified"] = _data?.data;
         }
 
         // table export
@@ -474,7 +1211,7 @@ export default function ExportButton({
           { key: "label", width: 35 },
         ];
 
-        _.map(data?.bases, (base) => {
+        _.map(_data?.bases, (base) => {
           sheet.mergeCells(rowBase, colBase, rowBase, colBase + 1);
 
           const rowBase1 = sheet.getRow(rowBase);
@@ -503,7 +1240,7 @@ export default function ExportButton({
         sheet.columns = col;
 
         // data
-        sheet.addRows(data?.data, "i");
+        sheet.addRows(_data?.data, "i");
         sheet.eachRow((row, number) => {
           if ([8, 9, 10].includes(number)) {
             row.eachCell((cell) => {
@@ -559,7 +1296,7 @@ export default function ExportButton({
         const totalRow = sheet.lastRow;
         let total = ["TOTAL", ""];
 
-        _.map(data?.bases, (base) => {
+        _.map(_data?.bases, (base) => {
           let tpa = 0,
             tra = 0,
             tp = 0;
@@ -760,9 +1497,12 @@ export default function ExportButton({
     }
 
     addExportLog(exportLog).then((response) => {
+      setLoadingPdf(false);
+      setLoading(false);
+
       if (response?.code === 200) {
-        workbook.xlsx.writeBuffer().then(function (data) {
-          const blob = new Blob([data], {
+        workbook.xlsx.writeBuffer().then(function (_data) {
+          const blob = new Blob([_data], {
             type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           });
           const url = window.URL.createObjectURL(blob);
@@ -780,7 +1520,7 @@ export default function ExportButton({
   };
 
   // pdf
-  const pdfx = async (formValues = {}) => {
+  const pdfx = async (formValues = {}, _data = data) => {
     const dataSigner = {
       export_date: viewDate(formValues?.export_date),
       signerIs: signers.find((d) => d?.id === formValues?.signer_id),
@@ -790,7 +1530,7 @@ export default function ExportButton({
     const exportLog = {
       table: master ?? report,
       export: {
-        detail: data,
+        detail: _data,
         fileName: `${master ? EXPORT_TARGET[master].filename : fileName}`,
         type: "pdf",
         sign: formValues,
@@ -801,7 +1541,7 @@ export default function ExportButton({
     // set level from which prefer account
     if (!isEmpty(formValues?.account_level)) {
       exportLog.export.detail = _.filter(
-        data,
+        _data,
         (i) => i?.account_level <= formValues?.account_level
       );
     }
@@ -818,10 +1558,10 @@ export default function ExportButton({
     );
     const asPdf = pdf([]); // {} or [] is important, throws without an argument
     asPdf.updateContainer(doc);
-    setLoadingPdf(true);
 
     addExportLog(exportLog).then(async (response) => {
       setLoadingPdf(false);
+      setLoading(false);
       onSignerModal(false);
 
       if (response?.code === 200) {
@@ -923,9 +1663,7 @@ export default function ExportButton({
           form={form}
           labelCol={{ span: 8 }}
           labelAlign="left"
-          onFinish={(v) =>
-            doNext === "xlsx" ? xlsx(v) : doNext === "pdfx" ? pdfx(v) : null
-          }
+          onFinish={(v) => collect(v)}
           autoComplete="off"
           initialValues={{
             signer_id: "",
@@ -1063,8 +1801,9 @@ export default function ExportButton({
           form={form}
           labelCol={{ span: 8 }}
           labelAlign="left"
-          onFinish={(v) =>
-            doNext === "xlsx" ? xlsx(v) : doNext === "pdfx" ? pdfx(v) : null
+          onFinish={
+            (v) => collect(v)
+            // doNext === "xlsx" ? xlsx(v) : doNext === "pdfx" ? pdfx(v) : null
           }
           autoComplete="off"
           initialValues={{

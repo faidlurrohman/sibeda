@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Card, DatePicker, Select, Table } from "antd";
+import { DatePicker, Select, Table } from "antd";
 import axios from "axios";
 import ReloadButton from "../../components/button/ReloadButton";
 import { getCityList } from "../../services/city";
@@ -7,12 +7,10 @@ import { DATE_FORMAT_VIEW, PAGINATION } from "../../helpers/constants";
 import { convertDate, dbDate } from "../../helpers/date";
 import { getRecapitulationCities } from "../../services/report";
 import { searchColumn } from "../../helpers/table";
-import { formatterNumber } from "../../helpers/number";
 import _ from "lodash";
 import ExportButton from "../../components/button/ExportButton";
-import { isEmpty, lower } from "../../helpers/typo";
+import { lower } from "../../helpers/typo";
 import { getAccountList } from "../../services/account";
-import { Column } from "@ant-design/plots";
 import { useAppSelector } from "../../hooks/useRedux";
 
 const { RangePicker } = DatePicker;
@@ -20,9 +18,6 @@ const { RangePicker } = DatePicker;
 export default function PendapatanBelanja() {
   const [data, setData] = useState([]);
   const [cities, setCities] = useState([]);
-  const [exports, setExports] = useState([]);
-  const [chartP, setChartP] = useState([]);
-  const [chartB, setChartB] = useState([]);
   const [loading, setLoading] = useState(false);
   const session = useAppSelector((state) => state.session.user);
 
@@ -36,151 +31,24 @@ export default function PendapatanBelanja() {
   const [cityFilter, setCityFilter] = useState([]);
   const [tablePage, setTablePage] = useState(PAGINATION);
 
-  const columnConfig = {
-    appendPadding: 20,
-    style: { height: 300 },
-    isGroup: true,
-    xField: "city",
-    yField: "value",
-    yAxis: {
-      label: {
-        formatter: (v) => formatterNumber(v),
-      },
-    },
-    tooltip: {
-      formatter: (v) => {
-        return { ...v, value: formatterNumber(v?.value) };
-      },
-    },
-    seriesField: "name",
-    legend: false,
-    color: ["#1ca9e6", "#f88c24"],
-    xAxis: { label: { autoRotate: true } },
-    scrollbar: { type: "horizontal" },
-  };
-
   const getData = (params) => {
     setLoading(true);
     axios
       .all([
         getRecapitulationCities(params),
-        getRecapitulationCities({
-          ...params,
-          pagination: { ...params.pagination, pageSize: 0 },
-        }),
         getCityList(),
         getAccountList("base"),
       ])
       .then(
-        axios.spread((_data, _export, _cities, _bases) => {
+        axios.spread((_data, _cities, _bases) => {
           setLoading(false);
           setData(_data?.data);
           setCities(_cities?.data);
-          setExports(setDataExport(_export?.data));
-
           setTablePage({
             pagination: { ...params.pagination, total: _data?.total },
           });
-
-          if (!!(_bases?.data).length && !!(_cities?.data).length) {
-            makeChartData(
-              _bases?.data,
-              _cities?.data,
-              params?.filters,
-              _export?.data
-            );
-          }
         })
       );
-  };
-
-  const makeChartData = (bases, cities, filter, values) => {
-    // init tampung data masing-masing  akun base
-    let _cp = null,
-      _cb = null;
-
-    // init array untung menampung data chart
-    let _chartP = [],
-      _chartB = [];
-
-    // tampung semua kota
-    let _sl = cities;
-
-    // cari data akun base yang labelnya Pendapatan Dan Belanja
-    _cp = _.find(bases, (v) => v?.label.includes("Pendapatan"));
-    _cb = _.find(bases, (v) => v?.label.includes("Belanja"));
-
-    // cek filter kotanya
-    if (filter && filter?.city_id && !!filter?.city_id[0].length) {
-      // ambil kota yang hanya difilter sebagai default tampilan
-      _sl = _.filter(cities, (v) => filter?.city_id[0].includes(v?.id));
-    }
-
-    // proses untuk pendapatan, jika tidak ada tidak usah tampilkan chart
-    if (_cp) {
-      // loop kota
-      _.map(_sl, (city) => {
-        // cari kota dan sesuai akun base yang ada didata list
-        const cb = _.filter(
-          values,
-          (v) => v?.city_id === city?.id && v?.account_base_id === _cp?.id
-        );
-
-        // init default chart plan atau real
-        let _ip = { name: "Anggaran", value: 0, city: city?.label };
-        let _ir = { name: "Relisasi", value: 0, city: city?.label };
-
-        // kalau ada data dari city yang ada dilist
-        if (cb && !!cb.length) {
-          // loop hitung masing-masing plan atau real
-          _.map(cb, (cur) => {
-            // pakai float karena nilai ada pakai koma
-            _ip.value += parseFloat(cur?.account_base_plan_amount || 0);
-            _ir.value += parseFloat(cur?.account_base_real_amount || 0);
-          });
-        }
-
-        // push init masing-masing plan atau real
-        _chartP.push(_ip);
-        _chartP.push(_ir);
-      });
-
-      // set ke state
-      setChartP(_chartP);
-    }
-
-    // proses untuk belanja, jika tidak ada tidak usah tampilkan chart
-    if (_cb) {
-      // loop kota
-      _.map(_sl, (city) => {
-        // cari kota dan sesuai akun base yang ada didata list
-        const cb = _.filter(
-          values,
-          (v) => v?.city_id === city?.id && v?.account_base_id === _cb?.id
-        );
-
-        // init default chart plan atau real
-        let _ip = { name: "Anggaran", value: 0, city: city?.label };
-        let _ir = { name: "Relisasi", value: 0, city: city?.label };
-
-        // kalau ada data dari city yang ada dilist
-        if (cb && !!cb.length) {
-          // loop hitung masing-masing plan atau real
-          _.map(cb, (cur) => {
-            // pakai float karena nilai ada pakai koma
-            _ip.value += parseFloat(cur?.account_base_plan_amount || 0);
-            _ir.value += parseFloat(cur?.account_base_real_amount || 0);
-          });
-        }
-
-        // push init masing-masing plan atau real
-        _chartB.push(_ip);
-        _chartB.push(_ir);
-      });
-
-      // set ke state
-      setChartB(_chartB);
-    }
   };
 
   const reloadTable = () => {
@@ -273,7 +141,7 @@ export default function PendapatanBelanja() {
     searchColumn(
       tableFilterInputRef,
       "city_label",
-      "Ka/.Kota",
+      "Kab/Kota",
       null,
       true,
       tableSorted
@@ -305,74 +173,6 @@ export default function PendapatanBelanja() {
       "int"
     ),
   ];
-
-  const setDataExport = (data) => {
-    let results = { bases: [], cities: [], data: [] };
-
-    // sorting
-    let srt = _.sortBy(data, ["account_base_label", "city_label"]);
-
-    // take all base
-    results.bases = _.chain(srt)
-      .groupBy("account_base_label")
-      .map((values, label) => ({
-        base: label,
-        base_id: values[0].account_base_id,
-        children: values,
-      }))
-      .value();
-
-    // take all city
-    results.cities = _.chain(srt)
-      .groupBy("city_label")
-      .map((values, label) => ({
-        city: label,
-        city_id: values[0].city_id,
-        children: values,
-      }))
-      .value();
-
-    // set data per-city
-    _.map(results?.cities, (city, index) => {
-      let d = { no: index + 1, label: city?.city };
-      _.map(results.bases, (base) => {
-        let fb = city?.children.find(
-          (i) => i?.account_base_label === base?.base
-        );
-
-        if (fb) {
-          d[`${base?.base_id}_plan_amount`] = formatterNumber(
-            fb?.account_base_plan_amount
-          );
-          d[`${base?.base_id}_real_amount`] = formatterNumber(
-            fb?.account_base_real_amount
-          );
-          d[`${base?.base_id}_percentage`] = sumPercentage(
-            fb?.account_base_real_amount,
-            fb?.account_base_plan_amount
-          );
-        } else {
-          d[`${base?.base_id}_plan_amount`] = 0;
-          d[`${base?.base_id}_real_amount`] = 0;
-          d[`${base?.base_id}_percentage`] = 0;
-        }
-      });
-      results?.data.push(d);
-    });
-
-    return results;
-  };
-
-  const sumPercentage = (value1 = 0, value2 = 0, results = 0) => {
-    if (isEmpty(value1)) value1 = 0;
-    if (isEmpty(value2)) value2 = 0;
-
-    results = ((value1 / value2) * 100).toFixed(2);
-
-    if (isNaN(results) || !isFinite(Number(results))) return 0;
-
-    return results;
-  };
 
   useEffect(() => reloadTable(), []);
 
@@ -424,9 +224,9 @@ export default function PendapatanBelanja() {
           />
         </div>
         <ReloadButton onClick={reloadTable} stateLoading={loading} />
-        {!!exports?.data?.length && (
+        {!!data?.length && (
           <ExportButton
-            data={exports}
+            city_id={cityFilter}
             date={dateRangeFilter}
             report={`rekapitulasi`}
             pdfOrientation="landscape"
@@ -434,34 +234,6 @@ export default function PendapatanBelanja() {
           />
         )}
       </div>
-      {!!chartP.length && !!chartB.length && (
-        <div className="flex mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0">
-          <Card
-            size="small"
-            title={
-              <span className="text-xs">Anggaran & Realisasi Pendapatan</span>
-            }
-            bodyStyle={{ padding: 0, margin: 0 }}
-            className="text-center w-full"
-          >
-            <Column {...columnConfig} data={chartP} loading={loading} />
-          </Card>
-        </div>
-      )}
-      {!!chartB.length && (
-        <div className="flex mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0">
-          <Card
-            size="small"
-            title={
-              <span className="text-xs">Anggaran & Realisasi Belanja</span>
-            }
-            bodyStyle={{ padding: 0, margin: 0 }}
-            className="text-center w-full"
-          >
-            <Column {...columnConfig} data={chartB} loading={loading} />
-          </Card>
-        </div>
-      )}
       <Table
         scroll={{
           scrollToFirstRowOnChange: true,
