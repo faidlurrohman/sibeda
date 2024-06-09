@@ -20,7 +20,11 @@ const { RangePicker } = DatePicker;
 export default function AnggaranGabunganKota() {
   const [data, setData] = useState([]);
   const [cities, setCities] = useState([]);
-  const [charts, setCharts] = useState([]);
+
+  const [chartIn, setChartIn] = useState([]);
+  const [chartOut, setChartOut] = useState([]);
+  const [chartCost, setChartCost] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const session = useAppSelector((state) => state.session.user);
 
@@ -103,10 +107,14 @@ export default function AnggaranGabunganKota() {
     //   {name: 'Anggaran', value: 0, city: 'Kabupaten Anambas'},
     //   {name: 'Relisasi', value: 0, city: 'Kabupaten Anambas'}
     // ]
-    let _chart = [];
+    let _i = [],
+      _o = [],
+      _c = [];
 
     // tampung kota
     let _ct = cities;
+
+    console.log("values", values);
 
     // cek filter kotanya
     if (filter && filter?.city_id && !!filter?.city_id[0].length) {
@@ -116,13 +124,37 @@ export default function AnggaranGabunganKota() {
     // data kota harus ada baru nampilkan chart
     if (!!_ct.length) {
       _.map(_ct, (ct) => {
-        _chart.push({
+        _i.push({
           id: ct?.id,
           city: ct?.label,
           name: "Anggaran",
           value: 0,
         });
-        _chart.push({
+        _i.push({
+          id: ct?.id,
+          city: ct?.label,
+          name: "Realisasi",
+          value: 0,
+        });
+        _o.push({
+          id: ct?.id,
+          city: ct?.label,
+          name: "Anggaran",
+          value: 0,
+        });
+        _o.push({
+          id: ct?.id,
+          city: ct?.label,
+          name: "Realisasi",
+          value: 0,
+        });
+        _c.push({
+          id: ct?.id,
+          city: ct?.label,
+          name: "Anggaran",
+          value: 0,
+        });
+        _c.push({
           id: ct?.id,
           city: ct?.label,
           name: "Realisasi",
@@ -130,9 +162,59 @@ export default function AnggaranGabunganKota() {
         });
       });
 
-      _chart = _.map(_chart, (ch) => {
+      // cari pendapatan = account_base_label (4)
+      _i = _.map(_i, (ch) => {
         // cari kota yang ada didata
-        let _dct = _.filter(values, (v) => v?.city_id === ch?.id);
+        let _dct = _.filter(
+          values,
+          (v) => v?.city_id === ch?.id && v?.account_base_label.includes("(4)")
+        );
+
+        if (ch?.name === "Anggaran") {
+          ch = {
+            ...ch,
+            value: _.sumBy(_dct, (i) => Number(i[`account_base_plan_amount`])),
+          };
+        } else if (ch?.name === "Realisasi") {
+          ch = {
+            ...ch,
+            value: _.sumBy(_dct, (i) => Number(i[`account_base_real_amount`])),
+          };
+        }
+
+        return ch;
+      });
+
+      // cari belanja = account_base_label (5)
+      _o = _.map(_o, (ch) => {
+        // cari kota yang ada didata
+        let _dct = _.filter(
+          values,
+          (v) => v?.city_id === ch?.id && v?.account_base_label.includes("(5)")
+        );
+
+        if (ch?.name === "Anggaran") {
+          ch = {
+            ...ch,
+            value: _.sumBy(_dct, (i) => Number(i[`account_base_plan_amount`])),
+          };
+        } else if (ch?.name === "Realisasi") {
+          ch = {
+            ...ch,
+            value: _.sumBy(_dct, (i) => Number(i[`account_base_real_amount`])),
+          };
+        }
+
+        return ch;
+      });
+
+      // cari pembiayaan = account_base_label (6)
+      _c = _.map(_c, (ch) => {
+        // cari kota yang ada didata
+        let _dct = _.filter(
+          values,
+          (v) => v?.city_id === ch?.id && v?.account_base_label.includes("(6)")
+        );
 
         if (ch?.name === "Anggaran") {
           ch = {
@@ -151,7 +233,9 @@ export default function AnggaranGabunganKota() {
     }
 
     // set ke state
-    setCharts(_chart);
+    setChartIn(_i);
+    setChartOut(_o);
+    setChartCost(_c);
   };
 
   const reloadTable = () => {
@@ -339,16 +423,44 @@ export default function AnggaranGabunganKota() {
         )}
       </div>
       {!!cities.length && (
-        <div className="flex mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0">
-          <Card
-            size="small"
-            title={<span className="text-xs">Anggaran & Realisasi</span>}
-            bodyStyle={{ padding: 0, margin: 0 }}
-            className="text-center w-full"
-          >
-            <Column {...columnConfig} data={charts} loading={loading} />
-          </Card>
-        </div>
+        <>
+          <div className="flex mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0">
+            <Card
+              size="small"
+              title={
+                <span className="text-xs">Anggaran & Realisasi Pendapatan</span>
+              }
+              bodyStyle={{ padding: 0, margin: 0 }}
+              className="text-center w-full"
+            >
+              <Column {...columnConfig} data={chartIn} loading={loading} />
+            </Card>
+          </div>
+          <div className="flex mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0">
+            <Card
+              size="small"
+              title={
+                <span className="text-xs">Anggaran & Realisasi Belanja</span>
+              }
+              bodyStyle={{ padding: 0, margin: 0 }}
+              className="text-center w-full"
+            >
+              <Column {...columnConfig} data={chartOut} loading={loading} />
+            </Card>
+          </div>
+          <div className="flex mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0">
+            <Card
+              size="small"
+              title={
+                <span className="text-xs">Anggaran & Realisasi Pembiayaan</span>
+              }
+              bodyStyle={{ padding: 0, margin: 0 }}
+              className="text-center w-full"
+            >
+              <Column {...columnConfig} data={chartCost} loading={loading} />
+            </Card>
+          </div>
+        </>
       )}
       <Table
         scroll={{
